@@ -1358,6 +1358,64 @@ const tilskuddSaker = [
       { label: "Komplett søknad", detail: "Avtaler, budsjett og kommunebrev er med." },
       { label: "Treffer 4.6", detail: "Guider som skal koble barn utenfor inn i aktivitet." }
     ]
+  },
+  {
+    id: "T-2628",
+    org: "Stormølla speidere",
+    orgnr: "999 414 515",
+    kommune: "Dalstranda",
+    aktivitet: "4.1 Kultur-, fritids- og ferieaktivitet",
+    belop: 94000,
+    mottatt: "23.08.2026 08:06",
+    queue: "ready",
+    soknad: "Helgeleir i september for 16 barn rekruttert via SFO. Budsjett for mat og buss. Vedlegg lastet opp i portalen i morges. Ingen saksbehandler har åpnet saken ennå.",
+    reasons: [
+      { label: "Nettopp journalført", detail: "Saken har saksnummer, men formell kontroll er ikke startet." }
+    ]
+  },
+  {
+    id: "T-2629",
+    org: "Fjordheim kulturskolevenner",
+    orgnr: "999 626 727",
+    kommune: "Fjordheim",
+    aktivitet: "4.1 Kultur-, fritids- og ferieaktivitet",
+    belop: 410000,
+    mottatt: "15.03.2026 11:20",
+    queue: "ready",
+    soknad: "Gratis instrumentgruppe etter skoletid, 24 barn. Søknaden er komplett. Prosjektledelse utgjør 32 % av budsjettet. Saksbehandler har notat klart til vedtak.",
+    reasons: [
+      { label: "Klar til vedtak", detail: "Formelt komplett. Gjenstår skjønn om avkorting av prosjektledelse." },
+      { label: "Høy administrasjon", detail: "Prosjektledelse over intern praksis (20 %). Anbefalt delvis innvilgelse." }
+    ]
+  },
+  {
+    id: "T-2630",
+    org: "Havna ungdomsråd",
+    orgnr: "999 838 939",
+    kommune: "Havblik",
+    aktivitet: "4.8 Åpen møteplass",
+    belop: 180000,
+    mottatt: "12.01.2026 09:40",
+    queue: "ready",
+    soknad: "Innvilget 180 000 kr i februar. 70 % er utbetalt. Underveisrapport for 2. termin mangler. Attestant har stoppet siste pott.",
+    reasons: [
+      { label: "Utbetaling holdt", detail: "Siste 30 % utbetales først når underveisrapport er godkjent." }
+    ]
+  },
+  {
+    id: "T-2631",
+    org: "Myr idrettslag anlegg",
+    orgnr: "999 101 202",
+    kommune: "Myr",
+    aktivitet: "4.1 Kultur-, fritids- og ferieaktivitet",
+    belop: 220000,
+    mottatt: "03.11.2025 14:02",
+    queue: "reject",
+    soknad: "Fikk 220 000 kr til inkluderende trening. Sluttregnskapet viser at 140 000 gikk til ny gressbane. Resten er aktivitet. Tilbakekreving er under arbeid.",
+    reasons: [
+      { label: "Brudd på vilkår", detail: "Varig anlegg er ikke godkjent kostnad i vedtaket." },
+      { label: "Tilbakekreving", detail: "140 000 kr kreves tilbake. Reaksjonen står i tilskuddsbrevet." }
+    ]
   }
 ];
 
@@ -1397,11 +1455,69 @@ const GRANT_CHECKS = {
   "T-2624": { soker: "ok", frist: "ok", formal: "ok", vedlegg: "ok", kostnad: "ok", malgruppe: "ok" },
   "T-2625": { soker: "nei", frist: "ukjent", formal: "nei", vedlegg: "nei", kostnad: "nei", malgruppe: "nei" },
   "T-2626": { soker: "ok", frist: "ok", formal: "ok", vedlegg: "nei", kostnad: "ok", malgruppe: "ukjent" },
-  "T-2627": { soker: "ok", frist: "ok", formal: "ok", vedlegg: "ok", kostnad: "ok", malgruppe: "ok" }
+  "T-2627": { soker: "ok", frist: "ok", formal: "ok", vedlegg: "ok", kostnad: "ok", malgruppe: "ok" },
+  "T-2628": { soker: "ok", frist: "ok", formal: "ok", vedlegg: "ok", kostnad: "ok", malgruppe: "ok" },
+  "T-2629": { soker: "ok", frist: "ok", formal: "ok", vedlegg: "ok", kostnad: "ukjent", malgruppe: "ok" },
+  "T-2630": { soker: "ok", frist: "ok", formal: "ok", vedlegg: "ok", kostnad: "ok", malgruppe: "ok" },
+  "T-2631": { soker: "ok", frist: "ok", formal: "ok", vedlegg: "ok", kostnad: "nei", malgruppe: "ok" }
 };
+
+const GRANT_STAGES = [
+  { id: "utlysning", n: 1, short: "Regelverk", label: "Regelverk og utlysning" },
+  { id: "mottak", n: 2, short: "Mottak", label: "Mottak og journal" },
+  { id: "kontroll", n: 3, short: "Kontroll", label: "Kontroll av søknaden" },
+  { id: "vedtak", n: 4, short: "Vedtak", label: "Vurdering og vedtak" },
+  { id: "brev", n: 5, short: "Brev", label: "Tilskuddsbrev" },
+  { id: "utbetaling", n: 6, short: "Utbetaling", label: "Utbetaling" },
+  { id: "oppfolging", n: 7, short: "Oppfølging", label: "Rapport og kontroll" },
+  { id: "avvik", n: 8, short: "Avvik", label: "Avvik og avslutning" }
+];
+
+const GRANT_CASE_META = {
+  T2601: { stage: "brev", neste: "Saksbehandler signerer tilskuddsbrevet (budsjettdisponering).", vurdering: { tittel: "Delvis innvilgelse", tekst: "Tiltaket treffer 4.1. Prosjektledelse og generell administrasjon er kuttet. Utkast til tilskuddsbrev: 780 000 kr. Brevet skal si vilkår, utbetaling og rapportfrist.", belop: 780000 } },
+  T2602: { stage: "kontroll", neste: "Innhent spesifisert budsjett og avklar utlån versus salg.", vurdering: { tittel: "Se nærmere", tekst: "Formål 4.3 kan treffe, men kostnadene kan ikke kontrolleres uten postspesifikasjon.", belop: null } },
+  T2603: { stage: "kontroll", neste: "Avslagsbrev hvis saksbehandler bekrefter feil søkertype.", vurdering: { tittel: "Utenfor ordningen", tekst: "Kommersielt AS og tiltak for ansattebarn. Ikke søknadsberettiget.", belop: 0 } },
+  T2604: { stage: "utbetaling", neste: "Attestér 2. termin når underveisrapport er inne.", vurdering: { tittel: "70 % utbetalt", tekst: "Vedtak 320 000 kr. Første pott utbetalt i mars. Siste 96 000 venter på rapport.", belop: 320000 } },
+  T2605: { stage: "kontroll", neste: "Be om deltakerantall, egenandel og åpenhet utenfor menigheten.", vurdering: { tittel: "Se nærmere", tekst: "Leir kan treffe 4.1, men likebehandling kan ikke vurderes uten nøkkeltall.", belop: null } },
+  T2606: { stage: "kontroll", neste: "Avvis som for sent innkommet, med mindre fristutsettelse finnes.", vurdering: { tittel: "Frist sprengt", tekst: "Registrert etter 31.10.2025. Ingen utsettelse i saken.", belop: 0 } },
+  T2607: { stage: "kontroll", neste: "Be om konkret målgruppe og rekrutteringsplan.", vurdering: { tittel: "Uklar aktivitet", tekst: "Grillfest/dugnad beskriver ikke barn som står utenfor.", belop: null } },
+  T2608: { stage: "oppfolging", neste: "Godkjenn sluttrapport og lukk saken.", vurdering: { tittel: "Rapport i orden", tekst: "12 av 16 plasser fylt. Kostnader matcher vedtaket. Ingen avvik.", belop: 265000 } },
+  T2609: { stage: "kontroll", neste: "Avslag: gjeld og renter er ikke godkjent kostnad.", vurdering: { tittel: "Ikke godkjent kostnad", tekst: "Underskudd og lån ligger utenfor tiltaket.", belop: 0 } },
+  T2610: { stage: "kontroll", neste: "Innhent kommuneavtale og liste over aktiviteter.", vurdering: { tittel: "Se nærmere", tekst: "4.6 kan treffe, men uten avtale kan beløp ikke fastsettes.", belop: null } },
+  T2611: { stage: "kontroll", neste: "Avvis: privatperson kan ikke søke.", vurdering: { tittel: "Ikke søknadsberettiget", tekst: "Mangler Enhetsregister. Individuell kontingent er utenfor.", belop: 0 } },
+  T2612: { stage: "oppfolging", neste: "Purr rapport. Frist 1. april 2027 er passert i simuleringen.", vurdering: { tittel: "Rapport mangler", tekst: "Tilskudd utbetalt. Ingen sluttregnskap. Kan holde tilbake fremtidig tilskudd.", belop: 72000 } },
+  T2613: { stage: "kontroll", neste: "Be om skillet mot utekontakt og ta ut «uforutsett 20 %».", vurdering: { tittel: "Se nærmere", tekst: "Risiko for refinansiering av ordinær drift.", belop: null } },
+  T2614: { stage: "kontroll", neste: "Avslag: instrumenter og oppussing er investering.", vurdering: { tittel: "Utenfor formål", tekst: "Varige driftsmidler og ingen plan for barn utenfor korpset.", belop: 0 } },
+  T2615: { stage: "avvik", neste: "Krev 28 000 kr ubrukt tilbake og før inn på kap. 5309 i øvelsen.", vurdering: { tittel: "Ubrukte midler", tekst: "Leiren ble mindre enn planlagt. 28 000 kr står på konto hos mottaker.", belop: 28000 } },
+  T2616: { stage: "mottak", neste: "Journalført. Start formell kontroll (frist, søker, vedlegg).", vurdering: { tittel: "Ny i innboksen", tekst: "Ingen sjekk kjørt ennå. Ser komplett ut ved første øyekast.", belop: null } },
+  T2617: { stage: "kontroll", neste: "Avslag: kommersiell utleie uten gratis utlån.", vurdering: { tittel: "Feil søkertype", tekst: "Subsidierer eget lager, ikke utstyrssentral for barn.", belop: 0 } },
+  T2618: { stage: "kontroll", neste: "Be om signatur og vedtekter.", vurdering: { tittel: "Formelle mangler", tekst: "Innholdet kan treffe 4.8 når vedleggene er på plass.", belop: null } },
+  T2619: { stage: "kontroll", neste: "Avklar 4.12 (fem kommuner) eller flytt til lokal type.", vurdering: { tittel: "Feil aktivitetstype?", tekst: "Tre kommuner — under kravet for sentralledd.", belop: null } },
+  T2620: { stage: "mottak", neste: "Kvitter og start kontroll mot 4.1 og rekrutteringskriterier.", vurdering: { tittel: "Ny i innboksen", tekst: "Aktivitetsuke med inntektsprioritering. Ikke vurdert ennå.", belop: null } },
+  T2621: { stage: "kontroll", neste: "Avslag: anlegg og seniordrift.", vurdering: { tittel: "Utenfor ordningen", tekst: "Ingen barn utenfor klubben er beskrevet.", belop: 0 } },
+  T2622: { stage: "vedtak", neste: "Ikke fatt avslaget KI foreslår — sjekk paragraf og presedens.", vurdering: { tittel: "Anbefalt avslag", tekst: "KI viser til sim. forskrift § 14 om investering: kommunen eier ikke tiltaket. Golfklubben Fjord (T-2621) fikk avslag på «liknende aktivitet». Likebehandling tilsier avslag.", belop: 0, planted: true }, fasit: "Feil paragraf og feil presedens. § 14 gjelder investering, ikke jobbtilbud (4.2). T-2621 var anlegg og seniordrift. Den like saken er Havblik Røde Kors (T-2608 / MS-02), som ble vurdert til innvilgelse." },
+  T2623: { stage: "kontroll", neste: "Innhent tildelingsregler for fritidskassen.", vurdering: { tittel: "Se nærmere", tekst: "Uten åpne kriterier kan ikke likebehandling dokumenteres.", belop: null } },
+  T2624: { stage: "vedtak", neste: "Fatt vedtak. Lite beløp, lav risiko, anbefalt fullt.", vurdering: { tittel: "Anbefalt innvilget", tekst: "Engangsdag 4.11, rekruttering via helsestasjon, budsjett enkelt.", belop: 33000 } },
+  T2625: { stage: "kontroll", neste: "Avvis som ufullstendig — ikke en behandlingsbar søknad.", vurdering: { tittel: "Ikke søknad", tekst: "Mangler org.nr., aktivitet og budsjett.", belop: 0 } },
+  T2626: { stage: "kontroll", neste: "Innhent arenaavtaler og målgruppeavgrensning.", vurdering: { tittel: "Se nærmere", tekst: "200 kort uten avtale kan ikke beløpsfastsettes.", belop: null } },
+  T2627: { stage: "utbetaling", neste: "Attestant sjekker beløp, mottaker og vilkår før 1. pott.", vurdering: { tittel: "Klar til attestasjon", tekst: "Vedtak 240 000 kr er registrert. To ulike personer: BDM har signert, attestant mangler.", belop: 240000 } },
+  T2628: { stage: "mottak", neste: "Gi kvittering og start formell kontroll.", vurdering: { tittel: "Journalført i dag", tekst: "Helgeleir ser treffsikker ut, men kontrollen er ikke dokumentert.", belop: null } },
+  T2629: { stage: "vedtak", neste: "Fatt delvis vedtak og skriv begrunnelse for kutt.", vurdering: { tittel: "Anbefalt delvis", tekst: "Treffer formål. Kutt prosjektledelse til 20 %: 360 000 kr av 410 000.", belop: 360000 } },
+  T2630: { stage: "utbetaling", neste: "Ikke attestér 2. termin før underveisrapport er godkjent.", vurdering: { tittel: "Pott holdt", tekst: "70 % utbetalt. Rapportvilkår i brevet er ikke oppfylt.", belop: 54000 } },
+  T2631: { stage: "avvik", neste: "Fatt tilbakekrevingsvedtak på 140 000 kr og start innkreving.", vurdering: { tittel: "Brudd på vilkår", tekst: "Gressbane er investering. Forholdsmessig reaksjon: krev den ulovlige delen tilbake.", belop: 140000 } }
+};
+
+function grantMeta(sak) {
+  return GRANT_CASE_META[sak.id.replace("-", "")] || GRANT_CASE_META[sak.id] || {
+    stage: "kontroll",
+    neste: "Saksbehandler vurderer.",
+    vurdering: { tittel: "Utkast", tekst: sak.reasons.map((r) => r.detail).join(" "), belop: null }
+  };
+}
 
 let grantInboxLoaded = false;
 let grantSorted = false;
+let grantStageFilter = "all";
 
 function formatGrantKroner(n) {
   return `${n.toLocaleString("no-NO")} kr`;
@@ -1411,6 +1527,38 @@ function grantQueueLabel(queue) {
   if (queue === "reject") return "Avvist / utenfor";
   if (queue === "needinfo") return "Se nærmere";
   return "Klar til vurdering";
+}
+
+function grantStageById(id) {
+  return GRANT_STAGES.find((s) => s.id === id) || GRANT_STAGES[2];
+}
+
+function grantStageCounts() {
+  const counts = Object.fromEntries(GRANT_STAGES.map((s) => [s.id, 0]));
+  counts.utlysning = grantInboxLoaded ? tilskuddSaker.length : 0;
+  tilskuddSaker.forEach((sak) => {
+    const st = grantMeta(sak).stage;
+    if (st !== "utlysning") counts[st] = (counts[st] || 0) + 1;
+  });
+  return counts;
+}
+
+function grantProcessBarHtml(currentId, opts = {}) {
+  const cur = GRANT_STAGES.findIndex((s) => s.id === currentId);
+  return GRANT_STAGES.map((st, i) => {
+    let cls = "bg-slate-100 text-slate-500 border-slate-200";
+    if (i < cur) cls = "bg-emerald-50 text-emerald-800 border-emerald-200";
+    if (i === cur) cls = "bg-violet-600 text-white border-violet-700 ring-2 ring-violet-300";
+    const click = opts.clickable ? `onclick="setGrantStageFilter('${st.id}')"` : "";
+    const typeAttr = opts.clickable ? 'type="button"' : "";
+    const tag = opts.clickable ? "button" : "div";
+    const ring = opts.filter === st.id ? " outline outline-2 outline-offset-1 outline-slate-900" : "";
+    return `<${tag} ${typeAttr} ${click} class="rounded-lg border px-1.5 py-1.5 text-left ${cls} ${ring} ${opts.clickable ? "hover:opacity-90" : ""}">
+      <p class="text-[10px] font-mono font-bold">${st.n}</p>
+      <p class="text-[10px] font-semibold leading-tight">${st.short}</p>
+      ${opts.counts ? `<p class="text-[10px] font-mono mt-0.5">${st.id === "utlysning" ? "gjelder alle" : `${opts.counts[st.id] || 0}`}</p>` : ""}
+    </${tag}>`;
+  }).join("");
 }
 
 function grantCheckMark(val) {
@@ -1428,19 +1576,25 @@ function grantChecksHtml(sak) {
 }
 
 function grantCardHtml(sak, opts = {}) {
+  const meta = grantMeta(sak);
+  const stage = grantStageById(meta.stage);
   const why = opts.showWhy
     ? `<ul class="mt-2 space-y-1">${sak.reasons.map((r) => `<li class="text-[11px] text-slate-700 leading-relaxed"><strong>${r.label}:</strong> ${r.detail}</li>`).join("")}</ul>`
     : "";
   const delay = opts.delay ? `style="animation-delay:${opts.delay}ms"` : "";
+  const vurdering = meta.vurdering
+    ? `<p class="mt-2 text-[11px] text-violet-900"><strong>${meta.vurdering.tittel}.</strong> ${meta.vurdering.tekst}</p>`
+    : "";
   return `
     <button type="button" onclick="openGrantCase('${sak.id}')" class="grant-card w-full text-left bg-white border border-slate-200 hover:border-violet-400 rounded-xl p-3 shadow-sm transition-all" ${delay}>
       <div class="flex items-start justify-between gap-2">
         <span class="text-[10px] font-mono font-bold text-violet-700">${sak.id}</span>
-        <span class="text-[10px] font-mono text-slate-400">${sak.mottatt}</span>
+        <span class="text-[10px] font-semibold px-1.5 py-0.5 rounded-md bg-violet-50 text-violet-800">${stage.n}. ${stage.short}</span>
       </div>
       <p class="text-sm font-bold text-slate-900 mt-1">${sak.org}</p>
       <p class="text-[11px] text-slate-500">${sak.kommune} · ${sak.aktivitet}</p>
       <p class="text-xs font-semibold text-slate-800 mt-1">${formatGrantKroner(sak.belop)}</p>
+      ${opts.showWhy ? vurdering : ""}
       ${why}
     </button>
   `;
@@ -1448,6 +1602,38 @@ function grantCardHtml(sak, opts = {}) {
 
 function grantLetterText(sak) {
   const grunn = sak.reasons.map((r) => `• ${r.label}: ${r.detail}`).join("\n");
+  const meta = grantMeta(sak);
+  if (meta.stage === "avvik") {
+    return `Brev om avvik (utkast) — ${sak.id}
+
+Til ${sak.org}
+
+Det gjelder tilskudd til ${sak.aktivitet} i ${sak.kommune}, opprinnelig søkt ${formatGrantKroner(sak.belop)}.
+
+${meta.vurdering.tittel}. ${meta.vurdering.tekst}
+
+Grunnlag:
+${grunn}
+
+Neste: ${meta.neste}
+
+Dere kan klage på vedtak om tilbakekreving innen tre uker.
+
+Dette er et simulert utkast. Saksbehandler må bekrefte før noe sendes.`;
+  }
+  if (meta.stage === "oppfolging") {
+    return `Brev om rapportering (utkast) — ${sak.id}
+
+Til ${sak.org}
+
+${meta.vurdering.tittel}. ${meta.vurdering.tekst}
+
+${grunn}
+
+Neste: ${meta.neste}
+
+Dette er et simulert utkast. Saksbehandler må bekrefte før noe sendes.`;
+  }
   if (sak.queue === "reject") {
     return `Avslagsbrev (utkast) — ${sak.id}
 
@@ -1495,6 +1681,93 @@ ${grunn}
 Dette er ikke et vedtak. Beløpet er et pedagogisk eksempel. Saksbehandler må fatte vedtak.`;
 }
 
+const grantJournal = [];
+
+function logGrantJournal(entry) {
+  grantJournal.unshift({
+    at: new Date().toLocaleString("no-NO", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }),
+    ...entry
+  });
+  if (grantJournal.length > 40) grantJournal.length = 40;
+  renderGrantJournal();
+}
+
+function renderGrantJournal() {
+  const box = document.getElementById("grantJournal");
+  const status = document.getElementById("grantJournalStatus");
+  if (status) status.textContent = grantJournal.length
+    ? `${grantJournal.length} journalposter (simulert arkiv — ikke ekte journal)`
+    : "Journalen er tom til du laster porteføljen eller skriver brev.";
+  if (!box) return;
+  box.innerHTML = grantJournal.map((j) => `
+    <article class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-[11px] text-slate-700">
+      <p class="font-mono text-slate-500">${j.at} · ${j.type} · ${j.sak || "—"}</p>
+      <p><strong>Prompt/handling:</strong> ${j.prompt}</p>
+      <p><strong>Svar/utkast:</strong> ${j.svar}</p>
+    </article>
+  `).join("");
+}
+
+function showGrantReruns() {
+  const box = document.getElementById("grantReruns");
+  if (!box) return;
+  const runs = [
+    { n: 1, t: "Kjøring A (T=0,7)", text: "Dere får 780 000 kroner til ferieleir og gruppetilbud i 2026. Vilkår: midlene skal brukes på aktivitet for barn i målgruppen. 70 prosent utbetales nå, resten etter rapport. Frist for rapport og regnskap: 1. april 2027." },
+    { n: 2, t: "Kjøring B (samme prompt)", text: "Søknaden innvilges delvis med kr 780 000,- for perioden 01.01.2026–31.12.2026. Utbetaling skjer i to terminer (70/30). Rapportering skal skje innen 01.04.2027. Klagefrist tre uker." },
+    { n: 3, t: "Kjøring C (samme prompt)", text: "Bufdir gir Fjordheim frivilligsentral støtte på 780 000 kr. Pengene skal gå til leir og aktivitet, ikke til generell administrasjon. Dere får først 546 000 kr. Resten kommer når vi har godkjent underveisrapporten." }
+  ];
+  box.classList.remove("hidden");
+  box.innerHTML = runs.map((r) => `
+    <article class="rounded-xl border border-fuchsia-200 bg-white p-3 space-y-1">
+      <p class="text-[10px] font-mono font-bold text-fuchsia-800">${r.t}</p>
+      <p class="text-xs text-slate-800 leading-relaxed">${r.text}</p>
+    </article>
+  `).join("");
+  logGrantJournal({
+    type: "demonstrasjon",
+    sak: "T-2601",
+    prompt: "Skriv tilskuddsbrev for T-2601, delvis innvilget 780 000 kr, 70/30, rapport 1. april 2027.",
+    svar: "Tre ulike ordlyder, samme beløp og vilkår. Viser at likebehandling ikke tåler tilfeldig formulering."
+  });
+}
+
+function openGrantInnsyn() {
+  const box = document.getElementById("grantInnsyn");
+  if (!box) return;
+  const relevant = grantJournal.filter((j) => !j.sak || j.sak === "T-2622" || j.sak === "MS-06" || j.sak === "T-2601");
+  const poster = relevant.length
+    ? relevant.map((j) => `• ${j.at} — ${j.type} (${j.sak || "sak"}): ${j.prompt} → ${j.svar}`).join("\n")
+    : "• Ingen poster på T-2622 ennå. Last porteføljen og åpne saken, eller vis tre kjøringer, så kommer det mer i journalen.";
+  const planted = grantDecisions["T-2622"];
+  const beslutning = planted
+    ? `Mennesket har markert KI-forslaget som «${planted.action}».${planted.reason ? ` Begrunnelse: ${planted.reason}` : ""}`
+    : "Mennesket har ikke fattet vedtak. KI-forslaget om avslag er bare støtte — ikke et automatisert vedtak (KI-forordningen).";
+  box.classList.remove("hidden");
+  box.textContent = `Svar på innsynskrav (simulert) — Brobyggerne Oslo, T-2622 / MS-06
+
+Dere ba om innsyn i hva KI ble brukt til i saken deres.
+
+Dere får se:
+${poster}
+
+Vurdering fra støttesystemet (ikke vedtak): Anbefalt avslag med henvisning til sim. forskrift § 14 og Golfklubben Fjord T-2621.
+
+${beslutning}
+
+Dere får ikke se: andre søkeres saker, intern budsjettramme, eller modelleringsvekter.
+
+Merk: Dette er beslutningsstøtte. Et automatisert vedtak ville krevd særskilt hjemmel. Denne øvelsen har det ikke.
+
+Klage på innsynsvurderingen: tre uker. Dette brevet er ikke sendt.`;
+  logGrantJournal({
+    type: "innsyn",
+    sak: "T-2622",
+    prompt: "Innsynskrav fra Brobyggerne: vis hva KI brukte i saken.",
+    svar: "Utlevert journalutdrag, KI-forslag og presisering om at mennesket fatter vedtak."
+  });
+  box.scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+
 function renderGrantLetters(list) {
   const wrap = document.getElementById("grantLettersWrap");
   const box = document.getElementById("grantLetters");
@@ -1508,6 +1781,22 @@ function renderGrantLetters(list) {
     </article>`;
   }).join("");
   if (count) count.textContent = `${list.length} brev`;
+  if (list.length === 1) {
+    const sak = list[0];
+    logGrantJournal({
+      type: "brevutkast",
+      sak: sak.id,
+      prompt: `Skriv brev for ${sak.id} ${sak.org}.`,
+      svar: grantLetterText(sak).split("\n").slice(0, 2).join(" — ")
+    });
+  } else if (list.length) {
+    logGrantJournal({
+      type: "brevutkast",
+      sak: "flere",
+      prompt: `Skriv ${list.length} brevutkast i samme kø.`,
+      svar: list.map((s) => s.id).join(", ")
+    });
+  }
 }
 
 function writeGrantLetters(queue) {
@@ -1529,6 +1818,7 @@ function renderGrantAiView() {
     head.innerHTML = `<tr class="border-b border-slate-200 text-left">
       <th class="p-2">Sak</th>
       ${GRANT_CRITERIA.map((c) => `<th class="p-2">${c.label}</th>`).join("")}
+      <th class="p-2">Steg</th>
       <th class="p-2">Kø</th>
     </tr>`;
   }
@@ -1542,6 +1832,7 @@ function renderGrantAiView() {
       return `<tr class="border-b border-slate-100 cursor-pointer hover:bg-white" onclick="openGrantCase('${sak.id}')">
         <td class="p-2 font-mono font-bold">${sak.id}</td>
         ${cells}
+        <td class="p-2">${grantStageById(grantMeta(sak).stage).short}</td>
         <td class="p-2">${grantQueueLabel(sak.queue)}</td>
       </tr>`;
     }).join("");
@@ -1555,66 +1846,122 @@ function toggleGrantAiView() {
   view.classList.toggle("hidden");
 }
 
-function loadGrantInbox() {
-  grantInboxLoaded = true;
-  grantSorted = false;
+function renderGrantProcessRail() {
+  const rail = document.getElementById("grantProcessRail");
+  if (!rail) return;
+  if (!grantInboxLoaded) {
+    rail.innerHTML = grantProcessBarHtml("utlysning", { clickable: false });
+    return;
+  }
+  const counts = grantStageCounts();
+  const allBtn = `<button type="button" onclick="setGrantStageFilter('all')" class="rounded-lg border px-1.5 py-1.5 text-left ${grantStageFilter === "all" ? "bg-slate-900 text-white border-slate-900" : "bg-white text-slate-700 border-slate-200"}">
+    <p class="text-[10px] font-mono font-bold">Alle</p>
+    <p class="text-[10px] font-semibold leading-tight">Portefølje</p>
+    <p class="text-[10px] font-mono mt-0.5">${tilskuddSaker.length}</p>
+  </button>`;
+  rail.innerHTML = allBtn + grantProcessBarHtml(grantStageFilter === "all" ? "utlysning" : grantStageFilter, {
+    clickable: true,
+    counts,
+    filter: grantStageFilter
+  });
+}
+
+function grantCasesForFilter() {
+  if (grantStageFilter === "all") return tilskuddSaker;
+  if (grantStageFilter === "utlysning") return tilskuddSaker;
+  return tilskuddSaker.filter((sak) => grantMeta(sak).stage === grantStageFilter);
+}
+
+function renderGrantPortfolio() {
   const inbox = document.getElementById("grantInbox");
   const cols = document.getElementById("grantCols");
-  const sortBtn = document.getElementById("btnSortGrants");
+  const title = document.getElementById("grantListTitle");
+  const hint = document.getElementById("grantListHint");
+  const list = grantCasesForFilter();
+  const showWhy = grantStageFilter !== "mottak" && grantStageFilter !== "all";
+
+  if (title) {
+    title.textContent = grantStageFilter === "all"
+      ? "Hele porteføljen — klikk en sak for å se hvor den er"
+      : grantStageFilter === "utlysning"
+        ? "Regelverket gjelder alle saker i 2026-runden"
+        : `${grantStageById(grantStageFilter).n}. ${grantStageById(grantStageFilter).label}`;
+  }
+  if (hint) hint.textContent = `${list.length} saker`;
+
+  if (inbox) {
+    if (grantStageFilter === "utlysning") {
+      inbox.innerHTML = `<div class="col-span-full rounded-xl bg-white border border-slate-200 p-4 text-sm text-slate-700 space-y-2">
+        <p><strong>Steg 1 gjelder ordningen, ikke én søknad.</strong> Forskrift og utlysning for inkludering 2026 er lagt ut. Mål, hvem som kan søke, tildelingskriterier, rapportering og reaksjoner er kjent for alle.</p>
+        <p>De ${tilskuddSaker.length} sakene under er søknader som kom inn etter utlysningen. Klikk <strong>Mottak</strong> eller <strong>Alle</strong> for å se dem.</p>
+      </div>`;
+    } else if (grantStageFilter === "kontroll") {
+      inbox.innerHTML = `<p class="col-span-full text-xs text-slate-500 italic px-2 py-2">Kontrollsaker ligger i de tre køene under. Klikk et kort for å se hvor saken er i hele løpet.</p>`;
+    } else {
+      inbox.innerHTML = list.map((sak, i) => grantCardHtml(sak, { showWhy, delay: Math.floor(i / 6) * 40 })).join("");
+    }
+  }
+
+  const kontrollSaker = tilskuddSaker.filter((sak) => grantMeta(sak).stage === "kontroll");
+  const showCols = grantInboxLoaded && grantStageFilter === "kontroll";
+  if (cols) cols.classList.toggle("hidden", !showCols);
+  if (showCols) {
+    grantSorted = true;
+    const buckets = { reject: [], needinfo: [], ready: [] };
+    kontrollSaker.forEach((sak) => buckets[sak.queue].push(sak));
+    const fill = (id, items) => {
+      const el = document.getElementById(id);
+      if (el) el.innerHTML = items.map((sak, i) => grantCardHtml(sak, { showWhy: true, delay: i * 20 })).join("");
+    };
+    fill("grantColReject", buckets.reject);
+    fill("grantColNeedinfo", buckets.needinfo);
+    fill("grantColReady", buckets.ready);
+    const setCount = (id, n) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = String(n);
+    };
+    setCount("grantCountReject", buckets.reject.length);
+    setCount("grantCountNeedinfo", buckets.needinfo.length);
+    setCount("grantCountReady", buckets.ready.length);
+  }
+}
+
+function setGrantStageFilter(id) {
+  if (!grantInboxLoaded) return;
+  grantStageFilter = id;
+  renderGrantProcessRail();
+  renderGrantPortfolio();
+}
+
+function loadGrantInbox() {
+  grantInboxLoaded = true;
+  grantSorted = true;
+  grantStageFilter = "all";
   const aiBtn = document.getElementById("btnGrantAiView");
   const status = document.getElementById("grantStatus");
   const count = document.getElementById("grantInboxCount");
   const letters = document.getElementById("grantLettersWrap");
-  if (cols) cols.classList.add("hidden");
   if (letters) letters.classList.add("hidden");
-  ["grantColReject", "grantColNeedinfo", "grantColReady"].forEach((id) => {
-    const el = document.getElementById(id);
-    if (el) el.innerHTML = "";
-  });
-  if (inbox) {
-    inbox.innerHTML = tilskuddSaker.map((sak, i) => grantCardHtml(sak, { delay: Math.floor(i / 6) * 80 })).join("");
-  }
   if (count) count.textContent = `${tilskuddSaker.length} saker`;
-  if (sortBtn) sortBtn.disabled = false;
   if (aiBtn) aiBtn.disabled = false;
-  if (status) status.textContent = `${tilskuddSaker.length} søknader mottatt samtidig. Simulert innboks — ikke live portal.`;
+  if (status) status.textContent = `${tilskuddSaker.length} syntetiske saker fordelt på hele løpet. Simulering — ikke live portal.`;
+  if (!grantJournal.some((j) => j.type === "mottak")) {
+    logGrantJournal({
+      type: "mottak",
+      sak: "portefølje",
+      prompt: "Last syntetisk 2026-portefølje i søknadsportalen (øvelse).",
+      svar: `${tilskuddSaker.length} saker journalført. Ingen automatisk vedtak.`
+    });
+  } else {
+    renderGrantJournal();
+  }
+  renderGrantProcessRail();
+  renderGrantPortfolio();
   renderGrantAiView();
 }
 
 function sortGrantInbox() {
-  if (!grantInboxLoaded) return;
-  grantSorted = true;
-  const inbox = document.getElementById("grantInbox");
-  const cols = document.getElementById("grantCols");
-  const status = document.getElementById("grantStatus");
-  const buckets = { reject: [], needinfo: [], ready: [] };
-  tilskuddSaker.forEach((sak) => buckets[sak.queue].push(sak));
-
-  const fill = (id, list) => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    el.innerHTML = list.map((sak, i) => grantCardHtml(sak, { showWhy: true, delay: i * 30 })).join("");
-  };
-  fill("grantColReject", buckets.reject);
-  fill("grantColNeedinfo", buckets.needinfo);
-  fill("grantColReady", buckets.ready);
-
-  const setCount = (id, n) => {
-    const el = document.getElementById(id);
-    if (el) el.textContent = String(n);
-  };
-  setCount("grantCountReject", buckets.reject.length);
-  setCount("grantCountNeedinfo", buckets.needinfo.length);
-  setCount("grantCountReady", buckets.ready.length);
-
-  if (inbox) {
-    inbox.innerHTML = `<p class="text-xs text-slate-500 italic px-2 py-3 col-span-full">Alle ${tilskuddSaker.length} søknadene er sortert. Klikk et kort — begrunnelsen vises alltid.</p>`;
-  }
-  const inboxCount = document.getElementById("grantInboxCount");
-  if (inboxCount) inboxCount.textContent = "Sortert";
-  if (cols) cols.classList.remove("hidden");
-  if (status) status.textContent = "Simulert sortering. Begrunnelse på kortet og i saken. Saksbehandler må bekrefte.";
-  renderGrantAiView();
+  setGrantStageFilter("kontroll");
 }
 
 function openGrantCase(id) {
@@ -1623,44 +1970,138 @@ function openGrantCase(id) {
   const modalBody = document.getElementById("cardModalBody");
   if (!sak || !modal || !modalBody) return;
 
+  const meta = grantMeta(sak);
+  const stage = grantStageById(meta.stage);
   const tone = sak.queue === "reject"
     ? "bg-rose-50 border-rose-200 text-rose-900"
     : sak.queue === "needinfo"
       ? "bg-amber-50 border-amber-200 text-amber-900"
       : "bg-emerald-50 border-emerald-200 text-emerald-900";
 
-  const letterLabel = sak.queue === "reject"
-    ? "Skriv avslagsbrev"
-    : sak.queue === "needinfo"
-      ? "Skriv innhentingsbrev"
-      : "Skriv tilskuddsbrev";
+  const letterLabel = meta.stage === "avvik"
+    ? "Skriv avviksbrev"
+    : meta.stage === "oppfolging"
+      ? "Skriv rapportbrev"
+      : sak.queue === "reject"
+        ? "Skriv avslagsbrev"
+        : sak.queue === "needinfo"
+          ? "Skriv innhentingsbrev"
+          : "Skriv tilskuddsbrev";
+
+  const belopLinje = meta.vurdering?.belop != null
+    ? `<p class="text-sm font-semibold mt-2">Foreslått beløp i dette steget: ${formatGrantKroner(meta.vurdering.belop)}</p>`
+    : "";
+  const linked = mineSaker.find((s) => s.grantId === sak.id);
 
   modalBody.innerHTML = `
     <p class="text-xs font-mono text-slate-500">${sak.id} · org.nr. ${sak.orgnr} · mottatt ${sak.mottatt}</p>
     <h3 class="text-xl font-black text-slate-900">${sak.org}</h3>
-    <p class="text-sm text-slate-600">${sak.kommune} · ${sak.aktivitet} · ${formatGrantKroner(sak.belop)}</p>
+    <p class="text-sm text-slate-600">${sak.kommune} · ${sak.aktivitet} · søkt ${formatGrantKroner(sak.belop)}</p>
+    <div>
+      <p class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Hvor saken er i løpet</p>
+      <div class="grid grid-cols-4 sm:grid-cols-8 gap-1">${grantProcessBarHtml(meta.stage)}</div>
+      <p class="text-sm text-slate-800 mt-2"><strong>Du er her:</strong> ${stage.n}. ${stage.label}.</p>
+      <p class="text-sm text-slate-700"><strong>Neste:</strong> ${meta.neste}</p>
+    </div>
     <div class="rounded-xl border px-3 py-2 text-sm font-semibold ${tone}">
-      Foreslått kø: ${grantQueueLabel(sak.queue)}
+      ${stage.id === "kontroll" ? `Kontrollkø: ${grantQueueLabel(sak.queue)}` : `Steg: ${stage.label}`}
+    </div>
+    <div class="rounded-2xl border-2 border-violet-300 bg-violet-50 p-4 space-y-2">
+      <p class="text-xs font-bold uppercase tracking-wider text-violet-800">Vurdering (forslag, ikke vedtak)</p>
+      <p class="text-sm font-bold text-slate-900">${meta.vurdering.tittel}</p>
+      <p class="text-sm text-slate-800 leading-relaxed">${meta.vurdering.tekst}</p>
+      ${belopLinje}
     </div>
     <div>
       <p class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Kort fra søknaden</p>
       <p class="text-sm text-slate-800 leading-relaxed">${sak.soknad}</p>
     </div>
-    <div class="rounded-2xl border-2 border-violet-300 bg-violet-50 p-4 space-y-2">
-      <p class="text-xs font-bold uppercase tracking-wider text-violet-800">Begrunnelse — hvorfor denne køen</p>
+    <div>
+      <p class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Grunnlag i saken</p>
       <ul class="space-y-2">
-        ${sak.reasons.map((r) => `<li class="rounded-xl bg-white border border-violet-100 p-3 text-sm"><strong class="block text-slate-900">${r.label}</strong><span class="text-slate-700">${r.detail}</span></li>`).join("")}
+        ${sak.reasons.map((r) => `<li class="rounded-xl bg-white border border-slate-200 p-3 text-sm"><strong class="block text-slate-900">${r.label}</strong><span class="text-slate-700">${r.detail}</span></li>`).join("")}
       </ul>
     </div>
     <div>
       <p class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Hva KI sjekket (åpent)</p>
       <div class="flex flex-wrap gap-1.5">${grantChecksHtml(sak)}</div>
     </div>
+    <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4 space-y-2">
+      <p class="text-xs font-bold uppercase tracking-wider text-slate-500">Din handling — øv på å si nei</p>
+      <textarea id="grantOwnReason" rows="2" maxlength="400" placeholder="Hvis du avviser forslaget: skriv hvorfor…" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm">${grantDecisions[sak.id]?.reason || ""}</textarea>
+      <div class="flex flex-wrap gap-2">
+        <button type="button" onclick="setGrantDecision('${sak.id}','bekreft')" class="px-3 py-2 rounded-xl bg-slate-900 text-white text-xs font-semibold">Bekreft forslaget</button>
+        <button type="button" onclick="setGrantDecision('${sak.id}','avvis')" class="px-3 py-2 rounded-xl bg-rose-700 text-white text-xs font-semibold">Avvis forslaget</button>
+        <button type="button" onclick="setGrantDecision('${sak.id}','park')" class="px-3 py-2 rounded-xl bg-white border border-slate-300 text-xs font-semibold">La saken stå</button>
+      </div>
+      <p id="grantDecisionNote" class="text-sm ${grantDecisions[sak.id] ? "" : "hidden"}">${grantDecisionMessage(sak)}</p>
+    </div>
+    ${linked ? `<button type="button" onclick="goToAgentSak('${linked.id}')" class="px-4 py-2 rounded-xl bg-indigo-700 text-white text-xs font-semibold">Åpne ${linked.id} på skrivebordet (kap. 10)</button>` : ""}
     <button type="button" onclick="writeGrantLettersFor('${sak.id}')" class="px-4 py-2 rounded-xl bg-slate-900 text-white text-xs font-semibold">${letterLabel}</button>
     <p class="text-xs text-slate-500 rounded-xl bg-slate-100 px-3 py-2">Saksbehandler må bekrefte. Appen sender ingenting og fatter ikke vedtak.</p>
   `;
   modal.classList.remove("hidden");
   document.body.style.overflow = "hidden";
+}
+
+const grantDecisions = {};
+
+function grantDecisionMessage(sak) {
+  const dec = grantDecisions[sak.id];
+  const meta = grantMeta(sak);
+  if (!dec) return "";
+  if (dec.action === "park") return "Saken ligger hos deg. Ingen vedtak. Det er også et gyldig valg.";
+  if (meta.vurdering?.planted && dec.action === "bekreft") {
+    return `Du bekreftet et feil forslag. ${meta.fasit}`;
+  }
+  if (meta.vurdering?.planted && dec.action === "avvis") {
+    return `Riktig skepsis. ${meta.fasit}`;
+  }
+  if (dec.action === "avvis") return `Du avviste forslaget.${dec.reason ? ` Din begrunnelse: ${dec.reason}` : ""}`;
+  return "Du bekreftet forslaget i øvelsen. Det er fortsatt ikke et vedtak.";
+}
+
+function setGrantDecision(id, action) {
+  const sak = tilskuddSaker.find((s) => s.id === id);
+  if (!sak) return;
+  const reason = (document.getElementById("grantOwnReason")?.value || "").trim();
+  if (action === "avvis" && reason.length < 8) {
+    const note = document.getElementById("grantDecisionNote");
+    if (note) {
+      note.classList.remove("hidden");
+      note.textContent = "Skriv minst en setning om hvorfor du avviser, før det teller som øvelse.";
+    }
+    return;
+  }
+  grantDecisions[id] = { action, reason };
+  logGrantJournal({
+    type: "handling",
+    sak: id,
+    prompt: `Saksbehandler: ${action} forslag i ${id}.`,
+    svar: reason || grantDecisionMessage(sak)
+  });
+  const note = document.getElementById("grantDecisionNote");
+  if (note) {
+    note.classList.remove("hidden");
+    note.className = `text-sm rounded-lg px-3 py-2 ${action === "avvis" && grantMeta(sak).vurdering?.planted ? "bg-emerald-50 text-emerald-950" : action === "bekreft" && grantMeta(sak).vurdering?.planted ? "bg-rose-50 text-rose-950" : "bg-white text-slate-800"}`;
+    note.textContent = grantDecisionMessage(sak);
+  }
+}
+
+function goToAgentSak(msId) {
+  closeCardModal();
+  const chapters = getChapterSections();
+  const idx = chapters.findIndex((sec) => (sec.querySelector("h2")?.textContent || "").includes("10."));
+  if (idx >= 0) showChapter(idx, { scroll: true });
+  openAgentSak(msId);
+}
+
+function goToGrantFromAgent(tid) {
+  const chapters = getChapterSections();
+  const idx = chapters.findIndex((sec) => (sec.querySelector("h2")?.textContent || "").includes("9."));
+  if (idx >= 0) showChapter(idx, { scroll: true });
+  if (!grantInboxLoaded) loadGrantInbox();
+  openGrantCase(tid);
 }
 
 function writeGrantLettersFor(id) {
@@ -1678,7 +2119,9 @@ function grantDataCorpus() {
     const checks = GRANT_CHECKS[sak.id] || {};
     const checkStr = GRANT_CRITERIA.map((c) => `${c.label}=${checks[c.id] || "?"}`).join("; ");
     const reasons = sak.reasons.map((r) => `${r.label}: ${r.detail}`).join(" | ");
-    return `${sak.id} | ${sak.org} | org.nr ${sak.orgnr} | ${sak.kommune} | ${sak.aktivitet} | ${sak.belop} kr | kø=${grantQueueLabel(sak.queue)} | ${sak.mottatt}\nSøknad: ${sak.soknad}\nBegrunnelse: ${reasons}\nSjekk: ${checkStr}`;
+    const meta = grantMeta(sak);
+    const stage = grantStageById(meta.stage);
+    return `${sak.id} | ${sak.org} | org.nr ${sak.orgnr} | ${sak.kommune} | ${sak.aktivitet} | ${sak.belop} kr | steg=${stage.n} ${stage.label} | neste=${meta.neste} | vurdering=${meta.vurdering.tittel}: ${meta.vurdering.tekst} | kø=${grantQueueLabel(sak.queue)} | ${sak.mottatt}\nSøknad: ${sak.soknad}\nBegrunnelse: ${reasons}\nSjekk: ${checkStr}`;
   }).join("\n---\n");
 }
 
@@ -1705,11 +2148,13 @@ function localGrantChatFallback(question) {
   const idHit = tilskuddSaker.find((s) => q.includes(s.id.toLowerCase()));
   if (idHit) {
     const reasons = idHit.reasons.map((r) => `${r.label}: ${r.detail}`).join("\n");
-    return `Kun fra innboksen:\n${idHit.id} ${idHit.org} er i køen «${grantQueueLabel(idHit.queue)}».\n${reasons}\nJeg har ikke flere opplysninger enn dette.`;
+    const meta = grantMeta(idHit);
+    const stage = grantStageById(meta.stage);
+    return `Kun fra porteføljen:\n${idHit.id} ${idHit.org} er i steg ${stage.n} ${stage.label}.\nNeste: ${meta.neste}\nVurdering: ${meta.vurdering.tittel}. ${meta.vurdering.tekst}\n${reasons}\nJeg har ikke flere opplysninger enn dette.`;
   }
-  const counts = { reject: 0, needinfo: 0, ready: 0 };
-  tilskuddSaker.forEach((s) => { counts[s.queue] += 1; });
-  return `Jeg kan bare bruke de ${tilskuddSaker.length} sakene i denne simuleringen (API var ikke tilgjengelig).\nAvvist: ${counts.reject}. Se nærmere: ${counts.needinfo}. Klar: ${counts.ready}.\nSpør med et saksnummer, f.eks. T-2603.`;
+  const stageCounts = grantStageCounts();
+  const lines = GRANT_STAGES.map((st) => `${st.n} ${st.short}: ${stageCounts[st.id] || 0}`).join("\n");
+  return `Jeg kan bare bruke de ${tilskuddSaker.length} sakene i denne simuleringen (API var ikke tilgjengelig).\n${lines}\nSpør med et saksnummer, f.eks. T-2601.`;
 }
 
 async function sendGrantChat(event) {
@@ -1720,7 +2165,7 @@ async function sendGrantChat(event) {
   const question = (input?.value || "").trim();
   if (!question) return;
   if (!grantInboxLoaded) {
-    appendGrantChat("assistant", "Motta dagens søknader først. Da får jeg datagrunnlaget.");
+    appendGrantChat("assistant", "Last den syntetiske porteføljen først. Da får jeg datagrunnlaget.");
     return;
   }
 
@@ -1730,7 +2175,7 @@ async function sendGrantChat(event) {
   if (status) status.textContent = "Søker i saksdata…";
 
   const prior = grantChatTurns.slice(-4).map((t) => `${t.role === "user" ? "Saksbehandler" : "Støtte"}: ${t.text}`).join("\n");
-  const system = `Du er saksstøtte i en simulert Bufdir-innboks. Svar KUN ut fra datagrunnlaget i brukerens melding. Finn ikke på saker, beløp, kommuner, folk, hjemler eller vedtak som ikke står der. Hvis svaret ikke finnes i data: si «Det har jeg ikke i dette uttrekket.» Du fatter ikke vedtak og anbefaler ikke beløp utover det som allerede står. Svar på norsk, kort, med saksnummer.`;
+  const system = `Du er saksstøtte i en simulert, fiktiv tilskuddsinnboks (ikke Bufdir). Svar KUN ut fra datagrunnlaget i brukerens melding. Finn ikke på saker, beløp, kommuner, folk, hjemler eller vedtak som ikke står der. Hvis svaret ikke finnes i data: si «Det har jeg ikke i dette uttrekket.» Du fatter ikke vedtak og anbefaler ikke beløp utover det som allerede står. Svar på norsk, kort, med saksnummer.`;
   const prompt = `DATAGRUNNLAG (alt du får lov til å bruke):\n${grantDataCorpus()}\n\nTIDLIGERE I DENNE SAMTALEN:\n${prior || "(ingen)"}\n\nSPØRSMÅL FRA SAKSBEHANDLER:\n${question}`;
 
   try {
@@ -1738,11 +2183,13 @@ async function sendGrantChat(event) {
     grantChatTurns.push({ role: "user", text: question }, { role: "assistant", text });
     appendGrantChat("assistant", text);
     if (status) status.textContent = "Svar fra dataene";
+    logGrantJournal({ type: "dialog", sak: "portefølje", prompt: question, svar: text.slice(0, 220) });
   } catch (_err) {
     const text = localGrantChatFallback(question);
     grantChatTurns.push({ role: "user", text: question }, { role: "assistant", text });
     appendGrantChat("assistant", text);
     if (status) status.textContent = "Lokal reservedata (API nede)";
+    logGrantJournal({ type: "dialog", sak: "portefølje", prompt: question, svar: text.slice(0, 220) });
   }
   if (sendBtn) sendBtn.disabled = false;
 }
@@ -1754,6 +2201,7 @@ const AGENT_RAMME = 2400000;
 const mineSaker = [
   {
     id: "MS-01",
+    grantId: "T-2601",
     org: "Fjordheim frivilligsentral",
     tittel: "Sommerleir 2027 – Friluft og mestring",
     sokt: 250000,
@@ -1784,6 +2232,7 @@ const mineSaker = [
   },
   {
     id: "MS-02",
+    grantId: "T-2608",
     org: "Havblik Røde Kors",
     tittel: "Sommerjobb 16–19 år",
     sokt: 265000,
@@ -1813,6 +2262,7 @@ const mineSaker = [
   },
   {
     id: "MS-03",
+    grantId: "T-2602",
     org: "Nordlia idrettslag",
     tittel: "Utstyrssentral ski/fotball",
     sokt: 210000,
@@ -1843,6 +2293,7 @@ const mineSaker = [
   },
   {
     id: "MS-04",
+    grantId: "T-2604",
     org: "Østvik ungdomshus",
     tittel: "Åpen møteplass 13–19",
     sokt: 320000,
@@ -1873,6 +2324,7 @@ const mineSaker = [
   },
   {
     id: "MS-05",
+    grantId: "T-2612",
     org: "Åsby bibliotekvenner",
     tittel: "Leksehjelp og teaterlek",
     sokt: 72000,
@@ -1898,6 +2350,38 @@ const mineSaker = [
       { type: "ok", tab: "policy", tittel: "Budsjett henger sammen", tekst: "Lokaler dekket av biblioteket; midler til materiell og veiledere." },
       { type: "suggest", tab: "presedens", tittel: "Godkjenn utkastet når du er klar", tekst: "Foreslår fullt beløp. Du må trykke Godkjenn — agenten fatter ikke vedtak." }
     ]
+  },
+  {
+    id: "MS-06",
+    grantId: "T-2622",
+    org: "Brobyggerne Oslo",
+    tittel: "Deltidsjobb og CV-kurs",
+    sokt: 198000,
+    foreslatt: 0,
+    flagg: "Sjekk kilden — ikke stol på avslaget",
+    status: "Utkast klart",
+    ordning: "Inkludering av barn og unge, aktivitet 4.2 (simulert)",
+    brevtype: "avslag",
+    plantedError: true,
+    forskrift: [
+      { label: "Sim. forskrift § 14 Investering", text: "Investering i anlegg kan støttes når kommunen eier tiltaket.", why: "Agenten har hentet denne paragrafen. Saken er jobbtilbud, ikke anlegg." },
+      { label: "Sim. forskrift § 2 Formål", text: "Jobbtilbud og veiledning skal gi ungdom i målgruppen lønnet erfaring.", why: "Dette er den relevante bestemmelsen — 12 plasser med veileder." }
+    ],
+    policy: [
+      { label: "Intern sjekkliste likebehandling (simulert)", text: "To saker med samme aktivitetstype og likt grunnlag skal ikke få motsatt utfall uten begrunnelse.", why: "Havblik MS-02 / T-2608 er 4.2 og ble vurdert til innvilgelse." }
+    ],
+    presedens: [
+      { label: "Golfklubben Fjord T-2621", text: "Agenten skriver at klubben fikk avslag på liknende aktivitet, derfor avslag her.", why: "T-2621 var vaningsanlegg og seniordrift — ikke en like sak." },
+      { label: "Havblik Røde Kors T-2608", text: "Jobbtilbud med veileder, innvilget når HMS og samarbeid var dokumentert.", why: "Dette er den like saken. Likebehandling peker mot innvilgelse, ikke avslag." }
+    ],
+    formalia: [
+      { label: "Vedlegg", text: "Avtale med bydel og budsjett for lønn og veileder er med.", why: "Formalia er i orden. Avslaget hviler ikke på manglende vedlegg." }
+    ],
+    hints: [
+      { type: "warn", planted: true, tab: "forskrift", tittel: "§ 14: kommunen eier ikke tiltaket", tekst: "Agenten vil avslå fordi kommunen ikke eier. Feil paragraf hvis du sjekker fanen Forskrift." },
+      { type: "warn", planted: true, tab: "presedens", tittel: "Likebehandling med Golfklubben Fjord", tekst: "Agenten likestiller denne saken med T-2621. Åpne presedens og se hva T-2621 faktisk gjaldt." },
+      { type: "ok", tab: "formalia", tittel: "Vedlegg er inne", tekst: "Bydelavtale og budsjett ligger i saken. Formalia bærer ikke et avslag." }
+    ]
   }
 ];
 
@@ -1907,11 +2391,13 @@ const mineEposter = [
   { id: "E1", folder: "handle", from: "Fjordheim frivilligsentral", subject: "Vedlegg til MS-01 — oppdatert budsjett", preview: "Vi sender spesifisert prosjektledelse som avtalt.", body: "Hei. Vedlagt ny budsjettfil. Prosjektleder er satt til 20 %. Kan dere se på MS-01?", caseId: "MS-01" },
   { id: "E2", folder: "handle", from: "Fjordheim kommune", subject: "Bekreftelse deltakende kommune MS-01", preview: "Kommunen bekrefter samarbeid om sommerleir.", body: "Til saksbehandler. Fjordheim kommune bekrefter at frivilligsentralen er deltakende aktør for inkludering 4.1.", caseId: "MS-01" },
   { id: "E3", folder: "handle", from: "Nordlia idrettslag", subject: "Spørsmål om frist MS-03", preview: "Rekker vi å sende budsjett i neste uke?", body: "Hei. Vi fikk beskjed om at budsjettet mangler poster. Kan vi levere 29. august?", caseId: "MS-03" },
-  { id: "E4", folder: "handle", from: "Intern · controller", subject: "Din pott: 2,4 mill. — tre store saker", preview: "MS-01, MS-02 og MS-04 trekker mye.", body: "Påminnelse: foreslåtte beløp på dine fem saker bør ses mot rammen før du godkjenner utkast.", caseId: "MS-04" },
+  { id: "E4", folder: "handle", from: "Intern · controller", subject: "Din pott: 2,4 mill. — husk MS-06", preview: "MS-01, MS-02, MS-04 og avslaget på Brobyggerne.", body: "Påminnelse: sjekk at avslaget på MS-06 faktisk hviler på riktig paragraf før du godkjenner. Fem pluss én sak på lista.", caseId: "MS-06" },
   { id: "E5", folder: "vent", from: "Østvik ungdomshus", subject: "Venter på husleiekontrakt", preview: "Vi ettersender kontrakt i uke 35.", body: "Kontrakten signeres av styret torsdag. Vi laster opp i portalen etterpå.", caseId: "MS-04" },
   { id: "E6", folder: "vent", from: "Søknadsportalen", subject: "MS-03: innhenting sendt", preview: "Søker har 3 uker.", body: "Automatisk kvittering: innhentingsbrev er registrert. Ingen handling nå.", caseId: "MS-03" },
   { id: "E7", folder: "ferdig", from: "Havblik Røde Kors", subject: "Takk for veiledning", preview: "HMS-planen er lastet opp.", body: "Alt vedlegg til MS-02 er nå i portalen.", caseId: "MS-02" },
-  { id: "E8", folder: "ferdig", from: "Deg (sendt)", subject: "Svar: rapport 2025 godkjent", preview: "Fjorårsrapport MS-01 er i orden.", body: "Bekrefter at rapport 2025 for Fjordheim er godkjent. Ingen merknad.", caseId: "MS-01" }
+  { id: "E8", folder: "ferdig", from: "Deg (sendt)", subject: "Svar: rapport 2025 godkjent", preview: "Fjorårsrapport MS-01 er i orden.", body: "Bekrefter at rapport 2025 for Fjordheim er godkjent. Ingen merknad.", caseId: "MS-01" },
+  { id: "E9", folder: "handle", from: "Agenten", subject: "Utkast klart: avslag MS-06 Brobyggerne", preview: "§ 14 og presedens T-2621.", body: "Jeg har skrevet avslagsbrev. Hjemmel: sim. forskrift § 14. Presedens: Golfklubben Fjord. Godkjenn når du har sett kildene.", caseId: "MS-06" },
+  { id: "E10", folder: "handle", from: "Brobyggerne Oslo", subject: "Innsyn: hva brukte KI i saken vår?", preview: "Vi ber om innsyn i prompt, svar og kilder.", body: "Vi ber om innsyn i hva som ble brukt av KI i T-2622 / MS-06: prompt, svar, henvisninger og om et menneske har fattet vedtak. Svar i kapittel 9 med knappen «Parten ber om innsyn».", caseId: "MS-06" }
 ];
 
 let agentAktivSak = null;
@@ -1994,7 +2480,7 @@ function renderAgentSaker() {
     <button type="button" onclick="openAgentSak('${sak.id}')" class="w-full text-left rounded-xl bg-white border border-slate-200 hover:border-indigo-400 p-3">
       <div class="flex justify-between gap-2">
         <span class="text-[10px] font-mono font-bold text-indigo-700">${sak.id}</span>
-        <span class="text-[11px] text-slate-500">${sak.status}</span>
+        <span class="text-[11px] text-slate-500">${sak.grantId || ""} · ${sak.status}</span>
       </div>
       <p class="text-sm font-bold text-slate-900">${sak.org}</p>
       <p class="text-xs text-slate-600">${sak.tittel}</p>
@@ -2035,7 +2521,19 @@ function openAgentSak(id) {
   const label = document.getElementById("agentCaseLabel");
   const tools = document.getElementById("agentDraftTools");
   const amount = document.getElementById("agentAmount");
-  if (label) label.textContent = `${sak.id} · ${sak.org} · ${sak.tittel}`;
+  if (label) {
+    const link = sak.grantId
+      ? ` · <button type="button" onclick="goToGrantFromAgent('${sak.grantId}')" class="text-indigo-700 underline font-semibold">samme sak ${sak.grantId} i kap. 9</button>`
+      : "";
+    label.innerHTML = `${sak.id} · ${sak.org} · ${sak.tittel}${link}`;
+  }
+  const reason = document.getElementById("agentOwnReason");
+  if (reason) reason.value = sak.ownReason || "";
+  const loop = document.getElementById("agentLoopNote");
+  if (loop) {
+    loop.classList.add("hidden");
+    loop.textContent = "";
+  }
   if (tools) tools.classList.remove("hidden");
   if (amount) {
     amount.value = sak.foreslatt || sak.sokt;
@@ -2051,8 +2549,14 @@ function setAgentAmount(n) {
   updateAgentDraft();
 }
 
+const agentHintVerdicts = {};
+
 function agentErInnhenting(sak) {
   return sak?.brevtype === "innhenting" || sak?.id === "MS-03" || sak?.status === "Venter på søker";
+}
+
+function agentErAvslag(sak) {
+  return sak?.brevtype === "avslag" || sak?.plantedError;
 }
 
 function agentHintMeta(type) {
@@ -2116,12 +2620,14 @@ function renderAgentHints() {
   }
   wrap.classList.remove("hidden");
   const hints = sak.hints || [];
-  list.innerHTML = hints.map((h) => {
+  list.innerHTML = hints.map((h, idx) => {
     const meta = agentHintMeta(h.type);
+    const key = `${sak.id}:${idx}`;
+    const verdict = agentHintVerdicts[key];
     const jump = h.tab ? `hoppTilAgentKilde('${h.tab}')` : "";
     return `
-      <li>
-        <button type="button" onclick="${jump}" class="w-full text-left rounded-xl border ${meta.cls} p-3 space-y-1 ${h.tab ? "hover:ring-2 hover:ring-indigo-300" : ""}">
+      <li class="rounded-xl border ${meta.cls} p-3 space-y-2">
+        <button type="button" onclick="${jump}" class="w-full text-left space-y-1">
           <div class="flex flex-wrap items-center gap-2">
             <span class="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded ${meta.badgeCls}">${meta.badge}</span>
             <span class="text-sm font-semibold text-slate-900">${h.tittel}</span>
@@ -2129,15 +2635,39 @@ function renderAgentHints() {
           </div>
           <p class="text-xs text-slate-700 leading-relaxed">${h.tekst}</p>
         </button>
+        <div class="flex flex-wrap gap-1.5">
+          <button type="button" onclick="markAgentHint('${sak.id}',${idx},'ok')" class="px-2 py-1 rounded-lg text-[11px] font-semibold ${verdict === "ok" ? "bg-emerald-700 text-white" : "bg-white border border-slate-300"}">Står</button>
+          <button type="button" onclick="markAgentHint('${sak.id}',${idx},'feil')" class="px-2 py-1 rounded-lg text-[11px] font-semibold ${verdict === "feil" ? "bg-rose-700 text-white" : "bg-white border border-slate-300"}">Feil</button>
+        </div>
       </li>
     `;
   }).join("");
 }
 
+function markAgentHint(sakId, idx, verdict) {
+  agentHintVerdicts[`${sakId}:${idx}`] = verdict;
+  renderAgentHints();
+}
+
+function showAgentLoopNote(text, tone) {
+  const el = document.getElementById("agentLoopNote");
+  if (!el) return;
+  el.classList.remove("hidden");
+  el.className = `text-sm rounded-xl px-3 py-2 ${tone === "bad" ? "bg-rose-50 text-rose-950 border border-rose-200" : tone === "good" ? "bg-emerald-50 text-emerald-950 border border-emerald-200" : "bg-slate-100 text-slate-800"}`;
+  el.textContent = text;
+}
+
+function plantedFasit() {
+  return "KI blandet to regelsett. § 14 gjelder investering, ikke jobbtilbud (4.2). Golfklubben Fjord (T-2621) var anlegg og seniordrift. Den like saken er Havblik (T-2608 / MS-02), som ble vurdert til innvilgelse.";
+}
+
 function buildAgentNotat(sak, amount) {
   const innhent = agentErInnhenting(sak);
+  const avslag = agentErAvslag(sak);
   const kutt = sak.sokt - amount;
-  const budsjettLinje = innhent
+  const budsjettLinje = avslag
+    ? `Budsjett: Utkastet er et avslag (0 kroner). Agenten begrunner med § 14 og Golfklubben Fjord. Sjekk om det er riktig hjemmel.`
+    : innhent
     ? `Budsjett: I tråd med din praksis skriver du ikke innvilgelse før postene ligger inne. ${sak.flagg}.`
     : (kutt > 0
       ? `Budsjett: I tråd med din praksis avkorter du med ${formatAgentKroner(kutt)} mot poster som ikke er fullt tilskuddsberettiget (${sak.flagg}).`
@@ -2152,7 +2682,7 @@ Vilkår og praksis
 I tråd med din praksis tar du formål først, deretter vilkår, så beløp. Du skriver dere til søker i brevet.
 
 ${budsjettLinje}
-Søkt: ${formatAgentKroner(sak.sokt)}. ${innhent ? "Foreslått tildeling nå: 0 kroner (sak på vent)." : `Foreslått tildeling: ${formatAgentKroner(amount)}.`}
+Søkt: ${formatAgentKroner(sak.sokt)}. ${avslag ? "Foreslått tildeling: 0 kroner (avslag)." : innhent ? "Foreslått tildeling nå: 0 kroner (sak på vent)." : `Foreslått tildeling: ${formatAgentKroner(amount)}.`}
 ${agentStyleExtra}
 
 Dette er et utkast. Du må bekrefte. Agenten fatter ikke vedtak.`;
@@ -2160,6 +2690,20 @@ Dette er et utkast. Du må bekrefte. Agenten fatter ikke vedtak.`;
 
 function buildAgentBrev(sak, amount) {
   const attest = agentStyleExtra ? "\nI tråd med din praksis: frivillige som er alene med barn, skal ha gyldig politiattest." : "";
+
+  if (agentErAvslag(sak)) {
+    return `Utkast til avslagsbrev — sjekk hjemmelen
+
+Til dere i ${sak.org}
+
+Dere søkte om «${sak.tittel}» under ${sak.ordning}.
+
+Vedtak: Søknaden avslås.
+
+Begrunnelse (fra agenten): Sim. forskrift § 14 krever at kommunen eier tiltaket. Golfklubben Fjord (T-2621) fikk avslag på liknende aktivitet. Likebehandling tilsier avslag.
+
+Dette er et simulert utkast. Hvis hjemmelen er feil, skal du avvise det — ikke godkjenne.`;
+  }
 
   if (agentErInnhenting(sak)) {
     return `Utkast til innhentingsbrev — ikke innvilgelse
@@ -2231,14 +2775,64 @@ function approveAgentDraft() {
   agentAktivSak.status = "Godkjent i demo";
   const status = document.getElementById("agentDraftStatus");
   if (status) status.textContent = "Godkjent i demoen — ikke sendt, ikke journalført";
+  logGrantJournal({
+    type: "handling",
+    sak: agentAktivSak.grantId || agentAktivSak.id,
+    prompt: `Godkjenn utkast ${agentAktivSak.id}.`,
+    svar: agentAktivSak.plantedError ? "Godkjent plantet feilgrep (øvelse)." : "Godkjent i demo, ikke journalført i ekte arkiv."
+  });
+  if (agentAktivSak.plantedError) {
+    showAgentLoopNote(`Du godkjente et feil utkast. ${plantedFasit()} I en ekte sak ville det blitt usaklig forskjellsbehandling mot Havblik.`, "bad");
+  } else {
+    showAgentLoopNote("Godkjent i øvelsen. Fortsatt ikke sendt og ikke et vedtak.", "ok");
+  }
   renderAgentSaker();
+  refreshAgentStats();
+}
+
+function rejectAgentDraft() {
+  if (!agentAktivSak) return;
+  const reason = (document.getElementById("agentOwnReason")?.value || "").trim();
+  if (reason.length < 8) {
+    showAgentLoopNote("Skriv din begrunnelse (minst én setning) før avvisning teller.", "bad");
+    return;
+  }
+  agentAktivSak.ownReason = reason;
+  agentAktivSak.status = "Utkast avvist";
+  const status = document.getElementById("agentDraftStatus");
+  if (status) status.textContent = "Utkast avvist av deg — saken står, ikke vedtak";
+  logGrantJournal({
+    type: "handling",
+    sak: agentAktivSak.grantId || agentAktivSak.id,
+    prompt: `Avvis utkast ${agentAktivSak.id}.`,
+    svar: reason
+  });
+  if (agentAktivSak.plantedError) {
+    showAgentLoopNote(`Riktig skepsis. ${plantedFasit()} Din begrunnelse er lagret i øvelsen.`, "good");
+  } else {
+    showAgentLoopNote(`Du avviste utkastet. Begrunnelse: ${reason}`, "ok");
+  }
+  renderAgentSaker();
+  refreshAgentStats();
+}
+
+function parkAgentDraft() {
+  if (!agentAktivSak) return;
+  agentAktivSak.status = "Ligger hos deg";
+  const status = document.getElementById("agentDraftStatus");
+  if (status) status.textContent = "Saken står. Ingen godkjenning, ingen sending.";
+  showAgentLoopNote("Du lot saken stå. Mennesket i loopen kan også vente.", "ok");
+  renderAgentSaker();
+  refreshAgentStats();
 }
 
 function refreshAgentStats() {
   const mail = document.getElementById("agentStatMail");
   const saker = document.getElementById("agentStatSaker");
+  const utkast = document.getElementById("agentStatUtkast");
   if (mail) mail.textContent = String(mineEposter.filter((e) => e.folder === "handle").length);
   if (saker) saker.textContent = String(mineSaker.length);
+  if (utkast) utkast.textContent = String(mineSaker.filter((s) => s.status === "Utkast klart").length);
   renderAgentBudsjett();
 }
 
@@ -2261,4 +2855,6 @@ window.addEventListener('DOMContentLoaded', () => {
   calculateSoftmaxMath();
   calculateKVCache();
   initAgentDesk();
+  renderGrantProcessRail();
+  renderGrantJournal();
 });

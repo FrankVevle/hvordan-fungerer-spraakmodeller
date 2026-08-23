@@ -1,6 +1,6 @@
 # Hvordan Fungerer Språkmodeller?
 
-Interaktiv veiledning for forståelse, trygg bruk og datadrevet forvaltning med språkmodeller.
+Pedagogisk kursopplegg om språkmodeller og tilskuddsøvelse. **Ikke et Bufdir-verktøy.** Forskrift, policy, presedens og saker er oppdiktet. Siden er ikke beslutningsstøtte og fatter ikke vedtak. Sist oppdatert 23. august 2026.
 
 ## Lokal kjøring
 
@@ -16,5 +16,14 @@ Appen er en Vercel-side med `index.html` og serverless-ruten `/api/chat`. Prompt
 
 ## Moduser
 
-- **Enkel forklaring** — pedagogisk gjennomgang av tokens, neste ord og trygg bruk
+- **Enkel forklaring** — pedagogisk gjennomgang
 - **Teknisk dypdykk** — transformer-arkitektur, formler og KV-cache
+
+## Innhold
+
+- **Del 1** — tokens, neste ord, temperatur og at samme prompt gir ulike svar
+- **Del 2** — trygg bruk, trafikklys, innsyn/arkiv og skillet beslutningsstøtte vs. automatisert vedtak
+- **Del 3** — kildeforankret KI (hva det ikke løser) og en fiktiv datalab (ikke beslutningsstøtte)
+- **Del 4** — syntetisk tilskuddsløp (kap. 9), skrivebord med plantet feilgrep (kap. 10), avslutning (kap. 11)
+
+I kapittel 9 kan du journalføre handlinger, vise tre ulike brev for samme sak, og svare på et innsynskrav.
