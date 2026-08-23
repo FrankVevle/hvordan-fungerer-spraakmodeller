@@ -21,7 +21,8 @@ const SITE_PAGES = [
   { file: "kapittel-8.html", title: "Kapittel 8 · Åpne data-øvelse", part: "Del 3" },
   { file: "kapittel-9.html", title: "Kapittel 9 · Tilskuddsløpet", part: "Del 4" },
   { file: "kapittel-10.html", title: "Kapittel 10 · Personlig agent", part: "Del 4" },
-  { file: "kapittel-11.html", title: "Kapittel 11 · Ta med deg", part: "Del 4" }
+  { file: "kapittel-11.html", title: "Kapittel 11 · Ta med deg", part: "Del 4" },
+  { file: "kapittel-12.html", title: "Kapittel 12 · LangGraph-forslag", part: "Del 5" }
 ];
 
 function currentPageFile() {
@@ -3172,6 +3173,89 @@ function initAgentDesk() {
   setAgentTab("oversikt");
 }
 
+const LANGGRAPH_STEPS = [
+  {
+    id: "ork1",
+    node: "orkestrator",
+    tittel: "1. Orkestrator leser oppgaven",
+    tilstand: "sak_id=T-2622 · oppgave=vurder avslag · ordning=skjønn · kilder=[]",
+    tekst: "Ingen kilder ennå. Orkestratoren skriver ikke fakta. Den ruter til RAG med spørsmål: «Hvilken aktivitetstype og hvilken like sak finnes i uttrekket?»"
+  },
+  {
+    id: "rag1",
+    node: "rag",
+    tittel: "2. RAG svarer bare fra hentede chunks",
+    tilstand: "kilder=[sim. § 2/4.2, T-2608 Havblik, T-2621 Golfklubben som anlegg]",
+    tekst: "RAG kan sitere 4.2 jobbtilbud og T-2608. Den får ikke lov til å si «§ 14 investering» hvis den chunk-en ikke er hentet som hjemmel for 4.2. Mangler treff: «ikke i uttrekket»."
+  },
+  {
+    id: "val1",
+    node: "validator",
+    tittel: "3. Validator feller det plantede grepet",
+    tilstand: "utkast siterer T-2621 og § 14 · validering.ok=false",
+    tekst: "Sjekkliste: hver påstand har kilde-id; beløp matcher; ordningstype stemmer; presedens er samme aktivitet. Feil paragraf og feil søskensak = stopp. Ingen omskriving «for å redde» utkastet."
+  },
+  {
+    id: "ork2",
+    node: "orkestrator",
+    tittel: "4. Orkestrator velger loop eller menneske",
+    tilstand: "forsøk=1 · feil=[feil §, feil presedens] · neste=menneske",
+    tekst: "Etter én feilet validering går saken til mennesket med feillisten synlig. Orkestratoren rangerer ikke rammen og fatter ikke innstilling."
+  },
+  {
+    id: "hum",
+    node: "menneske",
+    tittel: "5. Mennesket er en node i grafen",
+    tilstand: "menneske_godkjent=false · saksbehandler avviser KI-forslaget",
+    tekst: "Samme øvelse som i kapittel 9–10: bekreft, avvis med grunn, eller la stå. Uten godkjenning finnes det ingen vei til leveranse."
+  },
+  {
+    id: "lev",
+    node: "leveranse",
+    tittel: "6. Leveranse bare hvis porten er åpen",
+    tilstand: "journal + brevutkast · sendt=false · vedtak=false",
+    tekst: "Hvis mennesket senere godkjenner et gyldig utkast, formaterer denne noden brev og journalpost. Den sender ingenting og kaller det ikke vedtak. Attestasjon ligger utenfor grafen."
+  }
+];
+
+let langGraphStep = 0;
+
+function renderLangGraphForslag() {
+  const rail = document.getElementById("langGraphRail");
+  const body = document.getElementById("langGraphStep");
+  const state = document.getElementById("langGraphState");
+  if (!rail || !body) return;
+  const nodes = [
+    { id: "orkestrator", label: "Orkestrator" },
+    { id: "rag", label: "RAG" },
+    { id: "validator", label: "Validator" },
+    { id: "menneske", label: "Menneske" },
+    { id: "leveranse", label: "Leveranse" }
+  ];
+  const current = LANGGRAPH_STEPS[langGraphStep];
+  rail.innerHTML = nodes.map((n) => {
+    const on = current.node === n.id;
+    return `<button type="button" class="rounded-lg border px-2 py-1.5 text-[11px] font-semibold ${on ? "bg-violet-600 text-white border-violet-700" : "bg-white text-slate-700 border-slate-200"}">${n.label}</button>`;
+  }).join("");
+  body.innerHTML = `
+    <p class="text-sm font-bold text-slate-900">${current.tittel}</p>
+    <p class="text-sm text-slate-700 leading-relaxed mt-1">${current.tekst}</p>`;
+  if (state) state.textContent = current.tilstand;
+  const idx = document.getElementById("langGraphIndex");
+  if (idx) idx.textContent = `${langGraphStep + 1} / ${LANGGRAPH_STEPS.length}`;
+}
+
+function stepLangGraph(delta) {
+  langGraphStep = Math.max(0, Math.min(LANGGRAPH_STEPS.length - 1, langGraphStep + delta));
+  renderLangGraphForslag();
+}
+
+function initLangGraphForslag() {
+  if (!document.getElementById("langGraphStep")) return;
+  langGraphStep = 0;
+  renderLangGraphForslag();
+}
+
 window.addEventListener('DOMContentLoaded', () => {
   try { currentMode = localStorage.getItem("guideMode") || "simple"; } catch (_e) { currentMode = "simple"; }
   toggleMode(currentMode, { keepChapter: true });
@@ -3185,6 +3269,7 @@ window.addEventListener('DOMContentLoaded', () => {
   calculateSoftmaxMath();
   calculateKVCache();
   initAgentDesk();
+  initLangGraphForslag();
   renderGrantProcessRail();
   renderGrantJournal();
   if (document.getElementById("techDeepDiveSection") && window.MathJax?.typesetPromise) {
