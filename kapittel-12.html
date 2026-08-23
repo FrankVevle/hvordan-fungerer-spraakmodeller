@@ -27,138 +27,84 @@
     </div>
   </header>
 
-  <main class="max-w-6xl mx-auto px-4 sm:px-6 mt-6 space-y-8">
+  <main class="max-w-6xl mx-auto px-4 sm:px-6 mt-8 space-y-6">
     <p class="text-[11px] font-bold uppercase tracking-widest text-slate-500">Del 5 · Forslag</p>
-
-    <section class="rounded-3xl bg-violet-800 text-white px-6 py-10 sm:px-12 sm:py-14 text-center space-y-4">
-      <p class="text-sm font-bold uppercase tracking-[0.2em] text-violet-200">KI-forslaget</p>
-      <h2 class="text-4xl sm:text-6xl font-black tracking-tight leading-none">Lese. Foreslå.<br>Gjøre forarbeid.</h2>
-      <p class="text-xl sm:text-2xl font-semibold text-violet-100">Du fatter vedtaket.</p>
-    </section>
-
-    <section class="grid md:grid-cols-2 gap-4 items-stretch">
-      <div class="rounded-3xl bg-white border border-slate-200 p-6 flex flex-col items-center justify-center">
-        <svg viewBox="0 0 280 160" class="w-full max-w-sm" aria-hidden="true">
-          <rect x="36" y="48" width="208" height="96" rx="10" fill="#e2e8f0"/>
-          <path d="M36 64h70l16-16h122a10 10 0 0 1 10 10v86a10 10 0 0 1-10 10H36a10 10 0 0 1-10-10V58a10 10 0 0 1 10-10z" fill="#6366f1"/>
-          <rect x="56" y="78" width="168" height="12" rx="3" fill="#c7d2fe"/>
-          <rect x="56" y="100" width="120" height="12" rx="3" fill="#c7d2fe"/>
-          <rect x="56" y="122" width="88" height="12" rx="3" fill="#a5b4fc"/>
-        </svg>
-        <p class="mt-3 text-2xl font-black text-slate-900">Mappa vår</p>
-        <p class="text-base text-slate-600">Bare det vi har lagt inn</p>
+    <section class="space-y-6">
+      <div class="flex items-center gap-2">
+        <span class="w-8 h-8 rounded-lg bg-violet-800 text-white flex items-center justify-center font-bold text-sm">12</span>
+        <h2 class="text-xl font-bold text-slate-900">12. KI-forslaget: RAG og LangGraph</h2>
       </div>
-      <div class="rounded-3xl bg-white border border-slate-200 p-6 flex flex-col items-center justify-center">
-        <svg viewBox="0 0 280 160" class="w-full max-w-sm" aria-hidden="true">
-          <circle cx="88" cy="80" r="36" fill="#c7d2fe"/>
-          <circle cx="88" cy="68" r="14" fill="#4f46e5"/>
-          <path d="M60 108c4-16 16-24 28-24s24 8 28 24" fill="#4f46e5"/>
-          <rect x="148" y="44" width="88" height="72" rx="8" fill="#e2e8f0"/>
-          <path d="M160 64h64M160 80h48M160 96h40" stroke="#64748b" stroke-width="6" stroke-linecap="round"/>
-          <path d="M124 80h20" stroke="#4f46e5" stroke-width="5" marker-end="url(#arr)"/>
-          <defs><marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0 0l8 4-8 4z" fill="#4f46e5"/></marker></defs>
-        </svg>
-        <p class="mt-3 text-2xl font-black text-slate-900">Ikke nettet</p>
-        <p class="text-base text-slate-600">Finnes det ikke i mappa: si det</p>
-      </div>
-    </section>
 
-    <section>
-      <div class="grid md:grid-cols-3 gap-4">
-        <div class="rounded-3xl bg-indigo-600 text-white p-8 min-h-[16rem] flex flex-col justify-between">
-          <svg class="w-16 h-16" viewBox="0 0 64 64" fill="none" aria-hidden="true"><rect x="10" y="14" width="44" height="36" rx="4" stroke="white" stroke-width="3"/><path d="M18 26h28M18 36h18" stroke="white" stroke-width="3" stroke-linecap="round"/></svg>
-          <div>
-            <p class="text-4xl font-black">Lese</p>
-            <p class="text-lg text-indigo-100 mt-1">Denne saken. Denne søkeren.</p>
+      <div class="bg-white p-5 sm:p-7 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+        <p class="text-slate-800 leading-relaxed">Vi kan bruke <strong>data vi har kontroll på</strong> — søknader, utlysning, tidligere saker, intern praksis — slik at KI kan <strong>lese</strong>, <strong>foreslå</strong> og <strong>gjøre forarbeid</strong>. Vedtaket er ditt. Forslaget bygger på to ting: RAG og LangGraph.</p>
+
+        <div class="grid md:grid-cols-2 gap-3">
+          <article class="rounded-xl border border-slate-200 p-4 space-y-2">
+            <p class="text-[11px] font-bold uppercase tracking-wider text-violet-700">RAG</p>
+            <p class="text-sm font-semibold text-slate-900">Retrieval-Augmented Generation</p>
+            <p class="text-sm text-slate-600 leading-relaxed">Før KI skriver noe, slår den opp i <em>vår</em> mappe. Svaret skal peke på det den fant. Finnes det ikke der, skal den si at det mangler — ikke hente en paragraf fra nettet eller fra hukommelsen.</p>
+          </article>
+          <article class="rounded-xl border border-slate-200 p-4 space-y-2">
+            <p class="text-[11px] font-bold uppercase tracking-wider text-violet-700">LangGraph</p>
+            <p class="text-sm font-semibold text-slate-900">Faster rekkefølge, ikke én chat</p>
+            <p class="text-sm text-slate-600 leading-relaxed">I stedet for én modell som gjør alt i samme samtale, går saken gjennom faste steg: fordele → slå opp (RAG) → sjekke → deg → eventuelt utkast. Hvis sjekken feiler, går den tilbake. Uten deg blir det ikke sendt noe.</p>
+          </article>
+        </div>
+
+        <div>
+          <p class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Slik henger det sammen</p>
+          <div class="overflow-x-auto rounded-xl border border-slate-200 bg-slate-50 p-4">
+            <div class="min-w-[36rem] flex items-center gap-2 text-xs font-semibold text-center">
+              <div class="flex-1 rounded-lg bg-white border border-slate-200 px-2 py-3">Vår mappe<br><span class="font-normal text-slate-500">kilder til RAG</span></div>
+              <span class="text-slate-400">→</span>
+              <div class="flex-1 rounded-lg bg-white border border-slate-200 px-2 py-3">Koordinator<br><span class="font-normal text-slate-500">LangGraph</span></div>
+              <span class="text-slate-400">→</span>
+              <div class="flex-1 rounded-lg bg-white border border-violet-200 px-2 py-3 text-violet-900">RAG-oppslag</div>
+              <span class="text-slate-400">→</span>
+              <div class="flex-1 rounded-lg bg-white border border-slate-200 px-2 py-3">Kvalitetssjekk</div>
+              <span class="text-slate-400">→</span>
+              <div class="flex-1 rounded-lg bg-slate-900 text-white px-2 py-3">Du</div>
+              <span class="text-slate-400">→</span>
+              <div class="flex-1 rounded-lg bg-white border border-slate-200 px-2 py-3">Utkast / journal</div>
+            </div>
           </div>
         </div>
-        <div class="rounded-3xl bg-amber-500 text-amber-950 p-8 min-h-[16rem] flex flex-col justify-between">
-          <svg class="w-16 h-16" viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M20 44l8-22 8 22 8-22" stroke="#78350f" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="32" cy="16" r="5" fill="#78350f"/></svg>
-          <div>
-            <p class="text-4xl font-black">Foreslå</p>
-            <p class="text-lg mt-1">Utkast. Ikke fasit.</p>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm border-collapse">
+            <thead>
+              <tr class="text-left border-b border-slate-200">
+                <th class="py-2 pr-3 font-semibold text-slate-900">Steg</th>
+                <th class="py-2 pr-3 font-semibold text-slate-900">Hva det gjør</th>
+                <th class="py-2 font-semibold text-slate-900">Hva det ikke gjør</th>
+              </tr>
+            </thead>
+            <tbody class="text-slate-700">
+              <tr class="border-b border-slate-100"><td class="py-2.5 pr-3 font-medium">Koordinator</td><td class="py-2.5 pr-3">Velger neste steg</td><td class="py-2.5">Finner ikke på fakta, kutter ikke i rammen</td></tr>
+              <tr class="border-b border-slate-100"><td class="py-2.5 pr-3 font-medium">RAG</td><td class="py-2.5 pr-3">Henter og siterer fra mappa</td><td class="py-2.5">Svarer ikke uten treff</td></tr>
+              <tr class="border-b border-slate-100"><td class="py-2.5 pr-3 font-medium">Sjekk</td><td class="py-2.5 pr-3">Kontrollerer paragraf, lik sak, beløp</td><td class="py-2.5">Pynter ikke på et feil forslag</td></tr>
+              <tr class="border-b border-slate-100"><td class="py-2.5 pr-3 font-medium">Du</td><td class="py-2.5 pr-3">Bekrefter, avviser eller lar stå</td><td class="py-2.5">—</td></tr>
+              <tr><td class="py-2.5 pr-3 font-medium">Utkast</td><td class="py-2.5 pr-3">Brev og journal etter ja</td><td class="py-2.5">Sender ikke, attesterer ikke, kaller det ikke vedtak</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <p class="text-sm font-bold text-slate-900">Eksempel: Brobyggerne (T-2622)</p>
+            <span id="langGraphIndex" class="text-[11px] font-mono text-slate-500">1 / 6</span>
+          </div>
+          <p class="text-xs text-slate-600">Et KI-forslag ville avslått med feil paragraf og feil «lik sak». RAG + sjekk skal stoppe det før det ser ferdig ut.</p>
+          <div id="langGraphRail" class="flex flex-wrap gap-1.5"></div>
+          <p id="langGraphState" class="text-xs text-slate-600"></p>
+          <div id="langGraphStep" class="text-sm"></div>
+          <div class="flex gap-2">
+            <button type="button" onclick="stepLangGraph(-1)" class="px-3 py-1.5 rounded-lg bg-white border border-slate-300 text-xs font-semibold">Forrige</button>
+            <button type="button" onclick="stepLangGraph(1)" class="px-3 py-1.5 rounded-lg bg-slate-900 text-white text-xs font-semibold">Neste</button>
           </div>
         </div>
-        <div class="rounded-3xl bg-emerald-600 text-white p-8 min-h-[16rem] flex flex-col justify-between">
-          <svg class="w-16 h-16" viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M16 34l10 10 22-26" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          <div>
-            <p class="text-4xl font-black">Forarbeid</p>
-            <p class="text-lg text-emerald-100 mt-1">Brev og journal. Ikke send.</p>
-          </div>
-        </div>
-      </div>
-    </section>
 
-    <section class="rounded-3xl bg-white border border-slate-200 p-6 sm:p-8 space-y-6">
-      <p class="text-center text-2xl font-black text-slate-900">Fire hjelpere. Så du.</p>
-      <div class="overflow-x-auto">
-        <svg viewBox="0 0 920 160" class="w-full min-w-[40rem]" role="img" aria-label="Mappa, lese, sjekke, du, utkast">
-          <rect x="8" y="36" width="150" height="88" rx="16" fill="#e2e8f0"/>
-          <text x="83" y="88" text-anchor="middle" font-size="20" font-weight="800" fill="#0f172a">Mappa</text>
-          <path d="M168 80h28" stroke="#94a3b8" stroke-width="4"/>
-          <polygon points="196,80 186,74 186,86" fill="#94a3b8"/>
-          <rect x="204" y="36" width="150" height="88" rx="16" fill="#e0e7ff"/>
-          <text x="279" y="88" text-anchor="middle" font-size="20" font-weight="800" fill="#312e81">Lese</text>
-          <path d="M364 80h28" stroke="#94a3b8" stroke-width="4"/>
-          <polygon points="392,80 382,74 382,86" fill="#94a3b8"/>
-          <rect x="400" y="36" width="150" height="88" rx="16" fill="#ccfbf1"/>
-          <text x="475" y="88" text-anchor="middle" font-size="20" font-weight="800" fill="#134e4a">Sjekke</text>
-          <path d="M560 80h28" stroke="#94a3b8" stroke-width="4"/>
-          <polygon points="588,80 578,74 578,86" fill="#94a3b8"/>
-          <rect x="596" y="36" width="150" height="88" rx="16" fill="#1e1b4b"/>
-          <text x="671" y="88" text-anchor="middle" font-size="20" font-weight="800" fill="#fff">Du</text>
-          <path d="M756 80h28" stroke="#94a3b8" stroke-width="4"/>
-          <polygon points="784,80 774,74 774,86" fill="#94a3b8"/>
-          <rect x="792" y="36" width="120" height="88" rx="16" fill="#d1fae5"/>
-          <text x="852" y="88" text-anchor="middle" font-size="20" font-weight="800" fill="#064e3b">Utkast</text>
-        </svg>
-      </div>
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <div class="rounded-2xl bg-slate-50 border border-slate-200 p-5 text-center">
-          <p class="text-5xl font-black text-violet-700">1</p>
-          <p class="text-xl font-black mt-1">Koordinator</p>
-          <p class="text-sm text-slate-500">Fordeler jobben</p>
-        </div>
-        <div class="rounded-2xl bg-slate-50 border border-slate-200 p-5 text-center">
-          <p class="text-5xl font-black text-violet-700">2</p>
-          <p class="text-xl font-black mt-1">Leser</p>
-          <p class="text-sm text-slate-500">Bare mappa</p>
-        </div>
-        <div class="rounded-2xl bg-slate-50 border border-slate-200 p-5 text-center">
-          <p class="text-5xl font-black text-violet-700">3</p>
-          <p class="text-xl font-black mt-1">Sjekk</p>
-          <p class="text-sm text-slate-500">Stopper feil</p>
-        </div>
-        <div class="rounded-2xl bg-slate-50 border border-slate-200 p-5 text-center">
-          <p class="text-5xl font-black text-violet-700">4</p>
-          <p class="text-xl font-black mt-1">Skrivehjelp</p>
-          <p class="text-sm text-slate-500">Etter at du sa ja</p>
-        </div>
-      </div>
-    </section>
-
-    <section class="rounded-3xl border-2 border-violet-300 bg-white p-6 sm:p-10 space-y-5">
-      <div class="flex flex-wrap items-end justify-between gap-3">
-        <p class="text-3xl font-black text-slate-900">Brobyggerne</p>
-        <span id="langGraphIndex" class="text-lg font-mono text-violet-700">1 / 6</span>
-      </div>
-      <div id="langGraphRail" class="flex flex-wrap gap-2"></div>
-      <p id="langGraphState" class="text-lg text-slate-600"></p>
-      <div id="langGraphStep" class="text-xl"></div>
-      <div class="flex gap-3 pt-2">
-        <button type="button" onclick="stepLangGraph(-1)" class="px-6 py-3 rounded-2xl bg-slate-100 text-base font-bold">←</button>
-        <button type="button" onclick="stepLangGraph(1)" class="px-8 py-3 rounded-2xl bg-violet-700 text-white text-base font-bold">Neste</button>
-      </div>
-    </section>
-
-    <section class="grid md:grid-cols-2 gap-4">
-      <div class="rounded-3xl bg-rose-600 text-white p-8 min-h-[12rem]">
-        <p class="text-sm font-bold uppercase tracking-widest text-rose-100">KI gjør ikke</p>
-        <p class="text-3xl font-black mt-3 leading-tight">Vedtak. Send. Attestasjon.</p>
-      </div>
-      <div class="rounded-3xl bg-slate-900 text-white p-8 min-h-[12rem]">
-        <p class="text-sm font-bold uppercase tracking-widest text-slate-400">Du gjør</p>
-        <p class="text-3xl font-black mt-3 leading-tight">Ser kilden. Sier nei. Eier svaret.</p>
+        <p class="text-xs text-slate-500">Forslag til arbeidsmåte, ikke et system i drift. Ikke Bufdir. Ikke automatisert vedtak.</p>
       </div>
     </section>
   </main>
@@ -171,7 +117,7 @@
   </div>
 
   <footer class="max-w-6xl mx-auto px-4 sm:px-6 mt-16 pt-8 pb-4 border-t border-slate-200 text-center text-xs text-slate-500 font-medium">
-    <p>Forslag. Ikke Bufdir. Ikke i drift. 23. august 2026.</p>
+    <p>Pedagogisk øvelse. Ikke et Bufdir-verktøy. 23. august 2026.</p>
   </footer>
 
   <div id="chapterNav" class="fixed bottom-0 inset-x-0 z-50 bg-white/95 backdrop-blur border-t border-slate-200 px-4 py-3 shadow-[0_-8px_24px_rgba(15,23,42,0.08)]">
@@ -179,7 +125,7 @@
       <button type="button" id="btnPrevChapter" onclick="stepChapter(-1)" class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed">← Forrige</button>
       <div class="text-center min-w-0">
         <p id="chapterPartLabel" class="text-[11px] font-bold uppercase tracking-widest text-slate-500 truncate">Del 5 · Forslag</p>
-        <p id="chapterStepLabel" class="text-sm font-semibold text-slate-800">Kapittel 12: KI-forslaget</p>
+        <p id="chapterStepLabel" class="text-sm font-semibold text-slate-800">Kapittel 12: RAG og LangGraph</p>
       </div>
       <button type="button" id="btnNextChapter" onclick="stepChapter(1)" class="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed">Neste →</button>
     </div>

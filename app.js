@@ -21,7 +21,7 @@ const SITE_PAGES = [
   { file: "kapittel-8.html", title: "Kapittel 8 · Åpne data-øvelse", part: "Del 3" },
   { file: "kapittel-9.html", title: "Kapittel 9 · Tilskuddsløpet", part: "Del 4" },
   { file: "kapittel-10.html", title: "Kapittel 10 · Personlig agent", part: "Del 4" },
-  { file: "kapittel-12.html", title: "Kapittel 12 · KI-forslaget", part: "Del 5" }
+  { file: "kapittel-12.html", title: "Kapittel 12 · RAG og LangGraph", part: "Del 5" }
 ];
 
 function currentPageFile() {
@@ -3176,44 +3176,44 @@ const LANGGRAPH_STEPS = [
   {
     id: "ork1",
     node: "orkestrator",
-    tittel: "1. Koordinatoren fordeler",
-    tilstand: "Brobyggerne. Jobb til ungdom. Mappa er ikke åpnet ennå.",
-    tekst: "«Les mappa. Hva slags tiltak? Har vi noe likt?»"
+    tittel: "1. Koordinator (LangGraph)",
+    tilstand: "Sak T-2622 Brobyggerne. Ingen kilder hentet ennå.",
+    tekst: "Koordinatoren ber RAG slå opp aktivitetstype og om vi har en lik sak. Den skriver ikke svaret selv."
   },
   {
     id: "rag1",
     node: "rag",
-    tittel: "2. Leseren åpner mappa",
-    tilstand: "I mappa: jobb til ungdom. Lik sak: Havblik. Golfklubben = anlegg, ikke lik sak.",
-    tekst: "Bare det som ligger der. Ingenting fra hodet."
+    tittel: "2. RAG slår opp i mappa",
+    tilstand: "Treff: jobbtilbud 4.2 og Havblik. Golfklubben ligger i mappa som anlegg — ikke som lik sak.",
+    tekst: "RAG kan bare sitere det den faktisk hentet. En paragraf som ikke er i uttrekket, skal ikke brukes."
   },
   {
     id: "val1",
     node: "validator",
-    tittel: "3. Sjekken sier nei",
-    tilstand: "Utkastet blander inn Golfklubben og feil paragraf.",
-    tekst: "Ikke samme type sak. Stopp. Ikke pynt."
+    tittel: "3. Sjekken avviser utkastet",
+    tilstand: "Utkastet viser til feil paragraf og Golfklubben som presedens.",
+    tekst: "Det er ikke samme type sak. Sjekken stopper forslaget i stedet for å omskrive det pent."
   },
   {
     id: "ork2",
     node: "orkestrator",
-    tittel: "4. Det kommer til deg",
-    tilstand: "Feil begrunnelse. Ikke ferdig.",
-    tekst: "Du skal se feilen. Ikke et pent avslag."
+    tittel: "4. LangGraph sender saken til deg",
+    tilstand: "validering feilet. Neste steg er saksbehandler, ikke utkast.",
+    tekst: "Koordinatoren fatter ikke vedtak. Feilen skal være synlig."
   },
   {
     id: "hum",
     node: "menneske",
-    tittel: "5. Du eier saken",
-    tilstand: "Du avviser. Ingenting er sendt.",
-    tekst: "Ja. Nei. Eller la stå."
+    tittel: "5. Du avgjør",
+    tilstand: "Forslaget avvises. Ingenting er sendt.",
+    tekst: "Bekreft, avvis med begrunnelse, eller la saken stå. Uten deg går ikke LangGraph videre til utkast."
   },
   {
     id: "lev",
     node: "leveranse",
-    tittel: "6. Skrivehjelp etter ja",
-    tilstand: "Først da: brevutkast og journal.",
-    tekst: "Du retter. Du signerer. En kollega attesterer."
+    tittel: "6. Utkast etter godkjenning",
+    tilstand: "Først da: brevutkast og journalpost.",
+    tekst: "Forarbeid du kan rette. Du signerer. En kollega attesterer. Det er ikke et vedtak."
   }
 ];
 
@@ -3226,7 +3226,7 @@ function renderLangGraphForslag() {
   if (!rail || !body) return;
   const nodes = [
     { id: "orkestrator", label: "Koordinator" },
-    { id: "rag", label: "Leser" },
+    { id: "rag", label: "RAG" },
     { id: "validator", label: "Sjekk" },
     { id: "menneske", label: "Du" },
     { id: "leveranse", label: "Utkast" }
@@ -3234,11 +3234,11 @@ function renderLangGraphForslag() {
   const current = LANGGRAPH_STEPS[langGraphStep];
   rail.innerHTML = nodes.map((n) => {
     const on = current.node === n.id;
-    return `<button type="button" class="rounded-xl border px-4 py-2 text-sm font-bold ${on ? "bg-violet-700 text-white border-violet-800" : "bg-slate-50 text-slate-700 border-slate-200"}">${n.label}</button>`;
+    return `<button type="button" class="rounded-lg border px-2.5 py-1.5 text-[11px] font-semibold ${on ? "bg-slate-900 text-white border-slate-900" : "bg-white text-slate-700 border-slate-200"}">${n.label}</button>`;
   }).join("");
   body.innerHTML = `
-    <p class="text-2xl font-black text-slate-900">${current.tittel}</p>
-    <p class="text-lg text-slate-700 leading-snug mt-2">${current.tekst}</p>`;
+    <p class="text-sm font-bold text-slate-900">${current.tittel}</p>
+    <p class="text-sm text-slate-700 leading-relaxed mt-1">${current.tekst}</p>`;
   if (state) state.textContent = current.tilstand;
   const idx = document.getElementById("langGraphIndex");
   if (idx) idx.textContent = `${langGraphStep + 1} / ${LANGGRAPH_STEPS.length}`;
