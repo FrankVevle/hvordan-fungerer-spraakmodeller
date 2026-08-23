@@ -162,107 +162,61 @@ function closeCardModal(event) {
   document.body.style.overflow = '';
 }
 
-function expandCard(element) {
-  const modal = document.getElementById('cardModal');
-  const modalBody = document.getElementById('cardModalBody');
-  if (!modal || !modalBody) return;
+function toggleRevealBox(box, event) {
+  if (!box) return;
+  if (event && event.target.closest(".reveal-body") && event.target.closest("input, button, textarea, select, a, label, [contenteditable]")) {
+    return;
+  }
+  const wasOpen = box.classList.contains("is-open");
+  document.querySelectorAll(".reveal-box.is-open").forEach((el) => el.classList.remove("is-open"));
+  if (!wasOpen) {
+    box.classList.add("is-open");
+    box.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    if (box.querySelector("#tokenInput")) renderTokens();
+    if (box.querySelector("#probBars")) setScenario(currentScenIdx || 0);
+  }
+}
 
-  modalBody.innerHTML = '';
+function initRevealBoxes() {
+  document.querySelectorAll('[onclick*="expandCard"]').forEach((box) => {
+    if (box.classList.contains("reveal-box")) return;
+    box.classList.add("reveal-box");
+    box.setAttribute("role", "button");
+    box.setAttribute("tabindex", "0");
 
-  const isInteractiveBox = element.id === 'sec8Datalab' || element.querySelector('#aggregatedDataList') || element.querySelector('#geminiOutput') || element.querySelector('#nonDetRunsOutput');
-
-  if (isInteractiveBox) {
-    const clone = element.cloneNode(true);
-    clone.removeAttribute('onclick');
-    clone.classList.remove('cursor-pointer', 'hover:border-sky-400', 'hover:border-amber-400', 'hover:border-fuchsia-400');
-    clone.classList.add('p-2', 'space-y-6', 'text-slate-900');
-
-    const headings = clone.querySelectorAll('h4, h5, label, span, p');
-    headings.forEach(el => {
-      el.classList.add('text-base', 'sm:text-lg');
-    });
-
-    const ssbBtn = clone.querySelector('button[onclick*="fetchLiveSSBData"]');
-    if (ssbBtn) ssbBtn.onclick = () => fetchLiveSSBData();
-
-    const aiBtn = clone.querySelector('button[onclick*="runCrossSectorAnalysis"]');
-    if (aiBtn) aiBtn.onclick = () => runCrossSectorAnalysis();
-
-    const nonDetBtn = clone.querySelector('button[onclick*="runNonDeterminismDemo"]');
-    if (nonDetBtn) nonDetBtn.onclick = () => runNonDeterminismDemo();
-
-    const modalContainer = document.createElement('div');
-    modalContainer.className = "space-y-4";
-
-    const titleBadge = document.createElement('div');
-    titleBadge.className = "bg-sky-100 text-sky-900 p-3 rounded-xl font-bold text-lg mb-2 flex items-center justify-between";
-    titleBadge.innerHTML = `<span>🔍 Forstørret Interaktiv Live-Simulering</span><span class="text-xs bg-sky-600 text-white px-2 py-1 rounded">Aktiv Modus</span>`;
-
-    modalContainer.appendChild(titleBadge);
-    modalContainer.appendChild(clone);
-    modalBody.appendChild(modalContainer);
-  } else {
-    const modalDetails = element.querySelector('.modal-details');
-
-    if (modalDetails) {
-      const content = modalDetails.cloneNode(true);
-      content.classList.remove('hidden');
-      modalBody.appendChild(content);
-    } else {
-      const clone = element.cloneNode(true);
-      clone.removeAttribute('onclick');
-
-      const hints = clone.querySelectorAll('span[class*="Klikk"]');
-      hints.forEach(h => h.remove());
-
-      const titleEl = clone.querySelector('h3, h4, h5, strong, .font-bold');
-      const descEl = clone.querySelector('p');
-
-      const container = document.createElement('div');
-      container.className = "space-y-4";
-
-      if (titleEl) {
-        const mainHeading = document.createElement('h3');
-        mainHeading.className = "text-2xl font-extrabold text-slate-900 border-b border-slate-200 pb-3";
-        mainHeading.textContent = titleEl.textContent;
-        container.appendChild(mainHeading);
-      }
-
-      if (descEl) {
-        const pointBox = document.createElement('div');
-        pointBox.className = "bg-slate-50 p-6 rounded-2xl border border-slate-200 space-y-3";
-
-        const label = document.createElement('strong');
-        label.className = "text-slate-900 font-bold text-lg block";
-        label.textContent = "📌 Punktvis detaljoversikt:";
-
-        const list = document.createElement('ul');
-        list.className = "list-disc pl-6 space-y-3 text-slate-800 text-lg leading-relaxed font-medium";
-
-        const sentences = descEl.textContent.split(/(?<=[.!?])\s+/);
-        sentences.forEach(s => {
-          if (s.trim().length > 0) {
-            const li = document.createElement('li');
-            li.textContent = s.trim();
-            list.appendChild(li);
-          }
-        });
-
-        pointBox.appendChild(label);
-        pointBox.appendChild(list);
-        container.appendChild(pointBox);
-      }
-
-      modalBody.appendChild(container);
+    const kids = [...box.children];
+    const titleIdx = kids.findIndex((el) => /^H[3-5]$/.test(el.tagName) || (el.tagName === "STRONG" && /block/.test(el.className)));
+    const cut = titleIdx >= 0 ? titleIdx + 1 : Math.min(1, kids.length);
+    const bodyKids = kids.slice(cut);
+    if (bodyKids.length) {
+      const body = document.createElement("div");
+      body.className = "reveal-body space-y-3 mt-3";
+      bodyKids.forEach((el) => body.appendChild(el));
+      body.querySelectorAll(".modal-details").forEach((el) => el.classList.remove("hidden"));
+      body.querySelectorAll("span.font-semibold.block.pt-1").forEach((el) => {
+        if (/Klikk/.test(el.textContent || "")) el.remove();
+      });
+      box.appendChild(body);
     }
-  }
 
-  modal.classList.remove('hidden');
-  document.body.style.overflow = 'hidden';
+    const cue = document.createElement("p");
+    cue.className = "reveal-cue text-[11px] text-slate-500 mt-2";
+    cue.textContent = "Klikk for å vise tekst, illustrasjon og øvelse";
+    box.appendChild(cue);
 
-  if (window.MathJax && window.MathJax.typesetPromise) {
-    window.MathJax.typesetPromise([modalBody]);
-  }
+    box.removeAttribute("onclick");
+    box.addEventListener("click", (e) => toggleRevealBox(box, e));
+    box.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        toggleRevealBox(box, e);
+      }
+    });
+  });
+}
+
+function expandCard(element, event) {
+  toggleRevealBox(element, event);
 }
 
 document.addEventListener('keydown', (e) => {
@@ -2879,6 +2833,7 @@ window.addEventListener('DOMContentLoaded', () => {
   try { currentMode = localStorage.getItem("guideMode") || "simple"; } catch (_e) { currentMode = "simple"; }
   toggleMode(currentMode, { keepChapter: true });
   syncChapterNav();
+  initRevealBoxes();
   applyHash();
   renderTokens();
   setScenario(0);
