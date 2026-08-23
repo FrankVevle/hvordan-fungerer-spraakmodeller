@@ -47,7 +47,22 @@
 
         <div class="bg-white p-5 sm:p-7 rounded-2xl border border-slate-200 shadow-sm space-y-5">
           <div class="rounded-xl border border-violet-200 bg-violet-50 px-4 py-3 text-sm text-violet-950">
-            <strong>Øvelse, ikke beslutningsstøtte.</strong> Syntetisk portefølje for 2026. Hver sak står i ett steg. Vurderingene er forslag — minst ett er plantet feil. Du kan avvise, rette eller la saken stå. Kapittel 10 er <em>dine</em> saker fra samme dag, ikke en ny lek.
+            <strong>Øvelse, ikke beslutningsstøtte.</strong> Syntetisk portefølje for 2026. Ikke Bufdirs saksflyt. Vurderingene er forslag — minst ett er plantet feil. Kapittel 10 er <em>dine</em> saker fra samme dag.
+          </div>
+
+          <div class="grid md:grid-cols-3 gap-2">
+            <div class="rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-3 text-xs text-indigo-950">
+              <p class="font-bold text-sm mb-1">1. Ordningstype</p>
+              Behandlingen avhenger av type: <strong>prosjekt/skjønn</strong> versus <strong>drift/kriterier</strong>. Filtrer etter type når porteføljen er lastet.
+            </div>
+            <div class="rounded-xl border border-amber-200 bg-amber-50 px-3 py-3 text-xs text-amber-950">
+              <p class="font-bold text-sm mb-1">2. Ramme, ikke formalia</p>
+              Det som koster tid, er <strong>prioritering mot ramme</strong>. Åpne steget Innstilling. KI summerer. Du kutter.
+            </div>
+            <div class="rounded-xl border border-rose-200 bg-rose-50 px-3 py-3 text-xs text-rose-950">
+              <p class="font-bold text-sm mb-1">3. KI forbereder</p>
+              KI hører hjemme på <strong>kontroll, budsjett, historikk og utkast</strong> — ikke på innstillingen som vedtak.
+            </div>
           </div>
 
           <div class="flex flex-wrap items-center justify-between gap-3">
@@ -68,7 +83,8 @@
               <span id="grantInboxCount" class="text-[11px] font-mono text-slate-500">0 saker</span>
             </div>
             <div id="grantProcessRail" class="flex flex-wrap gap-1.5"></div>
-            <p class="text-[11px] text-slate-500 mt-2">Klikk et steg for å filtrere. Åpne en sak for å se «du er her» og neste handling.</p>
+            <div id="grantTypeFilters" class="flex flex-wrap gap-1.5 mt-2"></div>
+            <p class="text-[11px] text-slate-500 mt-2">Klikk et steg eller en ordningstype. Innstilling viser rammen. Dette er ikke live portal.</p>
           </div>
 
           <div>
@@ -78,10 +94,12 @@
             </div>
             <div id="grantInbox" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-2 min-h-[4rem] max-h-[28rem] overflow-y-auto rounded-xl border border-dashed border-slate-200 bg-slate-50 p-2"></div>
           </div>
+          <div id="grantRammeWrap" class="hidden"></div>
 
           <div id="grantAiView" class="hidden rounded-2xl border border-slate-200 bg-slate-50 p-4 space-y-3">
             <h3 class="text-sm font-bold text-slate-900">Åpen sjekkliste: dette vurderer «KI» i simuleringen</h3>
-            <p class="text-xs text-slate-600">Ingen skjulte poeng. Hvert kriterium er synlig, med utfall per sak. Dette er regel-sjekk, ikke skjønn om hvem som «fortjener» penger.</p>
+            <p class="text-xs text-slate-600">Ingen skjulte poeng. Regel-sjekk og budsjettposter — ikke rangering mot ramme og ikke vedtak.</p>
+            <div id="grantAiRole" class="grid sm:grid-cols-2 gap-2 text-xs"></div>
             <div id="grantAiRubric" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-2 text-xs"></div>
             <div class="overflow-x-auto">
               <table class="w-full text-[11px] border-collapse">
@@ -134,9 +152,9 @@
               <p class="text-slate-400 text-xs">Last porteføljen først. Deretter kan du spørre f.eks. «Hvilke saker er i utbetaling?» eller «Hvor er T-2601 i løpet?»</p>
             </div>
             <div class="px-3 pb-2 flex flex-wrap gap-1.5" id="grantChatHints">
-              <button type="button" onclick="askGrantChat('Hvor mange saker er i hvert prosess-steg, og nevn ett saksnummer fra hvert steg?')" class="px-2 py-1 rounded-lg bg-slate-800 text-[11px] text-slate-200 hover:bg-slate-700">Fordeling per steg</button>
-              <button type="button" onclick="askGrantChat('Hvilke saker er i utbetaling eller oppfølging, og hva er neste handling?')" class="px-2 py-1 rounded-lg bg-slate-800 text-[11px] text-slate-200 hover:bg-slate-700">Etter vedtak</button>
-              <button type="button" onclick="askGrantChat('Hvor er T-2601 i løpet, og hva er vurderingen?')" class="px-2 py-1 rounded-lg bg-slate-800 text-[11px] text-slate-200 hover:bg-slate-700">Sak T-2601</button>
+              <button type="button" onclick="askGrantChat('Hvor mange saker er prosjekt/skjønn, og hvilke er drift/kriterier?')" class="px-2 py-1 rounded-lg bg-slate-800 text-[11px] text-slate-200 hover:bg-slate-700">Ordningstype</button>
+              <button type="button" onclick="askGrantChat('Hvilke saker er i innstilling, og slår rammen sprekk?')" class="px-2 py-1 rounded-lg bg-slate-800 text-[11px] text-slate-200 hover:bg-slate-700">Ramme</button>
+              <button type="button" onclick="askGrantChat('Hvor er T-2601 i løpet, og har samme søker flere saker?')" class="px-2 py-1 rounded-lg bg-slate-800 text-[11px] text-slate-200 hover:bg-slate-700">Historikk T-2601</button>
             </div>
             <form onsubmit="sendGrantChat(event)" class="p-3 border-t border-slate-700 flex gap-2">
               <input id="grantChatInput" type="text" maxlength="500" placeholder="Spør bare om dataene i innboksen…" class="flex-1 px-3 py-2 rounded-xl bg-slate-800 border border-slate-600 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-500" />
