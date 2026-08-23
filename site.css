@@ -43,15 +43,6 @@ body { font-family: 'Inter', sans-serif; }
 
     .chapter-section.hidden, .chapter-group.hidden { display: none; }
 
-    .reveal-box { cursor: pointer; transition: border-color 0.15s ease, box-shadow 0.15s ease; }
-    .reveal-box:not(.is-open) .reveal-body { display: none; }
-    .reveal-box.is-open .reveal-cue { display: none; }
-    .reveal-box.is-open {
-      border-color: rgb(139 92 246);
-      box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
-    }
-    .reveal-box.is-open { grid-column: 1 / -1; }
-
     @keyframes grantIn {
       from { opacity: 0; transform: translateY(8px); }
       to { opacity: 1; transform: translateY(0); }
