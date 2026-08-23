@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Kapittel 12: Forslag til LangGraph-løsning · Hvordan Fungerer Språkmodeller?</title>
+  <title>Kapittel 12: KI som leser, foreslår og gjør forarbeid · Hvordan Fungerer Språkmodeller?</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -28,107 +28,105 @@
   </header>
 
   <main class="max-w-6xl mx-auto px-4 sm:px-6 mt-8 space-y-6">
-    <p class="text-[11px] font-bold uppercase tracking-widest text-slate-500">Del 5 · Forslag, ikke produkt</p>
+    <p class="text-[11px] font-bold uppercase tracking-widest text-slate-500">Del 5 · Forslag til dere som behandler saker</p>
     <section class="chapter-section space-y-6">
       <div class="flex items-center gap-2">
         <span class="w-8 h-8 rounded-lg bg-violet-800 text-white flex items-center justify-center font-bold text-sm">12</span>
-        <h2 class="text-xl font-bold text-slate-900">12. Slik kunne KI-løsningen se ut: LangGraph</h2>
+        <h2 class="text-xl font-bold text-slate-900">12. KI som leser, foreslår og gjør forarbeid</h2>
       </div>
 
-      <div class="bg-white p-5 sm:p-7 rounded-2xl border border-slate-200 shadow-sm space-y-5">
+      <div class="bg-white p-5 sm:p-7 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+        <p class="text-lg font-bold text-slate-900 leading-snug">Poenget: vi styrer mappa. KI får bare lese det som ligger der. Den kan foreslå og gjøre forarbeid. <span class="text-violet-800">Du fatter fortsatt vedtaket.</span></p>
+
         <div class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
-          <strong>Forslag.</strong> Ikke et system som finnes. Ikke Bufdir. Ikke automatisert vedtak. Fire spesialiserte noder pluss et menneske i grafen — én delt tilstand, eksplisitte loop.
+          Dette er et forslag til hvordan det <em>kunne</em> fungere. Ikke et system som er i drift. Ikke Bufdir. Ingenting sendes ut av seg selv.
         </div>
 
-        <p class="text-slate-700 text-sm leading-relaxed">Én chat som «gjør alt» blander ruting, fakta og pynt. LangGraph tvinger rekkefølge: <strong>hent → sjekk → spør mennesket → lever utkast</strong>. Stiplede piler går tilbake til orkestratoren. Heltrukne piler går fremover. Uten <code class="text-xs bg-slate-100 px-1 rounded">menneske_godkjent</code> finnes det ingen vei til leveranse.</p>
-
-        <div class="overflow-x-auto">
-          <div class="min-w-[40rem] flex items-center justify-between gap-1 text-[11px] font-semibold">
-            <span class="px-2 py-2 rounded-lg bg-slate-100 border border-slate-200">Start</span>
-            <span class="text-slate-400">→</span>
-            <span class="px-2 py-2 rounded-lg bg-violet-100 border border-violet-200 text-violet-900">Orkestrator</span>
-            <span class="text-slate-400">⇄</span>
-            <span class="px-2 py-2 rounded-lg bg-indigo-50 border border-indigo-200 text-indigo-900">RAG</span>
-            <span class="text-slate-400">⇄</span>
-            <span class="px-2 py-2 rounded-lg bg-teal-50 border border-teal-200 text-teal-900">Validator</span>
-            <span class="text-slate-400">→</span>
-            <span class="px-2 py-2 rounded-lg bg-slate-900 text-white border border-slate-900">Menneske</span>
-            <span class="text-slate-400">→</span>
-            <span class="px-2 py-2 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-900">Leveranse</span>
-            <span class="text-slate-400">→</span>
-            <span class="px-2 py-2 rounded-lg bg-slate-100 border border-slate-200">Slutt</span>
-          </div>
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 mb-2">Først: en mappe vi eier</h3>
+          <p class="text-sm text-slate-700 leading-relaxed">Tenk at alle søknader, utlysninger, tidligere vedtak og intern praksis ligger i <strong>én mappe vi har kontroll på</strong>. KI får ikke gå på nettet og «finne på» en paragraf. Den får bare slå opp i den mappa. Finnes det ikke der, skal den si: <em>dette har jeg ikke i saken</em>.</p>
         </div>
 
-        <div class="grid md:grid-cols-2 gap-3">
-          <article class="rounded-xl border border-slate-200 p-4 space-y-1">
-            <h3 class="text-sm font-bold text-slate-900">Orkestrator</h3>
-            <p class="text-xs text-slate-600">Leser tilstand, velger neste node, teller forsøk. Skriver ikke fakta. Rangerer ikke ramme. Fatter ikke vedtak.</p>
-          </article>
-          <article class="rounded-xl border border-slate-200 p-4 space-y-1">
-            <h3 class="text-sm font-bold text-slate-900">RAG-agent</h3>
-            <p class="text-xs text-slate-600">Svarer bare fra hentede chunks med kilde-id. Ingen treff: «ikke i uttrekket». Får ikke finne på paragraf eller presedens.</p>
-          </article>
-          <article class="rounded-xl border border-slate-200 p-4 space-y-1">
-            <h3 class="text-sm font-bold text-slate-900">Validator</h3>
-            <p class="text-xs text-slate-600">Sjekker sitat, beløp, ordningstype og hallusinert hjemmel. Omskriver ikke for å redde utkastet. Feil = synlig liste tilbake til orkestrator.</p>
-          </article>
-          <article class="rounded-xl border border-slate-200 p-4 space-y-1">
-            <h3 class="text-sm font-bold text-slate-900">Leveranse</h3>
-            <p class="text-xs text-slate-600">Brevutkast, journal og innsynsgrunnlag. Sender ingenting. Attestasjon og BDM er utenfor grafen — egne personer.</p>
-          </article>
-        </div>
-
-        <div class="rounded-2xl border border-slate-800 bg-slate-900 text-white p-4 space-y-3">
-          <div class="flex flex-wrap items-center justify-between gap-2">
-            <div>
-              <h3 class="text-sm font-bold">Gjennomgang: det plantede feilgrepet (T-2622)</h3>
-              <p class="text-[11px] text-slate-400">Slik ville grafen stoppet Golfklubben / § 14.</p>
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 mb-2">Hva KI kan gjøre for deg</h3>
+          <div class="grid md:grid-cols-3 gap-3">
+            <div class="rounded-xl border border-indigo-200 bg-indigo-50 p-4">
+              <p class="text-xs font-bold uppercase tracking-wider text-indigo-800">Lese</p>
+              <p class="text-sm text-indigo-950 mt-1">Finne det som gjelder denne saken: formål, vedlegg, tidligere saker på samme søker, om telleren stemmer.</p>
             </div>
-            <span id="langGraphIndex" class="text-[11px] font-mono text-slate-400">1 / 6</span>
-          </div>
-          <div id="langGraphRail" class="flex flex-wrap gap-1.5"></div>
-          <pre id="langGraphState" class="text-[11px] font-mono text-violet-200 whitespace-pre-wrap bg-slate-800 rounded-lg px-3 py-2"></pre>
-          <div id="langGraphStep" class="text-sm"></div>
-          <div class="flex gap-2">
-            <button type="button" onclick="stepLangGraph(-1)" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold">← Forrige node</button>
-            <button type="button" onclick="stepLangGraph(1)" class="px-3 py-2 rounded-xl bg-violet-600 hover:bg-violet-500 text-xs font-semibold">Neste node →</button>
+            <div class="rounded-xl border border-amber-200 bg-amber-50 p-4">
+              <p class="text-xs font-bold uppercase tracking-wider text-amber-800">Foreslå</p>
+              <p class="text-sm text-amber-950 mt-1">Utkast til vurdering, hva som mangler, hva som ligner. Forslag — ikke fasit. Minst ett forslag i øvelsen er plantet feil.</p>
+            </div>
+            <div class="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+              <p class="text-xs font-bold uppercase tracking-wider text-emerald-800">Gjøre forarbeid</p>
+              <p class="text-sm text-emerald-950 mt-1">Skrive brevutkast, legge i journal, klargjøre til innsyn. Den sender ikke. Den attesterer ikke. Den kaller det ikke vedtak.</p>
+            </div>
           </div>
         </div>
 
         <div>
-          <h3 class="text-sm font-bold text-slate-900 mb-2">Delt tilstand (det LangGraph faktisk holder)</h3>
-          <div class="overflow-x-auto">
-            <table class="w-full text-[12px] border-collapse">
-              <thead>
-                <tr class="text-left border-b border-slate-200">
-                  <th class="py-2 pr-3">Felt</th>
-                  <th class="py-2 pr-3">Skrives av</th>
-                  <th class="py-2">Hvorfor</th>
-                </tr>
-              </thead>
-              <tbody class="text-slate-700">
-                <tr class="border-b border-slate-100"><td class="py-2 pr-3 font-mono">sak_id, oppgave, ordning</td><td class="py-2 pr-3">Start / orkestrator</td><td class="py-2">Skjønn og kriterier skal ikke blandes</td></tr>
-                <tr class="border-b border-slate-100"><td class="py-2 pr-3 font-mono">kilder[]</td><td class="py-2 pr-3">RAG</td><td class="py-2">Svar uten kilde-id er ugyldig</td></tr>
-                <tr class="border-b border-slate-100"><td class="py-2 pr-3 font-mono">utkast</td><td class="py-2 pr-3">RAG etter rute</td><td class="py-2">Ett utkast, versjonert</td></tr>
-                <tr class="border-b border-slate-100"><td class="py-2 pr-3 font-mono">validering</td><td class="py-2 pr-3">Validator</td><td class="py-2">Loop eller stopp — ikke stille fiks</td></tr>
-                <tr class="border-b border-slate-100"><td class="py-2 pr-3 font-mono">menneske_godkjent</td><td class="py-2 pr-3">Menneske-noden</td><td class="py-2">Port før noe går til leveranse</td></tr>
-                <tr><td class="py-2 pr-3 font-mono">journal</td><td class="py-2 pr-3">Leveranse</td><td class="py-2">Innsyn i prompt, kilder og svar</td></tr>
-              </tbody>
-            </table>
+          <h3 class="text-sm font-bold text-slate-900 mb-2">Fire hjelpere — som et lite saksbehandlingsteam</h3>
+          <p class="text-sm text-slate-700 mb-3">I stedet for én chat som prøver å gjøre alt, har vi fire med hver sin jobb. En leder fordeler. En leser bare mappa. En sjekker at forslaget henger på greip. En gjør i stand utkastet. Så kommer det til deg.</p>
+          <div class="grid sm:grid-cols-2 gap-3">
+            <article class="rounded-xl border border-slate-200 p-4">
+              <h4 class="text-sm font-bold text-slate-900">1. Koordinatoren</h4>
+              <p class="text-sm text-slate-600 mt-1">Ser hva saken trenger nå: lese, sjekke eller vise deg. Bestemmer ikke beløp. Bestemmer ikke hvem som «fortjener» rammen.</p>
+            </article>
+            <article class="rounded-xl border border-slate-200 p-4">
+              <h4 class="text-sm font-bold text-slate-900">2. Saksleseren</h4>
+              <p class="text-sm text-slate-600 mt-1">Åpner bare det som ligger i mappa. Kan sitere søknaden, utlysningen og gamle saker vi har lagt inn. Finner den ingenting, sier den det.</p>
+            </article>
+            <article class="rounded-xl border border-slate-200 p-4">
+              <h4 class="text-sm font-bold text-slate-900">3. Kvalitetssjekken</h4>
+              <p class="text-sm text-slate-600 mt-1">Ser etter typiske feil: feil paragraf, feil «lik sak», beløp som ikke stemmer, blanding av skjønn og teller. Den pynter ikke på feilen. Den stopper den.</p>
+            </article>
+            <article class="rounded-xl border border-slate-200 p-4">
+              <h4 class="text-sm font-bold text-slate-900">4. Skrivehjelpen</h4>
+              <p class="text-sm text-slate-600 mt-1">Lager brevutkast og journal når du har sagt at forslaget kan brukes. Du signerer. En annen attesterer. Det er utenfor KI.</p>
+            </article>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <div class="min-w-[36rem] flex items-stretch justify-between gap-2 text-center text-[11px] font-semibold">
+            <div class="flex-1 rounded-lg bg-slate-100 border border-slate-200 px-2 py-2">Mappa vår</div>
+            <div class="self-center text-slate-400">→</div>
+            <div class="flex-1 rounded-lg bg-indigo-50 border border-indigo-200 px-2 py-2 text-indigo-900">Lese</div>
+            <div class="self-center text-slate-400">→</div>
+            <div class="flex-1 rounded-lg bg-teal-50 border border-teal-200 px-2 py-2 text-teal-900">Sjekke</div>
+            <div class="self-center text-slate-400">→</div>
+            <div class="flex-1 rounded-lg bg-slate-900 text-white px-2 py-2">Du sier ja eller nei</div>
+            <div class="self-center text-slate-400">→</div>
+            <div class="flex-1 rounded-lg bg-emerald-50 border border-emerald-200 px-2 py-2 text-emerald-900">Utkast klart</div>
+          </div>
+        </div>
+
+        <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4 space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h3 class="text-sm font-bold text-slate-900">Et eksempel fra øvelsen: Brobyggerne</h3>
+              <p class="text-xs text-slate-600">KI ville avslå med feil begrunnelse. Slik stoppes det før det kommer som «ferdig».</p>
+            </div>
+            <span id="langGraphIndex" class="text-[11px] font-mono text-slate-500">1 / 6</span>
+          </div>
+          <div id="langGraphRail" class="flex flex-wrap gap-1.5"></div>
+          <p id="langGraphState" class="text-xs text-slate-600 rounded-lg bg-white border border-slate-200 px-3 py-2"></p>
+          <div id="langGraphStep"></div>
+          <div class="flex gap-2">
+            <button type="button" onclick="stepLangGraph(-1)" class="px-3 py-2 rounded-xl bg-white border border-slate-300 text-xs font-semibold">← Forrige</button>
+            <button type="button" onclick="stepLangGraph(1)" class="px-3 py-2 rounded-xl bg-violet-700 hover:bg-violet-800 text-white text-xs font-semibold">Neste →</button>
           </div>
         </div>
 
         <div class="grid md:grid-cols-2 gap-3">
-          <div class="rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-3 text-sm text-indigo-950">
-            <strong>Skjønn.</strong> RAG henter formål, poster og historikk. Den innstiller ikke mot ramme. Det er saksbehandler i innstillingssteget.
+          <div class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-950">
+            <strong>KI skal ikke:</strong> fatte vedtak, sende brev, attestere utbetaling, eller kutte i rammen fordi «noen fortjener mer».
           </div>
-          <div class="rounded-xl border border-teal-200 bg-teal-50 px-4 py-3 text-sm text-teal-950">
-            <strong>Kriterier.</strong> RAG henter sats og teller. Validatoren avviser skjønnsord på en teller-sak.
+          <div class="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700">
+            <strong>Du skal:</strong> se kilden, si nei når forslaget er feil, og eie begrunnelsen. To like saker skal tåle samme svar neste uke.
           </div>
         </div>
-
-        <p class="text-xs text-slate-500">Teknisk: én <span class="font-mono">StateGraph</span> med supervisor-ruting, betingede kanter på <span class="font-mono">validering.ok</span> og <span class="font-mono">menneske_godkjent</span>, og interrupt før leveranse. Det er pedagogikk og et arkitekturforslag — ikke kode som kjører mot live saker.</p>
       </div>
     </section>
   </main>
@@ -141,8 +139,8 @@
   </div>
 
   <footer class="max-w-6xl mx-auto px-4 sm:px-6 mt-16 pt-8 pb-4 border-t border-slate-200 text-center text-xs text-slate-500 font-medium space-y-1">
-    <p>Pedagogisk øvelse om språkmodeller og tilskuddsforvaltning. <strong>Ikke et Bufdir-verktøy.</strong> Forskrift, policy, presedens og saker er oppdiktet.</p>
-    <p>Kapittel 12 er et arkitekturforslag, ikke et kjørende system. Sist oppdatert 23. august 2026.</p>
+    <p>Pedagogisk øvelse. <strong>Ikke et Bufdir-verktøy.</strong> Forskrift og saker er oppdiktet.</p>
+    <p>Kapittel 12 er et forslag til arbeidsmåte, ikke et system i drift. Sist oppdatert 23. august 2026.</p>
   </footer>
 
   <div id="chapterNav" class="fixed bottom-0 inset-x-0 z-50 bg-white/95 backdrop-blur border-t border-slate-200 px-4 py-3 shadow-[0_-8px_24px_rgba(15,23,42,0.08)]">
@@ -150,7 +148,7 @@
       <button type="button" id="btnPrevChapter" onclick="stepChapter(-1)" class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed">← Forrige</button>
       <div class="text-center min-w-0">
         <p id="chapterPartLabel" class="text-[11px] font-bold uppercase tracking-widest text-slate-500 truncate">Del 5 · Forslag</p>
-        <p id="chapterStepLabel" class="text-sm font-semibold text-slate-800">Kapittel 12: LangGraph-forslag</p>
+        <p id="chapterStepLabel" class="text-sm font-semibold text-slate-800">Kapittel 12: Lese, foreslå, forarbeid</p>
       </div>
       <button type="button" id="btnNextChapter" onclick="stepChapter(1)" class="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed">Neste →</button>
     </div>

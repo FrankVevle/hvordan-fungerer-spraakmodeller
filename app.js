@@ -21,8 +21,7 @@ const SITE_PAGES = [
   { file: "kapittel-8.html", title: "Kapittel 8 · Åpne data-øvelse", part: "Del 3" },
   { file: "kapittel-9.html", title: "Kapittel 9 · Tilskuddsløpet", part: "Del 4" },
   { file: "kapittel-10.html", title: "Kapittel 10 · Personlig agent", part: "Del 4" },
-  { file: "kapittel-11.html", title: "Kapittel 11 · Ta med deg", part: "Del 4" },
-  { file: "kapittel-12.html", title: "Kapittel 12 · LangGraph-forslag", part: "Del 5" }
+  { file: "kapittel-12.html", title: "Kapittel 12 · Lese, foreslå, forarbeid", part: "Del 5" }
 ];
 
 function currentPageFile() {
@@ -3177,44 +3176,44 @@ const LANGGRAPH_STEPS = [
   {
     id: "ork1",
     node: "orkestrator",
-    tittel: "1. Orkestrator leser oppgaven",
-    tilstand: "sak_id=T-2622 · oppgave=vurder avslag · ordning=skjønn · kilder=[]",
-    tekst: "Ingen kilder ennå. Orkestratoren skriver ikke fakta. Den ruter til RAG med spørsmål: «Hvilken aktivitetstype og hvilken like sak finnes i uttrekket?»"
+    tittel: "1. Koordinatoren ser på saken",
+    tilstand: "På pulten: Brobyggerne søker om jobb til ungdom. KI har ikke slått opp i mappa ennå.",
+    tekst: "Koordinatoren fordeler jobben: «Les mappa og finn hvilken type tiltak dette er, og om vi har behandlet noe likt.» Den finner ikke på svar selv."
   },
   {
     id: "rag1",
     node: "rag",
-    tittel: "2. RAG svarer bare fra hentede chunks",
-    tilstand: "kilder=[sim. § 2/4.2, T-2608 Havblik, T-2621 Golfklubben som anlegg]",
-    tekst: "RAG kan sitere 4.2 jobbtilbud og T-2608. Den får ikke lov til å si «§ 14 investering» hvis den chunk-en ikke er hentet som hjemmel for 4.2. Mangler treff: «ikke i uttrekket»."
+    tittel: "2. Saksleseren slår opp i mappa vår",
+    tilstand: "I mappa: jobbtilbud til ungdom, og Havblik Røde Kors som en lik sak. Golfklubben ligger der som anlegg — ikke som lik sak.",
+    tekst: "Leseren får bare bruke det som faktisk ligger i mappa. Den kan ikke hente en paragraf fra hodet. Finnes det ikke der, skal den si at det mangler."
   },
   {
     id: "val1",
     node: "validator",
-    tittel: "3. Validator feller det plantede grepet",
-    tilstand: "utkast siterer T-2621 og § 14 · validering.ok=false",
-    tekst: "Sjekkliste: hver påstand har kilde-id; beløp matcher; ordningstype stemmer; presedens er samme aktivitet. Feil paragraf og feil søskensak = stopp. Ingen omskriving «for å redde» utkastet."
+    tittel: "3. Kvalitetssjekken fanger feilen",
+    tilstand: "Et utkast vil avslå og viser til feil paragraf og Golfklubben. Sjekken sier nei.",
+    tekst: "Noen har prøvd å likestille Brobyggerne med golfanlegg. Det er ikke samme type sak. Sjekken stopper forslaget i stedet for å pynte på det."
   },
   {
     id: "ork2",
     node: "orkestrator",
-    tittel: "4. Orkestrator velger loop eller menneske",
-    tilstand: "forsøk=1 · feil=[feil §, feil presedens] · neste=menneske",
-    tekst: "Etter én feilet validering går saken til mennesket med feillisten synlig. Orkestratoren rangerer ikke rammen og fatter ikke innstilling."
+    tittel: "4. Koordinatoren sender det til deg",
+    tilstand: "Feilen er synlig: feil begrunnelse. Dette skal ikke se ferdig ut.",
+    tekst: "Koordinatoren kutter ikke i rammen og skriver ikke vedtak. Den viser deg hva som gikk galt, så du kan si nei."
   },
   {
     id: "hum",
     node: "menneske",
-    tittel: "5. Mennesket er en node i grafen",
-    tilstand: "menneske_godkjent=false · saksbehandler avviser KI-forslaget",
-    tekst: "Samme øvelse som i kapittel 9–10: bekreft, avvis med grunn, eller la stå. Uten godkjenning finnes det ingen vei til leveranse."
+    tittel: "5. Du eier saken",
+    tilstand: "Du avviser forslaget. Ingen brev er sendt.",
+    tekst: "Samme som i kapittel 9: bekreft, avvis med en setning, eller la saken stå. Uten deg blir det ikke noe utkast videre."
   },
   {
     id: "lev",
     node: "leveranse",
-    tittel: "6. Leveranse bare hvis porten er åpen",
-    tilstand: "journal + brevutkast · sendt=false · vedtak=false",
-    tekst: "Hvis mennesket senere godkjenner et gyldig utkast, formaterer denne noden brev og journalpost. Den sender ingenting og kaller det ikke vedtak. Attestasjon ligger utenfor grafen."
+    tittel: "6. Skrivehjelpen venter på deg",
+    tilstand: "Først når du har sagt ja til et gyldig forslag, kan et brevutkast og en journalpost gjøres i stand.",
+    tekst: "Da gjør KI forarbeidet: tekst du kan rette, og spor til innsyn. Den trykker ikke send. En kollega attesterer pengene, ikke maskinen."
   }
 ];
 
@@ -3226,11 +3225,11 @@ function renderLangGraphForslag() {
   const state = document.getElementById("langGraphState");
   if (!rail || !body) return;
   const nodes = [
-    { id: "orkestrator", label: "Orkestrator" },
-    { id: "rag", label: "RAG" },
-    { id: "validator", label: "Validator" },
-    { id: "menneske", label: "Menneske" },
-    { id: "leveranse", label: "Leveranse" }
+    { id: "orkestrator", label: "Koordinator" },
+    { id: "rag", label: "Leser" },
+    { id: "validator", label: "Sjekk" },
+    { id: "menneske", label: "Du" },
+    { id: "leveranse", label: "Utkast" }
   ];
   const current = LANGGRAPH_STEPS[langGraphStep];
   rail.innerHTML = nodes.map((n) => {
