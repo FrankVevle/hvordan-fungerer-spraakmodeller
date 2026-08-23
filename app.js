@@ -20,6 +20,7 @@ const SITE_PAGES = [
   { file: "kapittel-7.html", title: "Kapittel 7 · Kildeforankret KI", part: "Del 3" },
   { file: "kapittel-8.html", title: "Kapittel 8 · Åpne data-øvelse", part: "Del 3" },
   { file: "kapittel-9.html", title: "Kapittel 9 · Tilskuddsløpet", part: "Del 4" },
+  { file: "cockpit.html", title: "Prototype · Tilskuddscockpit", part: "Del 4" },
   { file: "kapittel-10.html", title: "Kapittel 10 · Personlig agent", part: "Del 4" },
   { file: "kapittel-12.html", title: "Kapittel 12 · RAG og LangGraph", part: "Del 5" }
 ];
@@ -144,6 +145,9 @@ function applyHash(opts = {}) {
   if (raw.startsWith("T-") && currentPageFile() === "kapittel-9.html") {
     if (!grantInboxLoaded) loadGrantInbox();
     openGrantCase(raw);
+  }
+  if (raw.startsWith("T-") && currentPageFile() === "cockpit.html") {
+    selectCockpitCase(raw);
   }
 }
 
@@ -1709,6 +1713,40 @@ function grantOrdningLabel(sak) {
     : "Prosjekt / skjønn";
 }
 
+const GRANT_SJEKK_CASE = {
+  "T-2602": [1],
+  "T-2603": [1],
+  "T-2605": [2],
+  "T-2607": [2],
+  "T-2608": [3],
+  "T-2609": [1],
+  "T-2612": [3],
+  "T-2622": [2, 4],
+  "T-2629": [1, 4],
+  "T-2631": [3],
+  "T-2632": [2, 4]
+};
+
+function grantSjekkLinje(sak) {
+  const dels = GRANT_SJEKK_CASE[sak.id];
+  if (!dels || !dels.length) return "";
+  const names = { 1: "1 Formalia/budsjett", 2: "2 Fag/skjønn", 3: "3 Rapport", 4: "4 Notat" };
+  return dels.map((d) => names[d]).join(" · ");
+}
+
+function setGrantSjekkDel(n) {
+  [1, 2, 3, 4].forEach((i) => {
+    const pane = document.getElementById(`sjekkDel${i}`);
+    const tab = document.getElementById(`sjekkTab${i}`);
+    if (pane) pane.classList.toggle("hidden", i !== n);
+    if (tab) {
+      tab.className = i === n
+        ? "sjekk-tab px-3 py-1.5 rounded-lg bg-slate-900 text-white text-xs font-semibold"
+        : "sjekk-tab px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-xs font-semibold";
+    }
+  });
+}
+
 function grantSokerSaker(sak) {
   if (!sak.orgnr || sak.orgnr === "—" || sak.orgnr === "mangler") return [];
   return tilskuddSaker.filter((other) => other.id !== sak.id && other.orgnr === sak.orgnr);
@@ -2321,6 +2359,7 @@ function openGrantCase(id) {
       ${stage.id === "kontroll" ? `Kontrollkø: ${grantQueueLabel(sak.queue)}` : `Steg: ${stage.label}`}
     </div>
     ${grantSokerSaker(sak).length ? `<div class="rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-2 text-sm text-indigo-950"><strong>Historikk på samme søker (org.nr. ${sak.orgnr}):</strong> ${grantSokerSaker(sak).map((s) => `${s.id} ${s.aktivitet}`).join(" · ")}. KI kan vise dette. Den skal ikke finne på en annen presedens.</div>` : ""}
+    ${grantSjekkLinje(sak) ? `<p class="text-xs text-slate-600">Sjekkliste i øvelsen: ${grantSjekkLinje(sak)}</p>` : ""}
     <div class="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-700">KI i denne saken: kontroll, budsjett, historikk og utkast. <strong>Ikke</strong> innstillingen som vedtak.</div>
     <div class="rounded-2xl border-2 border-violet-300 bg-violet-50 p-4 space-y-2">
       <p class="text-xs font-bold uppercase tracking-wider text-violet-800">Vurdering (forslag, ikke vedtak)</p>
@@ -3255,10 +3294,743 @@ function initLangGraphForslag() {
   renderLangGraphForslag();
 }
 
+const COCKPIT_CASE_IDS = ["T-2629", "T-2632", "T-2603", "T-2622", "T-2631", "T-2612"];
+
+const OVELSESREGISTER = [
+  { orgnr: "999 626 727", navn: "Fjordheim kulturskolevenner", form: "forening", enhet: true, frivillig: true },
+  { orgnr: "999 303 808", navn: "Storøy ungdomsverksted", form: "forening", enhet: true, frivillig: true },
+  { orgnr: "999 333 001", navn: "AS Fjord Byggdrift", form: "AS", enhet: true, frivillig: false },
+  { orgnr: "999 222 333", navn: "Brobyggerne Oslo", form: "forening", enhet: true, frivillig: true },
+  { orgnr: "999 101 202", navn: "Myr idrettslag anlegg", form: "idrettslag", enhet: true, frivillig: true },
+  { orgnr: "999 555 666", navn: "Åsby bibliotekvenner", form: "forening", enhet: true, frivillig: true }
+];
+
+const COCKPIT_RAG = [
+  { id: "f-soker", tittel: "Fiktiv veileder § 3 Hvem kan søke (øvelse 2026)", tekst: "Søker skal stå i Enhetsregisteret. For denne aktivitetstypen skal virksomheten også stå i Frivillighetsregisteret, med mindre søker er kommune. Kommersielt aksjeselskap uten frivillig formål kan ikke søke." },
+  { id: "f-admin", tittel: "Fiktiv intern praksis § 5 Administrasjon (øvelse 2026)", tekst: "Prosjektledelse og generell administrasjon skal som hovedregel ikke overstige 15 prosent av søknadssummen. Overskytende kan foreslås avkortet. Dette er øvelsesregel 2026, ikke evig forskrift. Avkorting er forslag til saksbehandler, ikke vedtak." },
+  { id: "f-revisor", tittel: "Fiktiv veileder § 8 Revisor (øvelse 2026)", tekst: "Søknader over 200 000 kroner skal ha revisorattest eller tilsvarende bekreftelse. Mangler attest, skal saken flagges. Beløpsgrensen er øvelse 2026." },
+  { id: "f-mal", tittel: "Fiktiv forskrift § 2 Formål og målgruppe", tekst: "Tiltaket skal nå barn og unge som står utenfor, særlig husholdninger med lav inntekt. Søknaden skal beskrive hvem som rekrutteres, og at deltakelse er gratis eller uten urimelig egenandel. Barns medvirkning skal beskrives der det er relevant. Står det ikke i teksten, er det ikke oppgitt." },
+  { id: "f-jobb", tittel: "Fiktiv forskrift aktivitet 4.2", tekst: "Jobbtilbud og veiledning gjelder lønnet praksis, kurs og veiledning for ungdom i målgruppen. Det er ikke investering i anlegg. Lik sak i øvelsen: Havblik Røde Kors (T-2608), vurdert til innvilgelse." },
+  { id: "f-invest", tittel: "Fiktiv forskrift § 14 Investering", tekst: "§ 14 gjelder varige driftsmidler og anlegg, for eksempel gressbane og vanningsanlegg. Golfklubben Fjord (T-2621) fikk avslag på anlegg og seniordrift. § 14 brukes ikke på jobbtilbud 4.2." }
+];
+
+const COCKPIT_PLANTED_RAG = {
+  id: "planted-lik",
+  tittel: "Utdrag (feil hentet i øvelsen) — lik sak",
+  tekst: "Likebehandling: Golfklubben Fjord (T-2621) fikk avslag på liknende aktivitet. Sim. forskrift § 14 om investering: kommunen eier ikke tiltaket. Anbefalt avslag."
+};
+
+const COCKPIT_EXTRA = {
+  "T-2629": {
+    flag: "avkorting",
+    adminPct: 32,
+    adminBelop: 131200,
+    rapportFjor: true,
+    budsjett: [
+      { post: "Instrumentleie og materiell", belop: 180000, type: "aktivitet" },
+      { post: "Prosjektledelse / administrasjon", belop: 131200, type: "admin" },
+      { post: "Lokaler og mat", belop: 98800, type: "aktivitet" }
+    ],
+    vedlegg: [
+      { navn: "Budsjett", status: "ok" },
+      { navn: "Vedtekter", status: "ok" },
+      { navn: "Årsregnskap", status: "ok" },
+      { navn: "Revisorattest", status: "mangler" }
+    ]
+  },
+  "T-2632": {
+    flag: "ramme",
+    adminPct: 11,
+    adminBelop: 97900,
+    rapportFjor: true,
+    budsjett: [
+      { post: "Lønn praksisplasser", belop: 520000, type: "aktivitet" },
+      { post: "Veileder og HMS", belop: 180000, type: "aktivitet" },
+      { post: "Administrasjon", belop: 97900, type: "admin" },
+      { post: "Lokaler og materiell", belop: 92100, type: "aktivitet" }
+    ],
+    vedlegg: [
+      { navn: "Budsjett", status: "ok" },
+      { navn: "HMS-plan", status: "ok" },
+      { navn: "Kommuneavtale", status: "ok" },
+      { navn: "Revisorattest", status: "ok" }
+    ]
+  },
+  "T-2603": {
+    flag: "formalia",
+    adminPct: 8,
+    adminBelop: 36000,
+    rapportFjor: true,
+    budsjett: [
+      { post: "Ferieaktivitet ansattebarn", belop: 414000, type: "aktivitet" },
+      { post: "Administrasjon", belop: 36000, type: "admin" }
+    ],
+    vedlegg: [
+      { navn: "Budsjett", status: "ok" },
+      { navn: "Vedtekter", status: "ok" },
+      { navn: "Revisorattest", status: "mangler" }
+    ]
+  },
+  "T-2622": {
+    flag: "plantet",
+    adminPct: 12,
+    adminBelop: 23760,
+    rapportFjor: true,
+    budsjett: [
+      { post: "Lønn deltidsjobb", belop: 120000, type: "aktivitet" },
+      { post: "CV-kurs og veileder", belop: 54240, type: "aktivitet" },
+      { post: "Administrasjon", belop: 23760, type: "admin" }
+    ],
+    vedlegg: [
+      { navn: "Budsjett", status: "ok" },
+      { navn: "Avtale med bydel", status: "ok" },
+      { navn: "Vedtekter", status: "ok" }
+    ]
+  },
+  "T-2631": {
+    flag: "avvik",
+    adminPct: 6,
+    adminBelop: 13200,
+    rapportFjor: true,
+    budsjett: [
+      { post: "Inkluderende trening (brukt)", belop: 80000, type: "aktivitet" },
+      { post: "Ny gressbane (ikke godkjent)", belop: 140000, type: "avvik" }
+    ],
+    vedlegg: [
+      { navn: "Sluttregnskap", status: "ok" },
+      { navn: "Opprinnelig vedtak", status: "ok" }
+    ]
+  },
+  "T-2612": {
+    flag: "historikk",
+    adminPct: 10,
+    adminBelop: 7200,
+    rapportFjor: false,
+    budsjett: [
+      { post: "Materiell og veiledere", belop: 64800, type: "aktivitet" },
+      { post: "Administrasjon", belop: 7200, type: "admin" }
+    ],
+    vedlegg: [
+      { navn: "Budsjett", status: "ok" },
+      { navn: "Samarbeid bibliotek", status: "ok" },
+      { navn: "Fjorårets rapport", status: "mangler" }
+    ]
+  }
+};
+
+const COCKPIT_FALLBACK = {
+  "T-2629": {
+    malgruppe: { score: 4, sitat: "Gratis instrumentgruppe etter skoletid, 24 barn." },
+    medvirkning: { score: null, sitat: "ikke oppgitt" },
+    gratis: { score: 5, sitat: "Gratis instrumentgruppe etter skoletid" },
+    notat: "Søknaden treffer 4.1. Adminandelen er 32 % mot øvelsesregel 15 % (2026). Foreslått avkorting av overskytende prosjektledelse. Dette er innstillingsforslag, ikke vedtak. Rangering mot ramme er saksbehandlers.",
+    brev: "Utkast — ikke vedtak\n\nTil Fjordheim kulturskolevenner\n\nDere søkte om 410 000 kr til gratis instrumentgruppe. Formålet treffer. Prosjektledelse utgjør 32 % av budsjettet. Etter øvelsesregel 2026 (15 % admin) foreslås avkorting av den overskytende delen.\n\nBeløpet i utkastet er forslag til saksbehandler. Klagefrist og vilkår fylles inn hvis dere fatter vedtak."
+  },
+  "T-2632": {
+    malgruppe: { score: 5, sitat: "Heldags verksted og lønnet praksis for 28 ungdommer i 8 uker." },
+    medvirkning: { score: null, sitat: "ikke oppgitt" },
+    gratis: { score: 4, sitat: "lønnet praksis" },
+    notat: "Formelt komplett og treffer 4.2. Admin innenfor 15 %. Attest er med. Beløpet 890 000 kr tvinger tverrgående kutt mot fiktiv ramme. KI summerer og peker — den rangerer ikke hvem som skal kuttes. Ikke vedtak.",
+    brev: "Utkast — ikke vedtak\n\nTil Storøy ungdomsverksted\n\nSøknaden om 890 000 kr til jobbtilbud er formelt i orden. Innstilling mot ramme gjenstår hos saksbehandler. Dette brevet er ikke et tilsagn."
+  },
+  "T-2603": {
+    malgruppe: { score: 1, sitat: "Ferieaktivitet for ansattebarn." },
+    medvirkning: { score: null, sitat: "ikke oppgitt" },
+    gratis: { score: null, sitat: "ikke oppgitt" },
+    notat: "Søker er AS og står ikke i Frivillighetsregisteret (øvelsestabell). Formålet er rekruttering til bedriften, ikke inkludering av barn i målgruppen. Forslag: utenfor ordningen. Ikke vedtak.",
+    brev: "Utkast til avslagsbrev — ikke vedtak\n\nTil AS Fjord Byggdrift\n\nDere kan etter øvelsesregelen 2026 ikke søke denne aktivitetstypen som kommersielt AS uten frivillig registrering. Tiltaket gjelder egne ansattebarn.\n\nSaksbehandler må bekrefte før noe sendes."
+  },
+  "T-2622": {
+    malgruppe: { score: 4, sitat: "Deltidsjobb og CV-kurs for 12 ungdommer." },
+    medvirkning: { score: null, sitat: "ikke oppgitt" },
+    gratis: { score: 4, sitat: "Deltidsjobb og CV-kurs" },
+    notat: "Anbefalt avslag. KI viser til sim. forskrift § 14 om investering: kommunen eier ikke tiltaket. Golfklubben Fjord (T-2621) fikk avslag på liknende aktivitet. Likebehandling tilsier avslag.",
+    brev: "Utkast til avslagsbrev — ikke vedtak\n\nTil Brobyggerne Oslo\n\nSøknaden avslås med henvisning til sim. forskrift § 14 (investering) og presedens i Golfklubben Fjord (T-2621).\n\nDette utkastet skal stoppes av sjekken. Saksbehandler kan avvise det."
+  },
+  "T-2631": {
+    malgruppe: { score: 3, sitat: "inkluderende trening" },
+    medvirkning: { score: null, sitat: "ikke oppgitt" },
+    gratis: { score: null, sitat: "ikke oppgitt" },
+    notat: "Sluttregnskap: 140 000 kr til gressbane (investering, ikke godkjent) og 80 000 kr til aktivitet. Forholdsmessig utkast: tilbakekreving av 140 000 kr. Ikke vedtak.",
+    brev: "Utkast om avvik — ikke vedtak\n\nTil Myr idrettslag anlegg\n\n140 000 kr gikk til ny gressbane. Det er ikke godkjent kostnad. Utkast: krev den delen tilbake. De 80 000 til trening vurderes som i tråd med tiltaket."
+  },
+  "T-2612": {
+    malgruppe: { score: 4, sitat: "Leksehjelp og teaterlek etter skoletid, to grupper à 12 barn. Gratis." },
+    medvirkning: { score: null, sitat: "ikke oppgitt" },
+    gratis: { score: 5, sitat: "Gratis." },
+    notat: "Tiltaket treffer og var utbetalt. Fjorårets rapport / sluttregnskap mangler. Rødt historikkflagg. Kan holde tilbake fremtidig tilskudd. Ikke vedtak.",
+    brev: "Utkast om rapportering — ikke vedtak\n\nTil Åsby bibliotekvenner\n\nTilskudd er utbetalt. Sluttregnskap etter øvelsesfristen mangler. Saken flagges. Saksbehandler avgjør purring eller tilbakehold."
+  }
+};
+
+const COCKPIT_SYSTEM_PROMPT = `Du er forvaltningsrådgiver i en pedagogisk øvelse om tilskudd. Du fatter ALDRI vedtak og kaller aldri svaret ditt et vedtak.
+
+Du får KUN søknadstekst og RAG-utdrag under. Bruk ikke annen kunnskap. Hvis noe ikke står i søknadsteksten, skriv «ikke oppgitt».
+
+Svar alltid på norsk, faktabasert, i denne malen:
+
+## Semantikk
+Målgruppe: N/5
+Sitat målgruppe: "..." eller ikke oppgitt
+Medvirkning: N/5
+Sitat medvirkning: "..." eller ikke oppgitt
+Gratis: N/5
+Sitat gratis: "..." eller ikke oppgitt
+
+## Saksnotat
+Kort innstillingsforslag med henvisning til utdrag. Ikke fatt vedtak.
+
+## Brevutkast
+Merk første linje: Utkast — ikke vedtak
+`;
+
+const cockpitJournal = [];
+const cockpitWork = {};
+let cockpitSelectedId = null;
+let cockpitTab = "arbeid";
+let cockpitKiSeq = 0;
+
+function escHtml(s) {
+  return String(s ?? "").replace(/[&<>"']/g, (c) => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+  }[c]));
+}
+
+function lookupOvelsesregister(orgnr) {
+  return OVELSESREGISTER.find((r) => r.orgnr === orgnr) || null;
+}
+
+function cockpitSak(id) {
+  return tilskuddSaker.find((s) => s.id === id) || null;
+}
+
+function cockpitFlagMeta(flag) {
+  if (flag === "avkorting") return { text: "Avkorting", cls: "bg-amber-100 text-amber-900" };
+  if (flag === "ramme") return { text: "Ramme", cls: "bg-indigo-100 text-indigo-900" };
+  if (flag === "formalia") return { text: "Formalia", cls: "bg-rose-100 text-rose-900" };
+  if (flag === "plantet") return { text: "Plantet feil", cls: "bg-fuchsia-100 text-fuchsia-900" };
+  if (flag === "avvik") return { text: "Avvik", cls: "bg-orange-100 text-orange-900" };
+  if (flag === "historikk") return { text: "Historikk", cls: "bg-rose-100 text-rose-900" };
+  return { text: "OK", cls: "bg-emerald-100 text-emerald-800" };
+}
+
+function ruleTone(status) {
+  if (status === "green") return { cls: "bg-emerald-50 border-emerald-200 text-emerald-950", mark: "OK" };
+  if (status === "yellow") return { cls: "bg-amber-50 border-amber-200 text-amber-950", mark: "Gul" };
+  return { cls: "bg-rose-50 border-rose-200 text-rose-950", mark: "Rød" };
+}
+
+function runGrantRules(sak) {
+  const extra = COCKPIT_EXTRA[sak.id] || { adminPct: 0, adminBelop: 0, rapportFjor: true, vedlegg: [], flag: "ok" };
+  const reg = lookupOvelsesregister(sak.orgnr);
+  const checks = [];
+  let recommended = sak.belop;
+
+  if (!reg || !reg.enhet) {
+    checks.push({ id: "soker", label: "Søkerform (øvelsesregister)", status: "red", text: "Ikke i den hardkodede Enhetsregister-tabellen." });
+    recommended = 0;
+  } else if (!reg.frivillig) {
+    checks.push({ id: "soker", label: "Søkerform (øvelsesregister)", status: "red", text: `${reg.form} står i Enhetsregisteret, men ikke i Frivillighetsregisteret. For denne øvelsesordningen kan de ikke søke.` });
+    recommended = 0;
+  } else {
+    checks.push({ id: "soker", label: "Søkerform (øvelsesregister)", status: "green", text: `${reg.navn}: ${reg.form}. Enhet ja, frivillig ja. Hardkodet tabell — ikke live API.` });
+  }
+
+  const allowedAdmin = Math.round(sak.belop * 0.15);
+  if (extra.adminPct > 15 && recommended > 0) {
+    const kutt = Math.max(0, extra.adminBelop - allowedAdmin);
+    recommended = sak.belop - kutt;
+    checks.push({
+      id: "admin",
+      label: "Adminandel (øvelse 2026)",
+      status: "yellow",
+      text: `Admin ${extra.adminPct} % (${formatGrantKroner(extra.adminBelop)}) over 15 % (${formatGrantKroner(allowedAdmin)}). Foreslått avkorting ${formatGrantKroner(kutt)} — ikke vedtak.`
+    });
+  } else {
+    checks.push({
+      id: "admin",
+      label: "Adminandel (øvelse 2026)",
+      status: "green",
+      text: `Admin ${extra.adminPct} % er innenfor 15 % av søknadssummen. Øvelsesregel 2026, ikke evig forskrift.`
+    });
+  }
+
+  const harAttest = (extra.vedlegg || []).some((v) => /revisor/i.test(v.navn) && v.status === "ok");
+  if (sak.belop > 200000 && !harAttest) {
+    checks.push({ id: "revisor", label: "Revisor (øvelse 2026)", status: "yellow", text: `Søkt ${formatGrantKroner(sak.belop)} — over 200 000 kr — og revisorattest mangler. Flagg, ikke automatisk avslag.` });
+  } else if (sak.belop > 200000) {
+    checks.push({ id: "revisor", label: "Revisor (øvelse 2026)", status: "green", text: "Attest er med. Beløpsgrense 200 000 kr er øvelse 2026." });
+  } else {
+    checks.push({ id: "revisor", label: "Revisor (øvelse 2026)", status: "green", text: "Under 200 000 kr. Attest er ikke krevd i øvelsen 2026." });
+  }
+
+  if (!extra.rapportFjor) {
+    checks.push({ id: "historikk", label: "Historikk / fjorårets rapport", status: "red", text: "Fjorårets rapport mangler. Rødt flagg. Kan påvirke ny tildeling — saksbehandler avgjør." });
+  } else {
+    checks.push({ id: "historikk", label: "Historikk / fjorårets rapport", status: "green", text: "Ingen åpen rapportmangel i øvelseshistorikken." });
+  }
+
+  if (sak.id === "T-2632" && recommended > 0) {
+    checks.push({ id: "ramme", label: "Ramme (skjønn)", status: "yellow", text: `Beløpet er stort mot fiktiv ramme ${formatGrantKroner(GRANT_SKJONN_RAMME)}. KI kutter ikke. Du prioriterer.` });
+  }
+  if (sak.id === "T-2631") {
+    recommended = 0;
+    checks.push({ id: "avvik", label: "Sluttregnskap", status: "red", text: "140 000 kr til gressbane er ikke godkjent kostnad. Utkast: tilbakekreving." });
+  }
+
+  return { checks, recommended, flag: extra.flag, kutt: Math.max(0, sak.belop - recommended) };
+}
+
+function cockpitRagFor(sak) {
+  const ids = ["f-soker", "f-admin", "f-revisor", "f-mal"];
+  if (sak.id === "T-2622") ids.push("f-jobb", "planted");
+  else if (sak.aktivitet.includes("4.2")) ids.push("f-jobb");
+  else if (sak.id === "T-2631") ids.push("f-invest");
+  return ids.map((id) => {
+    if (id === "planted") return COCKPIT_PLANTED_RAG;
+    return COCKPIT_RAG.find((r) => r.id === id);
+  }).filter(Boolean);
+}
+
+function formatCockpitRag(sak) {
+  return cockpitRagFor(sak).map((r) => `### ${r.tittel}\n${r.tekst}`).join("\n\n");
+}
+
+function parseCockpitKi(text) {
+  const grab = (label) => {
+    const m = text.match(new RegExp(`${label}:\\s*([^\\n]+)`, "i"));
+    return m ? m[1].trim() : "";
+  };
+  const scoreOf = (raw) => {
+    const m = String(raw).match(/(\d)\s*\/\s*5/);
+    return m ? Number(m[1]) : null;
+  };
+  const note = (text.split(/##\s*Saksnotat/i)[1] || "").split(/##\s*Brevutkast/i)[0].trim();
+  const brev = (text.split(/##\s*Brevutkast/i)[1] || "").trim();
+  return {
+    malgruppe: { score: scoreOf(grab("Målgruppe")), sitat: grab("Sitat målgruppe") || "ikke oppgitt" },
+    medvirkning: { score: scoreOf(grab("Medvirkning")), sitat: grab("Sitat medvirkning") || "ikke oppgitt" },
+    gratis: { score: scoreOf(grab("Gratis")), sitat: grab("Sitat gratis") || "ikke oppgitt" },
+    notat: note || text.trim(),
+    brev: brev || "",
+    raw: text
+  };
+}
+
+function applyCockpitFallback(id) {
+  const fb = COCKPIT_FALLBACK[id];
+  return {
+    malgruppe: fb.malgruppe,
+    medvirkning: fb.medvirkning,
+    gratis: fb.gratis,
+    notat: fb.notat,
+    brev: fb.brev,
+    raw: "",
+    live: false
+  };
+}
+
+function plantedCheck(id, semantic) {
+  if (id !== "T-2622") return null;
+  const blob = `${semantic.notat}\n${semantic.brev}\n${semantic.raw}`;
+  const hit = /§\s*14|Golfklubben/i.test(blob);
+  return {
+    fail: true,
+    tittel: "Sjekken stoppet utkastet",
+    tekst: hit
+      ? "Første KI-utkast siterer § 14 (investering) og/eller Golfklubben Fjord. Feil paragraf og feil presedens. § 14 gjelder anlegg, ikke jobbtilbud 4.2. Lik sak er Havblik Røde Kors (T-2608). Avvis forslaget."
+      : "Øvelsen krever at du ser den plantede feilen: et utkast som blander § 14 og Golfklubben Fjord (T-2621) med et 4.2-jobbtilbud. Fasit: Havblik Røde Kors (T-2608). Avvis."
+  };
+}
+
+function ensureCockpitWork(id) {
+  if (!cockpitWork[id]) {
+    const sak = cockpitSak(id);
+    const rules = runGrantRules(sak);
+    cockpitWork[id] = {
+      rules,
+      recommended: rules.recommended,
+      semantic: null,
+      note: "",
+      letter: "",
+      pipeline: "regler",
+      kiStatus: "Regler ferdige. Starter KI…",
+      kiLive: null,
+      hitl: null,
+      running: false
+    };
+  }
+  return cockpitWork[id];
+}
+
+function journaliser(entry) {
+  cockpitJournal.unshift({
+    at: new Date().toLocaleString("no-NO", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }),
+    ...entry
+  });
+  if (cockpitJournal.length > 50) cockpitJournal.length = 50;
+  renderCockpitJournal();
+}
+
+function renderCockpitJournal() {
+  const box = document.getElementById("cockpitJournal");
+  const status = document.getElementById("cockpitJournalStatus");
+  if (status) {
+    status.textContent = cockpitJournal.length
+      ? `${cockpitJournal.length} journalposter (mock i nettleseren — ikke Elements/Noark)`
+      : "Journalen er tom til du åpner en sak eller trykker en knapp.";
+  }
+  if (!box) return;
+  box.innerHTML = cockpitJournal.map((j) => `
+    <article class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-[11px] text-slate-700">
+      <p class="font-mono text-slate-500">${escHtml(j.at)} · ${escHtml(j.type)} · ${escHtml(j.sak || "—")}</p>
+      <p><strong>Handling:</strong> ${escHtml(j.prompt)}</p>
+      <p><strong>Resultat:</strong> ${escHtml(j.svar)}</p>
+    </article>
+  `).join("");
+}
+
+function renderCockpitPipeline(work) {
+  const el = document.getElementById("cockpitPipeline");
+  if (!el) return;
+  const step = !work ? "idle" : work.pipeline;
+  const items = [
+    { id: "regler", label: "1. Regler ferdige" },
+    { id: "ki", label: "2. KI analyserer" },
+    { id: "utkast", label: "3. Utkast klart" },
+    { id: "hitl", label: "4. Mennesket godkjenner" }
+  ];
+  const order = { idle: -1, regler: 0, ki: 1, utkast: 2, hitl: 3 };
+  const cur = order[step] ?? -1;
+  el.innerHTML = items.map((it, i) => {
+    let cls = "bg-slate-100 text-slate-500 border-slate-200";
+    if (i < cur) cls = "bg-emerald-50 text-emerald-800 border-emerald-200";
+    if (i === cur) cls = work?.running && it.id === "ki"
+      ? "bg-violet-600 text-white border-violet-700 ring-2 ring-violet-300 animate-pulse"
+      : "bg-violet-600 text-white border-violet-700 ring-2 ring-violet-300";
+    return `<div class="rounded-lg border px-2 py-2 text-[11px] font-semibold ${cls}">${it.label}</div>`;
+  }).join("");
+}
+
+function renderCockpitList() {
+  const box = document.getElementById("cockpitList");
+  if (!box) return;
+  box.innerHTML = COCKPIT_CASE_IDS.map((id) => {
+    const sak = cockpitSak(id);
+    const extra = COCKPIT_EXTRA[id];
+    const flag = cockpitFlagMeta(extra.flag);
+    const on = cockpitSelectedId === id;
+    return `
+      <button type="button" onclick="selectCockpitCase('${id}')" class="w-full text-left rounded-xl border px-3 py-2.5 ${on ? "border-violet-500 bg-violet-50" : "border-slate-200 bg-white hover:border-violet-300"}">
+        <div class="flex items-center justify-between gap-2">
+          <span class="text-[10px] font-mono font-bold text-violet-700">${sak.id}</span>
+          <span class="text-[10px] font-semibold px-1.5 py-0.5 rounded-md ${flag.cls}">${flag.text}</span>
+        </div>
+        <p class="text-sm font-bold text-slate-900 mt-0.5">${escHtml(sak.org)}</p>
+        <p class="text-xs text-slate-600">${formatGrantKroner(sak.belop)}</p>
+      </button>`;
+  }).join("");
+}
+
+function semanticRowHtml(label, item) {
+  const score = item?.score != null ? `${item.score}/5` : "—";
+  const sitat = item?.sitat || "ikke oppgitt";
+  return `<tr class="border-b border-slate-100">
+    <td class="py-1.5 pr-2 font-medium">${escHtml(label)}</td>
+    <td class="py-1.5 pr-2 font-mono text-xs">${score}</td>
+    <td class="py-1.5 text-slate-600">${escHtml(sitat)}</td>
+  </tr>`;
+}
+
+function renderCockpitCard() {
+  const box = document.getElementById("cockpitCard");
+  const status = document.getElementById("cockpitKiStatus");
+  if (!box) return;
+  if (!cockpitSelectedId) {
+    renderCockpitPipeline(null);
+    if (status) status.textContent = "Velg en sak. Reglene kjøres først. Deretter KI.";
+    box.innerHTML = `<p class="text-sm text-slate-500">Velg en sak i listen. Da ser du søknad, regler, KI-analyse og utkast.</p>`;
+    return;
+  }
+  const sak = cockpitSak(cockpitSelectedId);
+  const extra = COCKPIT_EXTRA[sak.id];
+  const work = ensureCockpitWork(sak.id);
+  renderCockpitPipeline(work);
+  if (status) status.textContent = work.kiStatus;
+  const planted = work.semantic ? plantedCheck(sak.id, work.semantic) : null;
+  const vedleggHtml = extra.vedlegg.map((v) => {
+    const ok = v.status === "ok";
+    return `<li class="flex justify-between gap-2 text-xs"><span>${escHtml(v.navn)}</span><span class="${ok ? "text-emerald-700" : "text-rose-700"} font-semibold">${ok ? "OK" : "Mangler"}</span></li>`;
+  }).join("");
+  const budsjettHtml = extra.budsjett.map((b) => `
+    <tr class="border-b border-slate-100">
+      <td class="py-1 pr-2">${escHtml(b.post)}</td>
+      <td class="py-1 pr-2 text-right font-mono">${formatGrantKroner(b.belop)}</td>
+      <td class="py-1 text-[10px] uppercase text-slate-500">${escHtml(b.type)}</td>
+    </tr>`).join("");
+  const checksHtml = work.rules.checks.map((c) => {
+    const t = ruleTone(c.status);
+    return `<div class="rounded-lg border px-2.5 py-2 ${t.cls}"><p class="text-[10px] font-bold uppercase">${t.mark} · ${escHtml(c.label)}</p><p class="text-xs mt-0.5">${escHtml(c.text)}</p></div>`;
+  }).join("");
+  const kiBanner = work.running
+    ? `<div class="rounded-lg border border-violet-300 bg-violet-50 px-3 py-2 text-xs text-violet-950">KI kjører via /api/chat…</div>`
+    : work.kiLive === true
+      ? `<div class="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-950">Live KI er aktiv (OpenAI via /api/chat). Forslag — ikke vedtak.</div>`
+      : work.kiLive === false
+        ? `<div class="rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-950">Live KI er ikke aktiv (ingen nøkkel eller API nede). Dette er forhåndsanalyse — ikke et modell-svar.</div>`
+        : `<div class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-700">Venter på KI-steget.</div>`;
+  const sem = work.semantic;
+  const semHtml = sem ? `
+    <table class="w-full text-xs">
+      <thead><tr class="text-left text-slate-500"><th class="py-1">Tema</th><th class="py-1">Score</th><th class="py-1">Sitat</th></tr></thead>
+      <tbody>
+        ${semanticRowHtml("Målgruppe", sem.malgruppe)}
+        ${semanticRowHtml("Medvirkning", sem.medvirkning)}
+        ${semanticRowHtml("Gratis", sem.gratis)}
+      </tbody>
+    </table>` : `<p class="text-xs text-slate-500">${work.running ? "Analyserer søknadstekst mot RAG-utdrag…" : "Ingen semantikk ennå."}</p>`;
+  const plantedHtml = planted ? `
+    <div class="rounded-lg border border-fuchsia-300 bg-fuchsia-50 px-3 py-2 text-xs text-fuchsia-950">
+      <p class="font-bold">${escHtml(planted.tittel)}</p>
+      <p class="mt-1">${escHtml(planted.tekst)}</p>
+    </div>` : "";
+  const hitlNote = work.hitl ? `<p class="text-xs font-semibold text-slate-800">${escHtml(work.hitl)}</p>` : "";
+
+  box.innerHTML = `
+    <div class="flex flex-wrap items-start justify-between gap-2 mb-3">
+      <div>
+        <p class="text-[10px] font-mono font-bold text-violet-700">${sak.id}</p>
+        <h3 class="text-base font-bold text-slate-900">${escHtml(sak.org)}</h3>
+        <p class="text-xs text-slate-500">${escHtml(sak.kommune)} · ${escHtml(sak.aktivitet)}</p>
+      </div>
+      <button type="button" onclick="runCockpitKI('${sak.id}', true)" class="px-3 py-1.5 rounded-lg bg-violet-800 hover:bg-violet-900 text-white text-xs font-semibold disabled:opacity-40" ${work.running ? "disabled" : ""}>Kjør KI-vurdering på nytt</button>
+    </div>
+    ${kiBanner}
+    <div class="grid md:grid-cols-2 gap-4 mt-4">
+      <div class="space-y-3">
+        <div>
+          <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500">Søknad</h4>
+          <p class="text-sm text-slate-800 leading-relaxed mt-1">${escHtml(sak.soknad)}</p>
+        </div>
+        <div>
+          <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500">Budsjettposter (syntetisk)</h4>
+          <table class="w-full text-xs mt-1">${budsjettHtml}</table>
+        </div>
+        <div>
+          <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500">Vedleggstatus (syntetisk)</h4>
+          <ul class="mt-1 space-y-1">${vedleggHtml}</ul>
+        </div>
+      </div>
+      <div class="space-y-3">
+        <div>
+          <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500">Kontroll (regler)</h4>
+          <div class="space-y-1.5 mt-1">${checksHtml}</div>
+        </div>
+        <div>
+          <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500">KI-semantikk</h4>
+          <div class="mt-1">${semHtml}</div>
+        </div>
+        ${plantedHtml}
+        <label class="block">
+          <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Anbefalt beløp (redigerbart, ikke vedtak)</span>
+          <input id="cockpitBelop" type="number" value="${work.recommended}" class="mt-1 w-full px-3 py-2 rounded-lg border border-slate-300 text-sm" />
+        </label>
+        <label class="block">
+          <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Saksnotat (utkast)</span>
+          <textarea id="cockpitNotat" rows="4" class="mt-1 w-full px-3 py-2 rounded-lg border border-slate-300 text-sm">${escHtml(work.note)}</textarea>
+        </label>
+        <label class="block">
+          <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Brevutkast</span>
+          <textarea id="cockpitBrev" rows="5" class="mt-1 w-full px-3 py-2 rounded-lg border border-slate-300 text-sm font-mono">${escHtml(work.letter)}</textarea>
+        </label>
+        <label class="block">
+          <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Din begrunnelse (ved avvis/juster)</span>
+          <input id="cockpitGrunn" type="text" placeholder="Skriv grunn her…" class="mt-1 w-full px-3 py-2 rounded-lg border border-slate-300 text-sm" />
+        </label>
+        <div class="flex flex-wrap gap-2">
+          <button type="button" onclick="cockpitHitl('bekreft')" class="px-3 py-1.5 rounded-lg bg-slate-900 text-white text-xs font-semibold">Bekreft forslag</button>
+          <button type="button" onclick="cockpitHitl('juster')" class="px-3 py-1.5 rounded-lg bg-white border border-slate-300 text-xs font-semibold">Juster</button>
+          <button type="button" onclick="cockpitHitl('avvis')" class="px-3 py-1.5 rounded-lg bg-white border border-rose-300 text-rose-800 text-xs font-semibold">Avvis med grunn</button>
+          <button type="button" onclick="cockpitHitl('sta')" class="px-3 py-1.5 rounded-lg bg-white border border-slate-300 text-xs font-semibold">La stå</button>
+        </div>
+        <p class="text-[11px] text-slate-500">Ingenting sendes eksternt. Mock-journal i nettleseren.</p>
+        ${hitlNote}
+      </div>
+    </div>`;
+}
+
+function readCockpitEditors(work) {
+  const belop = document.getElementById("cockpitBelop");
+  const notat = document.getElementById("cockpitNotat");
+  const brev = document.getElementById("cockpitBrev");
+  if (belop && belop.value !== "") work.recommended = Number(belop.value) || 0;
+  if (notat) work.note = notat.value;
+  if (brev) work.letter = brev.value;
+}
+
+async function runCockpitKI(id, force) {
+  const sak = cockpitSak(id);
+  if (!sak) return;
+  const work = ensureCockpitWork(id);
+  if (work.running) return;
+  if (work.semantic && !force) return;
+  work.running = true;
+  work.pipeline = "ki";
+  work.kiStatus = "KI analyserer søknadstekst + RAG-utdrag…";
+  renderCockpitList();
+  renderCockpitCard();
+  const seq = ++cockpitKiSeq;
+  const rag = formatCockpitRag(sak);
+  const userPrompt = `Saksnummer: ${sak.id}\nOrganisasjon: ${sak.org}\nSøkt beløp: ${sak.belop} kr\nAktivitet: ${sak.aktivitet}\n\nSØKNADSTEKST:\n${sak.soknad}\n\nRAG-UTDRAG (fiktiv veileder/forskrift, øvelse 2026):\n${rag}\n\nSkriv semantikk, saksnotat og brevutkast. Ikke fatt vedtak.`;
+  journaliser({
+    type: "ki-kall",
+    sak: id,
+    prompt: force ? "Kjør KI-vurdering på nytt" : "Første KI-vurdering",
+    svar: "Sendt søknadstekst og RAG-utdrag til /api/chat. Modell får ikke fatte vedtak."
+  });
+  try {
+    const text = await callModelAPI(userPrompt, COCKPIT_SYSTEM_PROMPT);
+    if (seq !== cockpitKiSeq && cockpitSelectedId === id && work.running === false) {
+      /* newer run may exist */
+    }
+    const parsed = parseCockpitKi(text);
+    work.semantic = parsed;
+    work.note = parsed.notat;
+    work.letter = parsed.brev || parsed.notat;
+    work.kiLive = true;
+    work.kiStatus = "Live KI ferdig. Forslag — ikke vedtak. Du kan kjøre på nytt.";
+    journaliser({
+      type: "ki-svar",
+      sak: id,
+      prompt: "Svar fra /api/chat",
+      svar: (parsed.notat || text).slice(0, 280)
+    });
+  } catch (e) {
+    const fb = applyCockpitFallback(id);
+    work.semantic = fb;
+    work.note = fb.notat;
+    work.letter = fb.brev;
+    work.kiLive = false;
+    work.kiStatus = "Live KI er ikke aktiv. Viser forhåndsanalyse — ikke et modell-svar.";
+    journaliser({
+      type: "ki-fallback",
+      sak: id,
+      prompt: "API uten nøkkel eller feil",
+      svar: "Forhåndsanalyse lastet. Prototypen later ikke som dette er live modell."
+    });
+  }
+  work.running = false;
+  work.pipeline = "utkast";
+  if (id === "T-2622") {
+    journaliser({
+      type: "sjekk",
+      sak: id,
+      prompt: "Validator mot plantet feil",
+      svar: "Utkastet skal kunne avvises: feil § og Golfklubben."
+    });
+  }
+  renderCockpitList();
+  renderCockpitCard();
+}
+
+function selectCockpitCase(id) {
+  if (!document.getElementById("cockpitRoot")) return;
+  const sak = cockpitSak(id);
+  if (!sak) return;
+  setCockpitTab("arbeid");
+  cockpitSelectedId = id;
+  const work = ensureCockpitWork(id);
+  if (!cockpitJournal.some((j) => j.sak === id && j.type === "regler")) {
+    journaliser({
+      type: "regler",
+      sak: id,
+      prompt: "Deterministisk kontroll",
+      svar: work.rules.checks.map((c) => `${c.label}: ${c.status}`).join("; ")
+    });
+  }
+  renderCockpitList();
+  renderCockpitCard();
+  if (!work.semantic && !work.running) runCockpitKI(id, false);
+  try { history.replaceState(null, "", `#${id}`); } catch (_e) { /* ignore */ }
+}
+
+function cockpitHitl(action) {
+  if (!cockpitSelectedId) return;
+  const work = ensureCockpitWork(cockpitSelectedId);
+  readCockpitEditors(work);
+  const grunnEl = document.getElementById("cockpitGrunn");
+  const grunn = grunnEl ? grunnEl.value.trim() : "";
+  work.pipeline = "hitl";
+  if (action === "bekreft") {
+    work.hitl = `Du bekreftet forslaget på ${formatGrantKroner(work.recommended)}. Fortsatt ikke et vedtak.`;
+    journaliser({ type: "hitl", sak: cockpitSelectedId, prompt: "Bekreft forslag", svar: work.hitl });
+  } else if (action === "juster") {
+    work.hitl = `Du justerte til ${formatGrantKroner(work.recommended)}. ${grunn || "Ingen skriftlig grunn."} Ikke vedtak.`;
+    journaliser({ type: "hitl", sak: cockpitSelectedId, prompt: "Juster", svar: work.hitl });
+  } else if (action === "avvis") {
+    if (!grunn) {
+      work.hitl = "Avvis krever en grunn. Skriv i feltet og prøv igjen.";
+      renderCockpitCard();
+      return;
+    }
+    work.hitl = `Du avviste KI-forslaget: ${grunn}`;
+    journaliser({ type: "hitl", sak: cockpitSelectedId, prompt: "Avvis med grunn", svar: work.hitl });
+  } else {
+    work.hitl = "Saken står. Ingen godkjenning, ingen sending.";
+    journaliser({ type: "hitl", sak: cockpitSelectedId, prompt: "La stå", svar: work.hitl });
+  }
+  renderCockpitCard();
+}
+
+function setCockpitTab(tab) {
+  cockpitTab = tab;
+  const arbeid = document.getElementById("cockpitArbeid");
+  const klage = document.getElementById("cockpitKlage");
+  const slutt = document.getElementById("cockpitSlutt");
+  if (arbeid) arbeid.classList.toggle("hidden", tab !== "arbeid");
+  if (klage) klage.classList.toggle("hidden", tab !== "klage");
+  if (slutt) slutt.classList.toggle("hidden", tab !== "slutt");
+  ["Arbeid", "Klage", "Slutt"].forEach((name) => {
+    const btn = document.getElementById(`cockpitTab${name}`);
+    if (!btn) return;
+    const on = (name === "Arbeid" && tab === "arbeid") || (name === "Klage" && tab === "klage") || (name === "Slutt" && tab === "slutt");
+    btn.className = on
+      ? "px-3 py-1.5 rounded-lg bg-slate-900 text-white text-xs font-semibold"
+      : "px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-xs font-semibold";
+  });
+}
+
+function journaliserCockpitKlage(valg) {
+  const el = document.getElementById("cockpitKlageStatus");
+  const tekst = valg === "godta"
+    ? "Nytt faktum (kursleder 40 000 kr som fag) er lagt inn i mock-journal. Adminandelen kan regnes på nytt. Ikke omgjøring, ikke vedtak."
+    : "Klagen er avslått i øvelsen. Opprinnelig avkortingsforslag står. Ikke vedtak.";
+  if (el) el.textContent = tekst;
+  journaliser({ type: "klage", sak: "T-2629", prompt: valg === "godta" ? "Godta nytt faktum" : "Avslå klage", svar: tekst });
+}
+
+function journaliserCockpitSlutt(valg) {
+  const el = document.getElementById("cockpitSluttStatus");
+  const tekst = valg === "tilbake"
+    ? "Utkast til tilbakekreving 140 000 kr (gressbane) er journalført. 80 000 kr aktivitet urørt. Ikke innkreving."
+    : "Sluttsaken står. Ingen tilbakekreving startet.";
+  if (el) el.textContent = tekst;
+  journaliser({ type: "slutt", sak: "T-2631", prompt: valg === "tilbake" ? "Tilbakekrevingsutkast" : "La slutt stå", svar: tekst });
+}
+
+function initCockpit() {
+  if (!document.getElementById("cockpitRoot")) return;
+  renderCockpitList();
+  renderCockpitJournal();
+  renderCockpitPipeline(null);
+  renderCockpitCard();
+}
+
 window.addEventListener('DOMContentLoaded', () => {
   try { currentMode = localStorage.getItem("guideMode") || "simple"; } catch (_e) { currentMode = "simple"; }
   toggleMode(currentMode, { keepChapter: true });
   syncChapterNav();
+  initCockpit();
   applyHash();
   renderTokens();
   setScenario(0);

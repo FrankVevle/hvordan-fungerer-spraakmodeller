@@ -48,6 +48,7 @@
         <div class="bg-white p-5 sm:p-7 rounded-2xl border border-slate-200 shadow-sm space-y-5">
           <div class="rounded-xl border border-violet-200 bg-violet-50 px-4 py-3 text-sm text-violet-950">
             <strong>Øvelse, ikke beslutningsstøtte.</strong> Syntetisk portefølje for 2026. Ikke Bufdirs saksflyt. Vurderingene er forslag — minst ett er plantet feil. Kapittel 10 er <em>dine</em> saker fra samme dag.
+            <span class="block mt-2"><a href="cockpit.html" class="font-bold underline underline-offset-2">Åpne prototypen</a> — KI-støttet sakskort med regler, utkast og mock-journal.</span>
           </div>
 
           <div class="grid md:grid-cols-3 gap-2">
@@ -62,6 +63,67 @@
             <div class="rounded-xl border border-rose-200 bg-rose-50 px-3 py-3 text-xs text-rose-950">
               <p class="font-bold text-sm mb-1">3. KI forbereder</p>
               KI hører hjemme på <strong>kontroll, budsjett, historikk og utkast</strong> — ikke på innstillingen som vedtak.
+            </div>
+          </div>
+
+          <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4 space-y-3">
+            <div>
+              <h3 class="text-sm font-bold text-slate-900">Saksbehandlers sjekkliste (øvelse)</h3>
+              <p class="text-xs text-slate-600 mt-1">Fire deler slik en sak typisk gjennomgås. Tall og «§ 5» er <strong>eksempel 2026</strong>, ikke evig regel. Ikke offisiell Bufdir-mal. KI kan forberede del 1 og 3 og utkast til del 4. Del 2 og rangering mot ramme er din.</p>
+            </div>
+            <div class="flex flex-wrap gap-1.5">
+              <button type="button" id="sjekkTab1" onclick="setGrantSjekkDel(1)" class="sjekk-tab px-3 py-1.5 rounded-lg bg-slate-900 text-white text-xs font-semibold">1 Formalia og budsjett</button>
+              <button type="button" id="sjekkTab2" onclick="setGrantSjekkDel(2)" class="sjekk-tab px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-xs font-semibold">2 Fag og skjønn</button>
+              <button type="button" id="sjekkTab3" onclick="setGrantSjekkDel(3)" class="sjekk-tab px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-xs font-semibold">3 Rapport</button>
+              <button type="button" id="sjekkTab4" onclick="setGrantSjekkDel(4)" class="sjekk-tab px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-xs font-semibold">4 Notat</button>
+            </div>
+            <div id="sjekkDel1" class="sjekk-del overflow-x-auto">
+              <p class="text-xs text-slate-600 mb-2">Inntak: er søker berettiget, og henger tallene på greip? Eksempler: T-2603, T-2602, T-2629, T-2609.</p>
+              <table class="w-full text-[11px] border-collapse bg-white rounded-lg overflow-hidden">
+                <thead><tr class="text-left border-b border-slate-200"><th class="p-2">Punkt</th><th class="p-2">Hva du sjekker</th><th class="p-2">Rødt flagg</th></tr></thead>
+                <tbody class="text-slate-700">
+                  <tr class="border-b border-slate-100"><td class="p-2 font-semibold">Søkerberettigelse</td><td class="p-2">Enhets- og ev. Frivillighetsregister. Rett form iht. utlysningen.</td><td class="p-2">ENK, kommersiell aktør der bare frivillighet/kommune kan søke.</td></tr>
+                  <tr class="border-b border-slate-100"><td class="p-2 font-semibold">Påkrevde vedlegg</td><td class="p-2">Årsregnskap, årsmelding, signert budsjett.</td><td class="p-2">Mangler underskrift, utdatert regnskap, bare foreløpige tall.</td></tr>
+                  <tr class="border-b border-slate-100"><td class="p-2 font-semibold">Administrasjon</td><td class="p-2">Andel til ledelse/admin. I øvelsen: ofte 10–20 % som intern praksis.</td><td class="p-2">Hele husleien/kontoret lagt på prosjektet.</td></tr>
+                  <tr class="border-b border-slate-100"><td class="p-2 font-semibold">Drift vs. prosjekt</td><td class="p-2">Ekstraordinær aktivitet, ikke fast drift (unntatt kriterie-grunnstøtte).</td><td class="p-2">Faste stillinger, gammel gjeld, løpende husleie uten prosjektknytning.</td></tr>
+                  <tr class="border-b border-slate-100"><td class="p-2 font-semibold">Andre kilder</td><td class="p-2">Egeninnsats, egenandel, andre tilskudd.</td><td class="p-2">Samme post dekket 100 % fra to ytere.</td></tr>
+                  <tr><td class="p-2 font-semibold">Pris per deltaker</td><td class="p-2">Søkt beløp mot antall barn/unge som nås.</td><td class="p-2">Uforholdsmessig høyt, f.eks. svært få deltakere mot stort beløp.</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div id="sjekkDel2" class="sjekk-del hidden overflow-x-auto">
+              <p class="text-xs text-slate-600 mb-2">Skjønn: treffer formålet? Eksempler: T-2605, T-2607, T-2601. Rangerer ikke mot ramme — det er innstilling.</p>
+              <table class="w-full text-[11px] border-collapse bg-white rounded-lg overflow-hidden">
+                <thead><tr class="text-left border-b border-slate-200"><th class="p-2">Kriterium</th><th class="p-2">Spørsmål</th><th class="p-2">Notat (øvelse)</th></tr></thead>
+                <tbody class="text-slate-700">
+                  <tr class="border-b border-slate-100"><td class="p-2 font-semibold">Målgruppe</td><td class="p-2">Barn/unge i lavinntekt eller annen definert gruppe — direkte eller for bredt?</td><td class="p-2">Direkte / indirekte / uklar</td></tr>
+                  <tr class="border-b border-slate-100"><td class="p-2 font-semibold">Brukermedvirkning</td><td class="p-2">Har barn og unge vært med på å utforme tiltaket?</td><td class="p-2">Dokumentert / overordnet / ingen</td></tr>
+                  <tr class="border-b border-slate-100"><td class="p-2 font-semibold">Gratis / barrierer</td><td class="p-2">Helt gratis, eller skjulte egenandeler (utstyr, reise)?</td><td class="p-2">Gratis / egenandel som må begrunnes</td></tr>
+                  <tr class="border-b border-slate-100"><td class="p-2 font-semibold">Gjennomførbarhet</td><td class="p-2">Kompetanse, apparat, realistisk plan?</td><td class="p-2">Høy / moderat risiko / urealistisk</td></tr>
+                  <tr><td class="p-2 font-semibold">Lokal forankring</td><td class="p-2">Kommune, skole, NAV, andre lag — støttebrev?</td><td class="p-2">Etablert / frittstående</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div id="sjekkDel3" class="sjekk-del hidden text-xs text-slate-700 space-y-2">
+              <p class="text-slate-600">Etter tilsagn, når rapporten er inne (i øvelsen ofte 1. april). Eksempler: T-2608, T-2612, T-2631.</p>
+              <ol class="list-decimal pl-5 space-y-1">
+                <li>Deltakertall: ble måltallet nådd?</li>
+                <li>Budsjettavvik: brukt mindre enn tildelt?</li>
+                <li>Revisor: i øvelsen typisk ved beløp over 200 000 kr — sjekk gjeldende vilkår.</li>
+                <li>Endringer: var omdisponering forhåndsgodkjent?</li>
+              </ol>
+              <p><strong>Godkjent</strong> → saken avsluttes. <strong>Avvik</strong> → mer info, eller vedtak om tilbakekreving / motregning. Vesentlig endring uten godkjenning: vurder omgjøring.</p>
+            </div>
+            <div id="sjekkDel4" class="sjekk-del hidden space-y-3 text-xs text-slate-700">
+              <p class="text-slate-600">To ulike begrunnelser. KI kan skrive utkast. Du eier teksten. «§ 5» er fiktiv.</p>
+              <div class="rounded-lg bg-white border border-slate-200 p-3 space-y-1">
+                <p class="font-semibold text-slate-900">Innvilgelse med avkorting</p>
+                <p class="italic leading-relaxed">«God målgruppe og gratis tiltak. Søkt 300 000 kr. Posten teknisk utstyr/PC (40 000) er generell drift og godkjennes ikke. Tildeling 260 000 mot revidert budsjett. (Øvelse: T-2629.)»</p>
+              </div>
+              <div class="rounded-lg bg-white border border-slate-200 p-3 space-y-1">
+                <p class="font-semibold text-slate-900">Avslag fordi rammen slår sprekk</p>
+                <p class="italic leading-relaxed">«Tiltaket kan falle inn under formålet, men har svakere målgruppetreff og medvirkning enn andre i samme runde. Samlet søknad overstiger bevilgningen. Avslag etter samlet prioritering, jf. sim. forskrift § 5. (Øvelse: T-2632 — ikke finn på andre saker enn de i mappa.)»</p>
+              </div>
             </div>
           </div>
 
