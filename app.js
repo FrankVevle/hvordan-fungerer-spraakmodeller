@@ -3311,7 +3311,9 @@ const COCKPIT_RAG = [
   { id: "f-revisor", tittel: "Fiktiv veileder § 8 Revisor (øvelse 2026)", tekst: "Søknader over 200 000 kroner skal ha revisorattest eller tilsvarende bekreftelse. Mangler attest, skal saken flagges. Beløpsgrensen er øvelse 2026." },
   { id: "f-mal", tittel: "Fiktiv forskrift § 2 Formål og målgruppe", tekst: "Tiltaket skal nå barn og unge som står utenfor, særlig husholdninger med lav inntekt. Søknaden skal beskrive hvem som rekrutteres, og at deltakelse er gratis eller uten urimelig egenandel. Barns medvirkning skal beskrives der det er relevant. Står det ikke i teksten, er det ikke oppgitt." },
   { id: "f-jobb", tittel: "Fiktiv forskrift aktivitet 4.2", tekst: "Jobbtilbud og veiledning gjelder lønnet praksis, kurs og veiledning for ungdom i målgruppen. Det er ikke investering i anlegg. Lik sak i øvelsen: Havblik Røde Kors (T-2608), vurdert til innvilgelse." },
-  { id: "f-invest", tittel: "Fiktiv forskrift § 14 Investering", tekst: "§ 14 gjelder varige driftsmidler og anlegg, for eksempel gressbane og vanningsanlegg. Golfklubben Fjord (T-2621) fikk avslag på anlegg og seniordrift. § 14 brukes ikke på jobbtilbud 4.2." }
+  { id: "f-invest", tittel: "Fiktiv forskrift § 14 Investering", tekst: "§ 14 gjelder varige driftsmidler og anlegg, for eksempel gressbane og vanningsanlegg. Golfklubben Fjord (T-2621) fikk avslag på anlegg og seniordrift. § 14 brukes ikke på jobbtilbud 4.2." },
+  { id: "f-klage", tittel: "Fiktiv praksis § 6 Klage og nytt faktum (øvelse 2026)", tekst: "Nytt faktum som endrer kostnadsfordelingen kan gi ny beregning. Honorar til kursleder er faglig aktivitet, ikke generell administrasjon, når det følger av dokumentasjon. Omgjøring eller opprettholdelse er saksbehandlers. KI fatter ikke vedtak." },
+  { id: "f-slutt", tittel: "Fiktiv veileder § 16 Slutt og tilbakekreving (øvelse 2026)", tekst: "Tilskudd brukt i strid med vilkår kan kreves tilbake forholdsmessig. Dokumentert, godkjent aktivitet holdes utenfor. Tilbakekreving er forslag — ikke innkreving, ikke SvarUt og ikke vedtak." }
 ];
 
 const COCKPIT_PLANTED_RAG = {
@@ -3463,9 +3465,11 @@ const COCKPIT_FALLBACK = {
   }
 };
 
-const COCKPIT_SYSTEM_PROMPT = `Du er forvaltningsrådgiver i en pedagogisk øvelse om tilskudd. Du fatter ALDRI vedtak og kaller aldri svaret ditt et vedtak.
+const COCKPIT_SYSTEM_PROMPT = `Du er forvaltningsrådgiver i en pedagogisk øvelse om tilskudd (prototype 2026). Du fatter ALDRI vedtak og kaller aldri svaret ditt et vedtak. Du er ikke Bufdir.
 
-Du får KUN søknadstekst og RAG-utdrag under. Bruk ikke annen kunnskap. Hvis noe ikke står i søknadsteksten, skriv «ikke oppgitt».
+Du får KUN søknadstekst, saksfakta og RAG-utdrag under. Bruk ikke annen kunnskap. Hvis noe ikke står i teksten du fikk, skriv «ikke oppgitt».
+
+Admin 15 % og revisor 200 000 kr er øvelsesregler 2026, ikke evig forskrift. Utdragene er fiktive — ikke ekte Bufdir-forskrift.
 
 Svar alltid på norsk, faktabasert, i denne malen:
 
@@ -3484,11 +3488,57 @@ Kort innstillingsforslag med henvisning til utdrag. Ikke fatt vedtak.
 Merk første linje: Utkast — ikke vedtak
 `;
 
+const COCKPIT_KLAGE_SYSTEM = `Du er forvaltningsrådgiver i en pedagogisk øvelse. Du fatter ALDRI vedtak og omgjør ingenting. Du er ikke Bufdir.
+
+Du får KUN saksfakta og fiktive RAG-utdrag. Hvis noe mangler, skriv «ikke oppgitt». Admin 15 % er øvelsesregel 2026.
+
+Svar på norsk, faktabasert, i denne malen:
+
+## Vurdering
+Hva det nye faktumet gjør med adminandelen. Pek, ikke avgjør.
+
+## Utkast omgjøring
+Hvis kursleder honorar godtas som fag. Merk: forslag — ikke vedtak.
+
+## Utkast opprettholdelse
+Hvis nytt faktum ikke godtas. Merk: forslag — ikke vedtak.
+`;
+
+const COCKPIT_SLUTT_SYSTEM = `Du er forvaltningsrådgiver i en pedagogisk øvelse. Du fatter ALDRI vedtak og starter ingen innkreving. Du er ikke Bufdir.
+
+Du får KUN saksfakta og fiktive RAG-utdrag. Hvis noe mangler, skriv «ikke oppgitt».
+
+Svar på norsk, faktabasert, i denne malen:
+
+## Vurdering
+Hva som er avvik versus godkjent aktivitet.
+
+## Utkast tilbakekreving
+Forholdsmessig forslag (gressbane vs trening). Merk: forslag — ikke innkreving, ikke vedtak.
+
+## Alternativ
+Hva som kreves hvis mer dokumentasjon kommer. Ikke fatt vedtak.
+`;
+
+const COCKPIT_KLAGE_FALLBACK = {
+  vurdering: "Nytt faktum: 40 000 kr av prosjektledelse var kursleder (fag). Hvis du godtar det, synker adminandelen under 15 % (øvelsesregel 2026) og kuttet blir mindre. Dette er forhåndstekst — ikke et modell-svar.",
+  omgjoring: "Utkast — ikke vedtak\n\nHvis kursleder honorar godtas som aktivitet, beregnes admin på nytt. Avkortingsforslaget reduseres. Saksbehandler avgjør omgjøring.",
+  opprettholdelse: "Utkast — ikke vedtak\n\nHvis nytt faktum ikke dokumenteres, står opprinnelig avkorting mot 15 % admin (øvelse 2026). Ikke vedtak."
+};
+
+const COCKPIT_SLUTT_FALLBACK = {
+  vurdering: "140 000 kr gikk til ny gressbane (investering, ikke godkjent). 80 000 kr gikk til inkluderende trening. Forhåndstekst — ikke et modell-svar.",
+  tilbake: "Utkast — ikke vedtak\n\nForholdsmessig forslag: krev 140 000 kr tilbake. De 80 000 til trening står. Ikke innkreving, ikke SvarUt.",
+  alternativ: "Hvis mer dokumentasjon viser at anlegget likevel var godkjent, må saken vurderes på nytt av saksbehandler. KI fatter ikke vedtak."
+};
+
 const cockpitJournal = [];
 const cockpitWork = {};
 let cockpitSelectedId = null;
 let cockpitTab = "arbeid";
 let cockpitKiSeq = 0;
+const cockpitKlage = { running: false, live: null, error: "", vurdering: "", omgjoring: "", opprettholdelse: "" };
+const cockpitSlutt = { running: false, live: null, error: "", vurdering: "", tilbake: "", alternativ: "" };
 
 function escHtml(s) {
   return String(s ?? "").replace(/[&<>"']/g, (c) => ({
@@ -3581,15 +3631,54 @@ function runGrantRules(sak) {
   return { checks, recommended, flag: extra.flag, kutt: Math.max(0, sak.belop - recommended) };
 }
 
-function cockpitRagFor(sak) {
+function cockpitRagIdsFor(sak) {
   const ids = ["f-soker", "f-admin", "f-revisor", "f-mal"];
   if (sak.id === "T-2622") ids.push("f-jobb", "planted");
   else if (sak.aktivitet.includes("4.2")) ids.push("f-jobb");
-  else if (sak.id === "T-2631") ids.push("f-invest");
-  return ids.map((id) => {
-    if (id === "planted") return COCKPIT_PLANTED_RAG;
-    return COCKPIT_RAG.find((r) => r.id === id);
-  }).filter(Boolean);
+  if (sak.id === "T-2631") ids.push("f-invest", "f-slutt");
+  if (sak.id === "T-2629") ids.push("f-klage");
+  return ids;
+}
+
+function resolveCockpitRag(id) {
+  if (id === "planted") return COCKPIT_PLANTED_RAG;
+  return COCKPIT_RAG.find((r) => r.id === id);
+}
+
+function cockpitRagFor(sak) {
+  return cockpitRagIdsFor(sak).map(resolveCockpitRag).filter(Boolean);
+}
+
+function cockpitKlageRag() {
+  return ["f-admin", "f-klage", "f-mal"].map(resolveCockpitRag).filter(Boolean);
+}
+
+function cockpitSluttRag() {
+  return ["f-invest", "f-slutt", "f-mal"].map(resolveCockpitRag).filter(Boolean);
+}
+
+function ragPanelHtml(items, extraNote) {
+  const list = (items || []).map((r) => {
+    const planted = r.id === "planted-lik";
+    const cls = planted
+      ? "border-fuchsia-300 bg-fuchsia-50"
+      : "border-slate-200 bg-slate-50";
+    const tag = planted
+      ? `<span class="text-[10px] font-bold uppercase tracking-wider text-fuchsia-800">Feil hentet i øvelsen</span>`
+      : `<span class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Fiktivt utdrag</span>`;
+    return `<article class="rounded-lg border ${cls} px-3 py-2">
+      ${tag}
+      <p class="text-xs font-semibold text-slate-900 mt-0.5">${escHtml(r.tittel)}</p>
+      <p class="text-[11px] text-slate-700 leading-relaxed mt-1">${escHtml(r.tekst)}</p>
+    </article>`;
+  }).join("");
+  return `<div class="rounded-xl border border-violet-200 bg-violet-50/60 p-3 space-y-2">
+    <div>
+      <h4 class="text-xs font-bold uppercase tracking-wider text-violet-800">Kilder brukt</h4>
+      <p class="text-[11px] text-violet-950 mt-0.5">Disse fiktive utdragene (veileder/forskrift/øvelsesregler 2026) ble sendt inn til /api/chat. <strong>Ikke ekte Bufdir-forskrift.</strong> ${escHtml(extraNote || "")}</p>
+    </div>
+    ${list}
+  </div>`;
 }
 
 function formatCockpitRag(sak) {
@@ -3654,8 +3743,9 @@ function ensureCockpitWork(id) {
       note: "",
       letter: "",
       pipeline: "regler",
-      kiStatus: "Regler ferdige. Starter KI…",
+      kiStatus: "Regler ferdige. Starter live KI…",
       kiLive: null,
+      kiError: "",
       hitl: null,
       running: false
     };
@@ -3772,13 +3862,20 @@ function renderCockpitCard() {
     const t = ruleTone(c.status);
     return `<div class="rounded-lg border px-2.5 py-2 ${t.cls}"><p class="text-[10px] font-bold uppercase">${t.mark} · ${escHtml(c.label)}</p><p class="text-xs mt-0.5">${escHtml(c.text)}</p></div>`;
   }).join("");
+  const ragItems = cockpitRagFor(sak);
   const kiBanner = work.running
-    ? `<div class="rounded-lg border border-violet-300 bg-violet-50 px-3 py-2 text-xs text-violet-950">KI kjører via /api/chat…</div>`
+    ? `<div class="rounded-lg border border-violet-300 bg-violet-50 px-3 py-2 text-xs text-violet-950" role="status">Live KI kjører via /api/chat… Semantikk, saksnotat og brevutkast kommer fra modellen når kallet lykkes.</div>`
     : work.kiLive === true
-      ? `<div class="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-950">Live KI er aktiv (OpenAI via /api/chat). Forslag — ikke vedtak.</div>`
+      ? `<div class="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-950">Live KI er førstevalg (OpenAI via /api/chat). Semantikk, saksnotat og brev er modellgenerert. <strong>Forslag — ikke vedtak.</strong></div>`
       : work.kiLive === false
-        ? `<div class="rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-950">Live KI er ikke aktiv (ingen nøkkel eller API nede). Dette er forhåndsanalyse — ikke et modell-svar.</div>`
-        : `<div class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-700">Venter på KI-steget.</div>`;
+        ? `<div class="rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-950"><strong>Ikke modell.</strong> /api/chat manglet eller feilet${work.kiError ? ` (${escHtml(work.kiError)})` : ""}. Dette er forhåndsanalyse (fallback). Kjør på nytt når API er oppe.</div>`
+        : `<div class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-700">Venter på live KI-steget.</div>`;
+  const plantedDemo = sak.id === "T-2622" ? `
+    <div class="rounded-lg border border-fuchsia-300 bg-fuchsia-50 px-3 py-2 text-xs text-fuchsia-950 space-y-1">
+      <p class="font-bold">Plantet feil — kan avvises</p>
+      <p>Første demonstrasjonsutkast siterer § 14 og Golfklubben Fjord (T-2621). Det er feil hentet. Jobbtilbud 4.2 skal peke på Havblik Røde Kors (T-2608). Bruk «Avvis med grunn».</p>
+      <p class="font-mono whitespace-pre-wrap">${escHtml(COCKPIT_FALLBACK["T-2622"].brev)}</p>
+    </div>` : "";
   const sem = work.semantic;
   const semHtml = sem ? `
     <table class="w-full text-xs">
@@ -3826,11 +3923,13 @@ function renderCockpitCard() {
           <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500">Kontroll (regler)</h4>
           <div class="space-y-1.5 mt-1">${checksHtml}</div>
         </div>
+        ${ragPanelHtml(ragItems, "Øvelsesregler 2026: admin 15 % og revisor 200 000 kr.")}
         <div>
           <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500">KI-semantikk</h4>
           <div class="mt-1">${semHtml}</div>
         </div>
         ${plantedHtml}
+        ${plantedDemo}
         <label class="block">
           <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Anbefalt beløp (redigerbart, ikke vedtak)</span>
           <input id="cockpitBelop" type="number" value="${work.recommended}" class="mt-1 w-full px-3 py-2 rounded-lg border border-slate-300 text-sm" />
@@ -3876,22 +3975,24 @@ async function runCockpitKI(id, force) {
   if (work.semantic && !force) return;
   work.running = true;
   work.pipeline = "ki";
-  work.kiStatus = "KI analyserer søknadstekst + RAG-utdrag…";
+  work.kiError = "";
+  work.kiStatus = "Live KI analyserer søknadstekst + RAG-utdrag via /api/chat…";
   renderCockpitList();
   renderCockpitCard();
   const seq = ++cockpitKiSeq;
+  const ragItems = cockpitRagFor(sak);
   const rag = formatCockpitRag(sak);
-  const userPrompt = `Saksnummer: ${sak.id}\nOrganisasjon: ${sak.org}\nSøkt beløp: ${sak.belop} kr\nAktivitet: ${sak.aktivitet}\n\nSØKNADSTEKST:\n${sak.soknad}\n\nRAG-UTDRAG (fiktiv veileder/forskrift, øvelse 2026):\n${rag}\n\nSkriv semantikk, saksnotat og brevutkast. Ikke fatt vedtak.`;
+  const userPrompt = `Saksnummer: ${sak.id}\nOrganisasjon: ${sak.org}\nSøkt beløp: ${sak.belop} kr\nAktivitet: ${sak.aktivitet}\nAdminandel i øvelsen: ${COCKPIT_EXTRA[id]?.adminPct ?? "ikke oppgitt"} %\n\nSØKNADSTEKST:\n${sak.soknad}\n\nRAG-UTDRAG (fiktiv veileder/forskrift, øvelse 2026 — ikke Bufdir):\n${rag}\n\nKilder sendt inn: ${ragItems.map((r) => r.tittel).join("; ")}\n\nSkriv semantikk, saksnotat og brevutkast. Ikke fatt vedtak.`;
   journaliser({
     type: "ki-kall",
     sak: id,
-    prompt: force ? "Kjør KI-vurdering på nytt" : "Første KI-vurdering",
-    svar: "Sendt søknadstekst og RAG-utdrag til /api/chat. Modell får ikke fatte vedtak."
+    prompt: force ? "Kjør KI-vurdering på nytt" : "Første live KI-vurdering",
+    svar: `Sendt søknadstekst og ${ragItems.length} RAG-utdrag til /api/chat. Modell får ikke fatte vedtak.`
   });
   try {
     const text = await callModelAPI(userPrompt, COCKPIT_SYSTEM_PROMPT);
-    if (seq !== cockpitKiSeq && cockpitSelectedId === id && work.running === false) {
-      /* newer run may exist */
+    if (seq !== cockpitKiSeq) {
+      return;
     }
     const parsed = parseCockpitKi(text);
     work.semantic = parsed;
@@ -3906,17 +4007,19 @@ async function runCockpitKI(id, force) {
       svar: (parsed.notat || text).slice(0, 280)
     });
   } catch (e) {
+    if (seq !== cockpitKiSeq) return;
     const fb = applyCockpitFallback(id);
     work.semantic = fb;
     work.note = fb.notat;
     work.letter = fb.brev;
     work.kiLive = false;
-    work.kiStatus = "Live KI er ikke aktiv. Viser forhåndsanalyse — ikke et modell-svar.";
+    work.kiError = e?.simulation ? "simulation/ingen nøkkel" : (e?.message || "api_error");
+    work.kiStatus = `Ikke modell. Fallback etter feil i /api/chat (${work.kiError}).`;
     journaliser({
       type: "ki-fallback",
       sak: id,
       prompt: "API uten nøkkel eller feil",
-      svar: "Forhåndsanalyse lastet. Prototypen later ikke som dette er live modell."
+      svar: `Forhåndsanalyse lastet (${work.kiError}). Ikke et modell-svar.`
     });
   }
   work.running = false;
@@ -3998,24 +4101,222 @@ function setCockpitTab(tab) {
       ? "px-3 py-1.5 rounded-lg bg-slate-900 text-white text-xs font-semibold"
       : "px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-xs font-semibold";
   });
+  if (tab === "klage") {
+    renderCockpitKlage();
+    if (!cockpitKlage.vurdering && !cockpitKlage.running) runCockpitKlageKI(false);
+  }
+  if (tab === "slutt") {
+    renderCockpitSlutt();
+    if (!cockpitSlutt.vurdering && !cockpitSlutt.running) runCockpitSluttKI(false);
+  }
+}
+
+function parseKlageKi(text) {
+  const del = (a, b) => (text.split(new RegExp(`##\\s*${a}`, "i"))[1] || "").split(new RegExp(`##\\s*${b}`, "i"))[0].trim();
+  return {
+    vurdering: del("Vurdering", "Utkast omgjøring") || text.trim(),
+    omgjoring: del("Utkast omgjøring", "Utkast opprettholdelse"),
+    opprettholdelse: (text.split(/##\s*Utkast opprettholdelse/i)[1] || "").trim()
+  };
+}
+
+function parseSluttKi(text) {
+  const del = (a, b) => (text.split(new RegExp(`##\\s*${a}`, "i"))[1] || "").split(new RegExp(`##\\s*${b}`, "i"))[0].trim();
+  return {
+    vurdering: del("Vurdering", "Utkast tilbakekreving") || text.trim(),
+    tilbake: del("Utkast tilbakekreving", "Alternativ"),
+    alternativ: (text.split(/##\s*Alternativ/i)[1] || "").trim()
+  };
+}
+
+function cockpitPhaseBanner(state, label) {
+  if (state.running) {
+    return `<div class="rounded-lg border border-violet-300 bg-violet-50 px-3 py-2 text-xs text-violet-950" role="status">${escHtml(label)} kjører via /api/chat…</div>`;
+  }
+  if (state.live === true) {
+    return `<div class="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-950">Live KI er førstevalg. Forslag — ikke vedtak.</div>`;
+  }
+  if (state.live === false) {
+    return `<div class="rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-950"><strong>Ikke modell.</strong> Fallback etter ${escHtml(state.error || "API-feil")}.</div>`;
+  }
+  return `<div class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-700">Venter på live KI.</div>`;
+}
+
+function renderCockpitKlage() {
+  const ragBox = document.getElementById("cockpitKlageRag");
+  const out = document.getElementById("cockpitKlageOutput");
+  const banner = document.getElementById("cockpitKlageBanner");
+  const rerun = document.getElementById("cockpitKlageRerun");
+  if (ragBox) ragBox.innerHTML = ragPanelHtml(cockpitKlageRag(), "Samme fiktive kildetype som sakskortet.");
+  if (banner) banner.innerHTML = cockpitPhaseBanner(cockpitKlage, "Klage-KI");
+  if (rerun) rerun.disabled = cockpitKlage.running;
+  if (!out) return;
+  if (!cockpitKlage.vurdering && cockpitKlage.running) {
+    out.innerHTML = `<p class="text-sm text-slate-600">Modellen skriver utkast til omgjøring og opprettholdelse…</p>`;
+    return;
+  }
+  if (!cockpitKlage.vurdering) {
+    out.innerHTML = `<p class="text-sm text-slate-500">Ingen KI-vurdering ennå.</p>`;
+    return;
+  }
+  out.innerHTML = `
+    <div class="space-y-3 text-sm text-slate-800">
+      <div><h4 class="text-xs font-bold uppercase tracking-wider text-slate-500">Vurdering</h4><p class="whitespace-pre-wrap mt-1">${escHtml(cockpitKlage.vurdering)}</p></div>
+      <div><h4 class="text-xs font-bold uppercase tracking-wider text-slate-500">Utkast omgjøring</h4><p class="whitespace-pre-wrap mt-1 font-mono text-xs">${escHtml(cockpitKlage.omgjoring)}</p></div>
+      <div><h4 class="text-xs font-bold uppercase tracking-wider text-slate-500">Utkast opprettholdelse</h4><p class="whitespace-pre-wrap mt-1 font-mono text-xs">${escHtml(cockpitKlage.opprettholdelse)}</p></div>
+    </div>`;
+}
+
+function renderCockpitSlutt() {
+  const ragBox = document.getElementById("cockpitSluttRag");
+  const out = document.getElementById("cockpitSluttOutput");
+  const banner = document.getElementById("cockpitSluttBanner");
+  const rerun = document.getElementById("cockpitSluttRerun");
+  if (ragBox) ragBox.innerHTML = ragPanelHtml(cockpitSluttRag(), "Samme fiktive kildetype som sakskortet.");
+  if (banner) banner.innerHTML = cockpitPhaseBanner(cockpitSlutt, "Slutt-KI");
+  if (rerun) rerun.disabled = cockpitSlutt.running;
+  if (!out) return;
+  if (!cockpitSlutt.vurdering && cockpitSlutt.running) {
+    out.innerHTML = `<p class="text-sm text-slate-600">Modellen skriver utkast til tilbakekreving…</p>`;
+    return;
+  }
+  if (!cockpitSlutt.vurdering) {
+    out.innerHTML = `<p class="text-sm text-slate-500">Ingen KI-vurdering ennå.</p>`;
+    return;
+  }
+  out.innerHTML = `
+    <div class="space-y-3 text-sm text-slate-800">
+      <div><h4 class="text-xs font-bold uppercase tracking-wider text-slate-500">Vurdering</h4><p class="whitespace-pre-wrap mt-1">${escHtml(cockpitSlutt.vurdering)}</p></div>
+      <div><h4 class="text-xs font-bold uppercase tracking-wider text-slate-500">Utkast tilbakekreving</h4><p class="whitespace-pre-wrap mt-1 font-mono text-xs">${escHtml(cockpitSlutt.tilbake)}</p></div>
+      <div><h4 class="text-xs font-bold uppercase tracking-wider text-slate-500">Alternativ</h4><p class="whitespace-pre-wrap mt-1">${escHtml(cockpitSlutt.alternativ)}</p></div>
+    </div>`;
+}
+
+async function runCockpitKlageKI(force) {
+  if (cockpitKlage.running) return;
+  if (cockpitKlage.vurdering && !force) return;
+  const sak = cockpitSak("T-2629");
+  const ragItems = cockpitKlageRag();
+  cockpitKlage.running = true;
+  cockpitKlage.error = "";
+  renderCockpitKlage();
+  const status = document.getElementById("cockpitKlageStatus");
+  if (status) status.textContent = "Live KI kjører på klagen via /api/chat…";
+  journaliser({
+    type: "ki-kall",
+    sak: "T-2629",
+    prompt: force ? "Kjør klage-KI på nytt" : "Klage-KI (kursleder)",
+    svar: `Sendt klagefakta og ${ragItems.length} RAG-utdrag. Ikke omgjøring, ikke vedtak.`
+  });
+  const prompt = `SAK: T-2629 ${sak?.org || "Fjordheim kulturskolevenner"}
+Søkt: ${sak?.belop || 410000} kr. Admin sto som 32 % (131 200 kr).
+Opprinnelig forslag: avkorting over 15 % admin (øvelsesregel 2026).
+KLAGE — nytt faktum: 40 000 kr av prosjektledelse var honorar til kursleder (faglig aktivitet), ikke generell administrasjon.
+
+SØKNADSTEKST:
+${sak?.soknad || "ikke oppgitt"}
+
+RAG-UTDRAG (fiktivt, øvelse 2026 — ikke Bufdir):
+${ragItems.map((r) => `### ${r.tittel}\n${r.tekst}`).join("\n\n")}
+
+Skriv vurdering, utkast omgjøring og utkast opprettholdelse. Ikke fatt vedtak.`;
+  try {
+    const text = await callModelAPI(prompt, COCKPIT_KLAGE_SYSTEM);
+    const parsed = parseKlageKi(text);
+    cockpitKlage.vurdering = parsed.vurdering;
+    cockpitKlage.omgjoring = parsed.omgjoring || parsed.vurdering;
+    cockpitKlage.opprettholdelse = parsed.opprettholdelse || "";
+    cockpitKlage.live = true;
+    if (status) status.textContent = "Live KI ferdig på klagen. Forslag — ikke vedtak.";
+    journaliser({ type: "ki-svar", sak: "T-2629", prompt: "Klage /api/chat", svar: parsed.vurdering.slice(0, 280) });
+  } catch (e) {
+    cockpitKlage.vurdering = COCKPIT_KLAGE_FALLBACK.vurdering;
+    cockpitKlage.omgjoring = COCKPIT_KLAGE_FALLBACK.omgjoring;
+    cockpitKlage.opprettholdelse = COCKPIT_KLAGE_FALLBACK.opprettholdelse;
+    cockpitKlage.live = false;
+    cockpitKlage.error = e?.simulation ? "simulation/ingen nøkkel" : (e?.message || "api_error");
+    if (status) status.textContent = `Ikke modell. Fallback (${cockpitKlage.error}).`;
+    journaliser({ type: "ki-fallback", sak: "T-2629", prompt: "Klage-API feilet", svar: `Forhåndstekst. ${cockpitKlage.error}` });
+  }
+  cockpitKlage.running = false;
+  renderCockpitKlage();
+}
+
+async function runCockpitSluttKI(force) {
+  if (cockpitSlutt.running) return;
+  if (cockpitSlutt.vurdering && !force) return;
+  const sak = cockpitSak("T-2631");
+  const ragItems = cockpitSluttRag();
+  cockpitSlutt.running = true;
+  cockpitSlutt.error = "";
+  renderCockpitSlutt();
+  const status = document.getElementById("cockpitSluttStatus");
+  if (status) status.textContent = "Live KI kjører på slutt/avvik via /api/chat…";
+  journaliser({
+    type: "ki-kall",
+    sak: "T-2631",
+    prompt: force ? "Kjør slutt-KI på nytt" : "Slutt-KI (mindreforbruk)",
+    svar: `Sendt sluttfakta og ${ragItems.length} RAG-utdrag. Ikke innkreving, ikke vedtak.`
+  });
+  const prompt = `SAK: T-2631 ${sak?.org || "Myr idrettslag anlegg"}
+Innvilget 220 000 kr til inkluderende trening.
+SLUTTREGNSKAP: 140 000 kr til ny gressbane (investering, ikke godkjent) og 80 000 kr til aktivitet. Mindreforbruk på aktivitet, brudd på vilkår på anlegg.
+
+SØKNADSTEKST:
+${sak?.soknad || "ikke oppgitt"}
+
+RAG-UTDRAG (fiktivt, øvelse 2026 — ikke Bufdir):
+${ragItems.map((r) => `### ${r.tittel}\n${r.tekst}`).join("\n\n")}
+
+Skriv vurdering, utkast tilbakekreving og alternativ. Ikke fatt vedtak. Ikke start innkreving.`;
+  try {
+    const text = await callModelAPI(prompt, COCKPIT_SLUTT_SYSTEM);
+    const parsed = parseSluttKi(text);
+    cockpitSlutt.vurdering = parsed.vurdering;
+    cockpitSlutt.tilbake = parsed.tilbake || parsed.vurdering;
+    cockpitSlutt.alternativ = parsed.alternativ || "";
+    cockpitSlutt.live = true;
+    if (status) status.textContent = "Live KI ferdig på slutt. Forslag — ikke innkreving, ikke vedtak.";
+    journaliser({ type: "ki-svar", sak: "T-2631", prompt: "Slutt /api/chat", svar: parsed.vurdering.slice(0, 280) });
+  } catch (e) {
+    cockpitSlutt.vurdering = COCKPIT_SLUTT_FALLBACK.vurdering;
+    cockpitSlutt.tilbake = COCKPIT_SLUTT_FALLBACK.tilbake;
+    cockpitSlutt.alternativ = COCKPIT_SLUTT_FALLBACK.alternativ;
+    cockpitSlutt.live = false;
+    cockpitSlutt.error = e?.simulation ? "simulation/ingen nøkkel" : (e?.message || "api_error");
+    if (status) status.textContent = `Ikke modell. Fallback (${cockpitSlutt.error}).`;
+    journaliser({ type: "ki-fallback", sak: "T-2631", prompt: "Slutt-API feilet", svar: `Forhåndstekst. ${cockpitSlutt.error}` });
+  }
+  cockpitSlutt.running = false;
+  renderCockpitSlutt();
 }
 
 function journaliserCockpitKlage(valg) {
   const el = document.getElementById("cockpitKlageStatus");
   const tekst = valg === "godta"
-    ? "Nytt faktum (kursleder 40 000 kr som fag) er lagt inn i mock-journal. Adminandelen kan regnes på nytt. Ikke omgjøring, ikke vedtak."
-    : "Klagen er avslått i øvelsen. Opprinnelig avkortingsforslag står. Ikke vedtak.";
+    ? "Du tok omgjøringsutkastet inn i mock-journal. Admin kan regnes på nytt. Ikke omgjøring, ikke vedtak."
+    : "Du tok opprettholdelsesutkastet inn i mock-journal. Opprinnelig avkorting står i øvelsen. Ikke vedtak.";
   if (el) el.textContent = tekst;
-  journaliser({ type: "klage", sak: "T-2629", prompt: valg === "godta" ? "Godta nytt faktum" : "Avslå klage", svar: tekst });
+  journaliser({
+    type: "hitl",
+    sak: "T-2629",
+    prompt: valg === "godta" ? "Human-in-the-loop: foreslå omgjøring" : "Human-in-the-loop: foreslå opprettholdelse",
+    svar: tekst
+  });
 }
 
 function journaliserCockpitSlutt(valg) {
   const el = document.getElementById("cockpitSluttStatus");
   const tekst = valg === "tilbake"
-    ? "Utkast til tilbakekreving 140 000 kr (gressbane) er journalført. 80 000 kr aktivitet urørt. Ikke innkreving."
+    ? "Du journalførte tilbakekrevingsutkastet (140 000 kr gressbane). 80 000 kr aktivitet urørt. Ikke innkreving."
     : "Sluttsaken står. Ingen tilbakekreving startet.";
   if (el) el.textContent = tekst;
-  journaliser({ type: "slutt", sak: "T-2631", prompt: valg === "tilbake" ? "Tilbakekrevingsutkast" : "La slutt stå", svar: tekst });
+  journaliser({
+    type: "hitl",
+    sak: "T-2631",
+    prompt: valg === "tilbake" ? "Human-in-the-loop: tilbakekrevingsutkast" : "Human-in-the-loop: la slutt stå",
+    svar: tekst
+  });
 }
 
 function initCockpit() {
@@ -4024,6 +4325,8 @@ function initCockpit() {
   renderCockpitJournal();
   renderCockpitPipeline(null);
   renderCockpitCard();
+  renderCockpitKlage();
+  renderCockpitSlutt();
 }
 
 window.addEventListener('DOMContentLoaded', () => {

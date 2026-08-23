@@ -46,7 +46,7 @@
 
     <div id="cockpitArbeid" class="space-y-5">
       <div id="cockpitPipeline" class="grid grid-cols-2 md:grid-cols-4 gap-2"></div>
-      <p id="cockpitKiStatus" class="text-xs font-mono text-slate-600">Velg en sak. Reglene kjøres først. Deretter KI.</p>
+      <p id="cockpitKiStatus" class="text-xs font-mono text-slate-600">Velg en sak. Reglene kjøres først. Deretter live KI via /api/chat (fallback bare hvis API feiler).</p>
 
       <div class="grid lg:grid-cols-12 gap-4">
         <section class="lg:col-span-4 bg-white rounded-2xl border border-slate-200 shadow-sm p-4 space-y-3">
@@ -74,30 +74,42 @@
     </div>
 
     <div id="cockpitKlage" class="hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-5 sm:p-7 space-y-4">
-      <p class="text-[11px] font-bold uppercase tracking-wider text-violet-700">Hardkodet demo · ikke eget klagesystem</p>
-      <h3 class="text-lg font-bold text-slate-900">Klage på T-2629 · Fjordheim kulturskolevenner</h3>
-      <p class="text-sm text-slate-700 leading-relaxed">Saksbehandler foreslo avkorting fordi prosjektledelse sto som 32 % administrasjon. Klagen kommer med <strong>nytt faktum</strong>: 40 000 kr av den posten var honorar til kursleder (faglig aktivitet), ikke generell administrasjon.</p>
+      <p class="text-[11px] font-bold uppercase tracking-wider text-violet-700">Samme KI-motor · klage T-2629 · ikke eget klagesystem · ikke Bufdir</p>
+      <div class="flex flex-wrap items-start justify-between gap-2">
+        <h3 class="text-lg font-bold text-slate-900">Klage på T-2629 · Fjordheim kulturskolevenner</h3>
+        <button type="button" id="cockpitKlageRerun" onclick="runCockpitKlageKI(true)" class="px-3 py-1.5 rounded-lg bg-violet-800 hover:bg-violet-900 text-white text-xs font-semibold disabled:opacity-40">Kjør KI-vurdering på nytt</button>
+      </div>
+      <p class="text-sm text-slate-700 leading-relaxed">Saksbehandler foreslo avkorting fordi prosjektledelse sto som 32 % administrasjon. Klagen kommer med <strong>nytt faktum</strong>: 40 000 kr av den posten var honorar til kursleder (faglig aktivitet), ikke generell administrasjon. Live KI skriver utkast til omgjøring og opprettholdelse. Du velger. <strong>Ikke vedtak.</strong></p>
       <div class="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-800 space-y-2">
-        <p><strong>Opprinnelig forslag:</strong> kutt over 15 % admin (øvelsesregel 2026).</p>
+        <p><strong>Opprinnelig forslag:</strong> kutt over 15 % admin (øvelsesregel 2026, ikke evig forskrift).</p>
         <p><strong>Nytt faktum:</strong> kursleder er aktivitet, ikke admin. Hvis du godtar det, synker adminandelen og kuttet blir mindre.</p>
-        <p><strong>KI her:</strong> kan peke på det nye faktumet. Den omgjør ikke vedtak. Det finnes ikke noe vedtak i prototypen.</p>
+        <p><strong>Human-in-the-loop:</strong> KI peker. Den omgjør ikke. Det finnes ikke noe vedtak i prototypen.</p>
       </div>
+      <div id="cockpitKlageBanner"></div>
+      <div id="cockpitKlageRag"></div>
+      <div id="cockpitKlageOutput"></div>
       <div class="flex flex-wrap gap-2">
-        <button type="button" onclick="journaliserCockpitKlage('godta')" class="px-4 py-2 rounded-xl bg-slate-900 text-white text-xs font-semibold">Godta nytt faktum (øvelse)</button>
-        <button type="button" onclick="journaliserCockpitKlage('avslå')" class="px-4 py-2 rounded-xl bg-white border border-slate-300 text-xs font-semibold">Avslå klagen (øvelse)</button>
+        <button type="button" onclick="journaliserCockpitKlage('godta')" class="px-4 py-2 rounded-xl bg-slate-900 text-white text-xs font-semibold">Ta omgjøringsutkastet (øvelse)</button>
+        <button type="button" onclick="journaliserCockpitKlage('avslå')" class="px-4 py-2 rounded-xl bg-white border border-slate-300 text-xs font-semibold">Ta opprettholdelse (øvelse)</button>
       </div>
-      <p id="cockpitKlageStatus" class="text-xs text-slate-600">Ingen handling ennå. Ingenting sendes ut av nettleseren.</p>
+      <p id="cockpitKlageStatus" class="text-xs text-slate-600">Ingen handling ennå. Ingenting sendes til Elements eller SvarUt.</p>
     </div>
 
     <div id="cockpitSlutt" class="hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-5 sm:p-7 space-y-4">
-      <p class="text-[11px] font-bold uppercase tracking-wider text-violet-700">Hardkodet demo · ikke sluttmodul i drift</p>
-      <h3 class="text-lg font-bold text-slate-900">Slutt / avvik · T-2631 Myr idrettslag anlegg</h3>
-      <p class="text-sm text-slate-700 leading-relaxed">Innvilget 220 000 kr til inkluderende trening. Sluttregnskapet viser <strong>140 000 kr til ny gressbane</strong> (investering) og 80 000 kr til aktivitet. Mindreforbruk på aktivitet, brudd på vilkår på anlegg.</p>
-      <div class="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-950 space-y-2">
-        <p><strong>Regel i øvelsen:</strong> varig anlegg er ikke godkjent kostnad.</p>
-        <p><strong>Forholdsmessig utkast:</strong> krev 140 000 kr tilbake. De 80 000 som gikk til trening, står.</p>
-        <p><strong>KI:</strong> kan skrive utkast til tilbakekrevingsbrev. Du fatter (i virkeligheten) vedtaket. Her journalføres bare mock.</p>
+      <p class="text-[11px] font-bold uppercase tracking-wider text-violet-700">Samme KI-motor · slutt T-2631 · ikke sluttmodul i drift · ikke Bufdir</p>
+      <div class="flex flex-wrap items-start justify-between gap-2">
+        <h3 class="text-lg font-bold text-slate-900">Slutt / avvik · T-2631 Myr idrettslag anlegg</h3>
+        <button type="button" id="cockpitSluttRerun" onclick="runCockpitSluttKI(true)" class="px-3 py-1.5 rounded-lg bg-violet-800 hover:bg-violet-900 text-white text-xs font-semibold disabled:opacity-40">Kjør KI-vurdering på nytt</button>
       </div>
+      <p class="text-sm text-slate-700 leading-relaxed">Innvilget 220 000 kr til inkluderende trening. Sluttregnskapet viser <strong>140 000 kr til ny gressbane</strong> (investering) og 80 000 kr til aktivitet. Mindreforbruk på aktivitet, brudd på vilkår på anlegg. Live KI skriver forholdsmessig tilbakekrevingsutkast. <strong>Ikke innkreving. Ikke vedtak.</strong></p>
+      <div class="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-950 space-y-2">
+        <p><strong>Regel i øvelsen:</strong> varig anlegg er ikke godkjent kostnad (fiktiv § 14 / § 16, øvelse 2026).</p>
+        <p><strong>Forholdsmessig utkast:</strong> krev 140 000 kr tilbake. De 80 000 som gikk til trening, står.</p>
+        <p><strong>Human-in-the-loop:</strong> du journalfører mock. Ingenting går til innkreving eller SvarUt.</p>
+      </div>
+      <div id="cockpitSluttBanner"></div>
+      <div id="cockpitSluttRag"></div>
+      <div id="cockpitSluttOutput"></div>
       <div class="flex flex-wrap gap-2">
         <button type="button" onclick="journaliserCockpitSlutt('tilbake')" class="px-4 py-2 rounded-xl bg-slate-900 text-white text-xs font-semibold">Journalfør tilbakekrevingsutkast</button>
         <button type="button" onclick="journaliserCockpitSlutt('park')" class="px-4 py-2 rounded-xl bg-white border border-slate-300 text-xs font-semibold">La saken stå</button>
