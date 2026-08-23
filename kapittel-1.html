@@ -71,13 +71,30 @@
               />
             </div>
 
-            <div class="bg-slate-900 p-4 rounded-xl text-white space-y-2" onclick="event.stopPropagation()">
+            <div class="bg-slate-900 p-4 rounded-xl text-white space-y-3" onclick="event.stopPropagation()">
               <div class="flex justify-between items-center text-xs font-mono">
-                <span class="text-slate-400">Tokens:</span>
+                <span class="text-slate-400">1. Tokens</span>
                 <span id="tokenCount" class="text-purple-400 font-bold">0 tokens</span>
               </div>
               <div id="tokenContainer" class="flex flex-wrap gap-1.5 pt-1"></div>
-              <p class="text-[10px] text-slate-400 font-sans leading-relaxed pt-1">Forenklet oppdeling på ord og tegn — ikke ekte BPE/tokenizer som GPT bruker.</p>
+              <p class="text-[10px] text-slate-400 font-sans leading-relaxed">Klikk en token. Så ser du id-nummeret og vektoren — listen med tall datamaskinen regner på.</p>
+
+              <div id="tokenVectorPanel" class="hidden space-y-3 border-t border-slate-700 pt-3">
+                <div>
+                  <p class="text-[10px] font-mono text-slate-400 uppercase tracking-wider mb-1">2. Id-nummer</p>
+                  <p id="tokenIdLine" class="text-xs font-mono text-purple-200"></p>
+                </div>
+                <div>
+                  <p class="text-[10px] font-mono text-slate-400 uppercase tracking-wider mb-1">3. Vektor (8 tall · ekte modeller har flere hundre)</p>
+                  <p id="tokenVectorLine" class="text-[11px] font-mono text-indigo-200 break-all"></p>
+                  <div id="tokenVectorBars" class="grid grid-cols-8 gap-1 mt-2 h-16 items-end"></div>
+                </div>
+                <div>
+                  <p class="text-[10px] font-mono text-slate-400 uppercase tracking-wider mb-1">4. Samme tall som punkt i et 2D-kart</p>
+                  <svg id="tokenVectorMap" viewBox="0 0 320 200" class="w-full h-44 rounded-lg bg-slate-950 border border-slate-700"></svg>
+                  <p class="text-[10px] text-slate-500 font-sans mt-1">Pedagogisk vektor, ikke ekte embedding fra en modell. Samme token lander alltid på samme sted.</p>
+                </div>
+              </div>
             </div>
 
             <div class="hidden modal-details space-y-3">
@@ -86,6 +103,7 @@
                 <li><strong>Sub-word tokenisering:</strong> Ord som er vanlige blir egne tokens, mens sjeldne ord deles opp i mindre stavelser (f.eks. "Språk" + "modell").</li>
                 <li><strong>Hva betyr dette i praksis?</strong> Én token er i snitt ca. 4 bokstaver på engelsk, og litt kortere på norsk (ca 3-3.5 bokstaver).</li>
                 <li><strong>Hvorfor gjør vi dette?</strong> Datamaskiner kan ikke regne på bokstaver direkte – de må gjøre alt om til tall.</li>
+                <li><strong>Vektor:</strong> Id-nummeret slås opp i en tabell og blir en liste med tall. Under boksen kan du se 8 slike tall og samme punkt i et kart. Ekte modeller har mange flere dimensjoner.</li>
               </ul>
             </div>
             <span class="text-[10px] text-purple-600 font-semibold block pt-1">🔍 Klikk for forstørret punktvisning</span>

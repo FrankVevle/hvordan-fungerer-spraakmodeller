@@ -277,6 +277,95 @@ window.addEventListener('hashchange', () => {
   applyHash();
 });
 
+let tokenVizSelected = 0;
+
+function hash32(str) {
+  let h = 2166136261;
+  const t = String(str).toLowerCase();
+  for (let i = 0; i < t.length; i++) h = Math.imul(h ^ t.charCodeAt(i), 16777619);
+  return h >>> 0;
+}
+
+function tokenNumericId(tok) {
+  return 100 + (hash32(tok) % 49000);
+}
+
+function tokenEmbedding(tok, dims = 8) {
+  let s = hash32(tok);
+  const vec = [];
+  for (let i = 0; i < dims; i++) {
+    s = (Math.imul(s, 1664525) + 1013904223) >>> 0;
+    vec.push(((s % 2000) / 1000) - 1);
+  }
+  return vec;
+}
+
+function tokenMapPoint(tok) {
+  const known = {
+    katt: [72, 48], katten: [78, 52], hund: [92, 44], hunden: [98, 50],
+    tre: [248, 150], treet: [256, 142], traktor: [268, 168],
+    konge: [56, 160], dronning: [68, 168], mann: [48, 128], kvinne: [60, 136],
+    språk: [140, 40], modeller: [158, 48], tekst: [170, 70], tokens: [186, 62],
+    tall: [200, 88], vektor: [210, 96]
+  };
+  const key = String(tok).toLowerCase().replace(/[^a-zæøå]/gi, "");
+  if (known[key]) return known[key];
+  const v = tokenEmbedding(tok);
+  return [24 + (v[0] + 1) * 136, 20 + (v[1] + 1) * 80];
+}
+
+function renderTokenVectorViz(visibleTokens) {
+  const panel = document.getElementById("tokenVectorPanel");
+  const idLine = document.getElementById("tokenIdLine");
+  const vecLine = document.getElementById("tokenVectorLine");
+  const bars = document.getElementById("tokenVectorBars");
+  const map = document.getElementById("tokenVectorMap");
+  if (!panel || !idLine || !vecLine || !bars || !map) return;
+
+  if (!visibleTokens.length) {
+    panel.classList.add("hidden");
+    return;
+  }
+  panel.classList.remove("hidden");
+  if (tokenVizSelected >= visibleTokens.length) tokenVizSelected = 0;
+
+  const tok = visibleTokens[tokenVizSelected];
+  const id = tokenNumericId(tok);
+  const vec = tokenEmbedding(tok);
+  idLine.textContent = `"${tok}"  →  id ${id}`;
+  vecLine.textContent = `[ ${vec.map((n) => n.toFixed(2)).join(",  ")} ]`;
+
+  bars.innerHTML = vec.map((n) => {
+    const h = Math.max(8, Math.abs(n) * 56);
+    const cls = n >= 0 ? "bg-violet-400" : "bg-amber-400";
+    return `<div class="flex flex-col justify-end items-center h-full">
+      <div class="w-full rounded-t ${cls}" style="height:${h}px" title="${n.toFixed(2)}"></div>
+    </div>`;
+  }).join("");
+
+  const dots = visibleTokens.map((t, i) => {
+    const [x, y] = tokenMapPoint(t);
+    const on = i === tokenVizSelected;
+    return `<g class="cursor-pointer" onclick="selectTokenViz(${i})">
+      <circle cx="${x}" cy="${y}" r="${on ? 8 : 5}" fill="${on ? "#c084fc" : "#64748b"}" stroke="${on ? "#f5d0fe" : "#334155"}" stroke-width="2"/>
+      <text x="${x + 10}" y="${y + 4}" fill="${on ? "#f5d0fe" : "#94a3b8"}" font-size="10" font-family="ui-monospace, monospace">${t.replace(/</g, "")}</text>
+    </g>`;
+  }).join("");
+  map.innerHTML = `
+    <rect width="320" height="200" fill="#020617"/>
+    <line x1="16" y1="184" x2="304" y2="184" stroke="#334155"/>
+    <line x1="16" y1="16" x2="16" y2="184" stroke="#334155"/>
+    <text x="300" y="196" fill="#64748b" font-size="9" text-anchor="end">dim 1</text>
+    <text x="8" y="14" fill="#64748b" font-size="9">dim 2</text>
+    ${dots}
+  `;
+}
+
+function selectTokenViz(idx) {
+  tokenVizSelected = idx;
+  renderTokens();
+}
+
 function renderTokens() {
   const inputEl = document.getElementById('tokenInput');
   const container = document.getElementById('tokenContainer');
@@ -289,6 +378,7 @@ function renderTokens() {
 
   if (!text.trim()) {
     countEl.textContent = "0 tokens";
+    renderTokenVectorViz([]);
     return;
   }
 
@@ -305,11 +395,16 @@ function renderTokens() {
   ];
 
   visibleTokens.forEach((tok, idx) => {
-    const badge = document.createElement('span');
-    badge.className = `px-2 py-1 rounded-lg border text-xs font-mono shadow-sm ${colors[idx % colors.length]}`;
+    const badge = document.createElement('button');
+    badge.type = "button";
+    const on = idx === tokenVizSelected;
+    badge.className = `px-2 py-1 rounded-lg border text-xs font-mono shadow-sm ${colors[idx % colors.length]} ${on ? "ring-2 ring-white" : ""}`;
     badge.textContent = tok;
+    badge.onclick = () => selectTokenViz(idx);
     container.appendChild(badge);
   });
+
+  renderTokenVectorViz(visibleTokens);
 }
 
 function calculateSoftmaxMath() {
