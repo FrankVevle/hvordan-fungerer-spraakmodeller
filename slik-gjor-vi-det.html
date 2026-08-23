@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Slik er løsningen bygget · Hvordan Fungerer Språkmodeller?</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Fira+Code:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="site.css">
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen pb-32" data-page="slik-gjor-vi-det.html">
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <a href="index.html" class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-purple-600 via-indigo-600 to-blue-500 flex items-center justify-center text-white font-black text-xl shadow-md shadow-purple-200">AI</div>
+        <div>
+          <h1 class="text-lg font-bold text-slate-900 leading-tight">Hvordan Fungerer Språkmodeller?</h1>
+          <p class="text-xs text-slate-500">Forklaring — ikke Bufdir</p>
+        </div>
+      </a>
+      <div class="bg-slate-100 p-1 rounded-xl flex border border-slate-200 text-xs font-semibold">
+        <button id="btnSimple" onclick="toggleMode('simple')" class="px-3.5 py-1.5 rounded-lg bg-white text-purple-700 shadow-sm transition-all font-bold">🟢 Enkel forklaring</button>
+        <button id="btnTech" onclick="toggleMode('tech')" class="px-3.5 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition-all">🔬 Teknisk dypdykk</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-4 sm:px-6 mt-8 space-y-6">
+    <p class="text-[11px] font-bold uppercase tracking-widest text-slate-500">Del 4 · Forklaring</p>
+    <div class="flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-2">
+        <span class="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-800 flex items-center justify-center font-bold text-sm">S</span>
+        <h2 class="text-xl font-bold text-slate-900">Slik er løsningen bygget</h2>
+      </div>
+      <a href="cockpit.html" class="px-3 py-1.5 rounded-lg bg-violet-800 hover:bg-violet-900 text-white text-xs font-semibold">Åpne prototypen →</a>
+    </div>
+
+    <div class="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-950">
+      <strong>Prototype og øvelse.</strong> Ikke Bufdir. Ikke beslutningsstøtte i drift. Ikke automatisert vedtak. Ordningen, forskriften og sakene er fiktive. Admin 15 % og revisor 200 000 kr er <em>øvelsesregler 2026</em>. KI leser, foreslår og gjør forarbeid. <strong>Mennesket fatter vedtaket</strong> — i virkeligheten. Her journalføres bare mock.
+    </div>
+
+    <div class="bg-white p-5 sm:p-7 rounded-2xl border border-slate-200 shadow-sm space-y-5">
+      <p class="text-slate-800 leading-relaxed">Helheten er en <strong>hybrid pipeline</strong>: først det som kan sjekkes med regler, deretter språkmodell med utdrag fra <em>vår</em> mappe, så utkast, så deg. Cockpiten viser det som er bygget nå. Resten av denne siden er forslaget — hva som er på plass, og hva som bare er skissert videre.</p>
+
+      <div class="grid sm:grid-cols-2 gap-2 text-xs">
+        <div class="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-3 text-emerald-950">
+          <p class="font-bold text-sm mb-1">Bygget nå</p>
+          Statisk side + <code class="font-mono">/api/chat</code>. Regler, synlig RAG, live semantikk/saksnotat/brev, klage- og sluttutkast, human-in-the-loop, mock-journal. Fallback merket «ikke modell».
+        </div>
+        <div class="rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 text-slate-800">
+          <p class="font-bold text-sm mb-1">Skissert videre</p>
+          Ekte Elements/Noark, SvarUt, nemnd, friststyring, læring til neste år, sandkasse mot intern mappe. Ikke FastAPI, ikke Next.js, ikke Sikri i denne prototypen.
+        </div>
+      </div>
+    </div>
+
+    <section class="bg-white p-5 sm:p-7 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+      <h3 class="text-base font-bold text-slate-900">1. Hybrid-pipeline</h3>
+      <p class="text-sm text-slate-700 leading-relaxed">Én chat som «gjør alt» er feil form. Saken går i fire steg. Hvis sjekken feiler, går den tilbake. Uten deg blir det ikke sendt noe.</p>
+      <div class="overflow-x-auto rounded-xl border border-slate-200 bg-slate-50 p-4">
+        <div class="min-w-[40rem] flex items-center gap-2 text-xs font-semibold text-center">
+          <div class="flex-1 rounded-lg bg-white border border-slate-200 px-2 py-3">1. Regler<br><span class="font-normal text-slate-500">søker, admin 15 %, revisor 200k</span></div>
+          <span class="text-slate-400">→</span>
+          <div class="flex-1 rounded-lg bg-violet-50 border border-violet-200 px-2 py-3 text-violet-950">2. Semantikk + RAG<br><span class="font-normal">målgruppe, medvirkning, gratis</span></div>
+          <span class="text-slate-400">→</span>
+          <div class="flex-1 rounded-lg bg-white border border-slate-200 px-2 py-3">3. Utkast<br><span class="font-normal text-slate-500">notat, brev, aggregering</span></div>
+          <span class="text-slate-400">→</span>
+          <div class="flex-1 rounded-lg bg-slate-900 text-white px-2 py-3">4. Du<br><span class="font-normal text-slate-300">bekreft, juster, avvis, la stå</span></div>
+        </div>
+      </div>
+      <p class="text-xs text-slate-500">Bygget nå i cockpiten som fire klosser øverst på arbeidslisten. Live KI er førstevalg når <code class="font-mono">/api/chat</code> virker.</p>
+    </section>
+
+    <section class="bg-white p-5 sm:p-7 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+      <h3 class="text-base font-bold text-slate-900">2. Tre moduler</h3>
+      <div class="grid md:grid-cols-3 gap-3">
+        <article class="rounded-xl border border-slate-200 p-4 space-y-2">
+          <p class="text-[11px] font-bold uppercase tracking-wider text-violet-700">Modul A · Regler</p>
+          <p class="text-sm font-semibold text-slate-900">Deterministisk kontroll</p>
+          <p class="text-sm text-slate-600 leading-relaxed">Hardkodet øvelsesregister, adminandel og attest. Samme input gir samme utfall. Ingen modell her. Grønt / gult / rødt er flagg, ikke vedtak.</p>
+          <p class="text-[11px] font-semibold text-emerald-800">Bygget nå</p>
+        </article>
+        <article class="rounded-xl border border-slate-200 p-4 space-y-2">
+          <p class="text-[11px] font-bold uppercase tracking-wider text-violet-700">Modul B · Semantikk</p>
+          <p class="text-sm font-semibold text-slate-900">LLM + synlig RAG</p>
+          <p class="text-sm text-slate-600 leading-relaxed">Modellen scorer målgruppe, medvirkning og gratisprinsipp mot søknadstekst og fiktive utdrag. Mangler teksten noe, skal den skrive «ikke oppgitt». Kildene vises på sakskortet — ikke later som Bufdir-forskrift.</p>
+          <p class="text-[11px] font-semibold text-emerald-800">Bygget nå (live, med fallback)</p>
+        </article>
+        <article class="rounded-xl border border-slate-200 p-4 space-y-2">
+          <p class="text-[11px] font-bold uppercase tracking-wider text-violet-700">Modul C · Generator</p>
+          <p class="text-sm font-semibold text-slate-900">Saksnotat og brevutkast</p>
+          <p class="text-sm text-slate-600 leading-relaxed">Skriver innstillingsforslag og brev merket «Utkast — ikke vedtak». Samme motor brukes på klage (omgjøring vs opprettholdelse) og slutt (tilbakekreving). Plantet feil i T-2622 kan avvises.</p>
+          <p class="text-[11px] font-semibold text-emerald-800">Bygget nå som forslag</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="bg-white p-5 sm:p-7 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+      <h3 class="text-base font-bold text-slate-900">3. Cockpit, kontrolltabell og innstilling</h3>
+      <p class="text-sm text-slate-700 leading-relaxed">Cockpiten er arbeidslisten. Du åpner et sakskort, ser regler og KI side om side, redigerer beløp og tekst, og logger handlingen. <a href="kapittel-9.html" class="font-semibold text-violet-800 underline underline-offset-2">Kapittel 9</a> har den større porteføljen: ramme, kø og innstilling. Der summerer KI. <strong>Du rangerer. Innstilling er ikke vedtak.</strong></p>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm border-collapse">
+          <thead>
+            <tr class="text-left border-b border-slate-200">
+              <th class="py-2 pr-3 font-semibold text-slate-900">Flate</th>
+              <th class="py-2 pr-3 font-semibold text-slate-900">Hva du ser</th>
+              <th class="py-2 font-semibold text-slate-900">Hva det ikke er</th>
+            </tr>
+          </thead>
+          <tbody class="text-slate-700">
+            <tr class="border-b border-slate-100"><td class="py-2.5 pr-3 font-medium">Kontrolltabell</td><td class="py-2.5 pr-3">Formalia, admin, attest, historikk</td><td class="py-2.5">Automatisk avslag</td></tr>
+            <tr class="border-b border-slate-100"><td class="py-2.5 pr-3 font-medium">Sakskort</td><td class="py-2.5 pr-3">Søknad, RAG, semantikk, utkast</td><td class="py-2.5">Ferdig vedtak</td></tr>
+            <tr class="border-b border-slate-100"><td class="py-2.5 pr-3 font-medium">Innstilling (kap. 9)</td><td class="py-2.5 pr-3">Summering mot fiktiv ramme</td><td class="py-2.5">Rangering eller tildeling</td></tr>
+            <tr><td class="py-2.5 pr-3 font-medium">Human-in-the-loop</td><td class="py-2.5 pr-3">Bekreft, juster, avvis, la stå</td><td class="py-2.5">Sending, attest, SvarUt</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="bg-white p-5 sm:p-7 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+      <h3 class="text-base font-bold text-slate-900">4. Klageflyt (øvelse)</h3>
+      <p class="text-sm text-slate-700 leading-relaxed">I forvaltningsloven er ideen at førsteinstansen ser på saken på nytt før den eventuelt går videre. Her er det <strong>fiktiv øvelse</strong> — ikke Bufdirs klageordning, ikke nemnd, ikke ekte frist.</p>
+      <div class="grid md:grid-cols-3 gap-3 text-sm">
+        <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <p class="font-bold text-slate-900">Frist (skissert)</p>
+          <p class="text-slate-600 mt-1 text-xs leading-relaxed">I virkeligheten: klagefrist etter underretning (typisk tre uker, fvl. §§ 28–29-idéen). I prototypen finnes ingen klokke og ingen sending.</p>
+          <p class="text-[11px] font-semibold text-slate-500 mt-2">Skissert videre</p>
+        </div>
+        <div class="rounded-xl border border-violet-200 bg-violet-50 p-4">
+          <p class="font-bold text-violet-950">Omgjøring vs opprettholdelse</p>
+          <p class="text-violet-900 mt-1 text-xs leading-relaxed">T-2629: nytt faktum om kursleder. Live KI skriver to utkast. Du velger. Det er fvl. § 33-<em>idéen</em>: se på nytt faktum først. Ingen omgjøring skjer.</p>
+          <p class="text-[11px] font-semibold text-emerald-800 mt-2">Bygget nå som forslag</p>
+        </div>
+        <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <p class="font-bold text-slate-900">Nemnd (skissert)</p>
+          <p class="text-slate-600 mt-1 text-xs leading-relaxed">Hvis førsteinstansen opprettholder, kan saken i et ekte løp gå til klageinstans. Ikke bygget. Ingen oversendelse.</p>
+          <p class="text-[11px] font-semibold text-slate-500 mt-2">Skissert videre</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="bg-white p-5 sm:p-7 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+      <h3 class="text-base font-bold text-slate-900">5. Sluttkontroll og neste år</h3>
+      <p class="text-sm text-slate-700 leading-relaxed">Når pengene er brukt, sjekker vi mot vilkår. Mindreforbruk og feil post er to ulike ting. T-2631: 80 000 kr trening kan stå, 140 000 kr gressbane er avvik. KI skriver forholdsmessig tilbakekrevingsutkast. <strong>Ikke innkreving.</strong></p>
+      <div class="overflow-x-auto rounded-xl border border-slate-200 bg-slate-50 p-4">
+        <div class="min-w-[32rem] flex items-center gap-2 text-xs font-semibold text-center">
+          <div class="flex-1 rounded-lg bg-white border border-slate-200 px-2 py-3">Sluttregnskap</div>
+          <span class="text-slate-400">→</span>
+          <div class="flex-1 rounded-lg bg-white border border-slate-200 px-2 py-3">Godkjent vs avvik</div>
+          <span class="text-slate-400">→</span>
+          <div class="flex-1 rounded-lg bg-violet-50 border border-violet-200 px-2 py-3 text-violet-950">Utkast tilbakekreving</div>
+          <span class="text-slate-400">→</span>
+          <div class="flex-1 rounded-lg bg-white border border-slate-200 px-2 py-3">Læring neste år<br><span class="font-normal text-slate-500">skissert</span></div>
+        </div>
+      </div>
+      <p class="text-xs text-slate-500">Læring til neste år — mønstre i avvik, adminandel, manglende rapport — er målbilde, ikke en rapportmotor i prototypen.</p>
+    </section>
+
+    <section class="bg-white p-5 sm:p-7 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+      <h3 class="text-base font-bold text-slate-900">6. Arkiv: målbilde, ikke Sikri</h3>
+      <p class="text-sm text-slate-700 leading-relaxed">I et ekte fagsystem ville prompt, svar og din handling gått i journal (Elements / Noark-tanken) via en adapter. <strong>Prototypen gjør ikke det.</strong> Mock-journalen lever i nettleseren. Ingenting sendes til Elements, Noark, Maskinporten eller SvarUt.</p>
+      <div class="grid md:grid-cols-2 gap-3 text-sm">
+        <div class="rounded-xl border border-amber-200 bg-amber-50 p-4 text-amber-950">
+          <p class="font-bold">Nå: mock-adapter</p>
+          <p class="mt-1 text-xs leading-relaxed">Samme felter som kapittel 9: tid, sak, handling, resultat. Forsvinner når du laster siden på nytt. Ærlig merking på sakskortet.</p>
+        </div>
+        <div class="rounded-xl border border-slate-200 bg-slate-50 p-4 text-slate-800">
+          <p class="font-bold">Videre: ekte journal</p>
+          <p class="mt-1 text-xs leading-relaxed">Adapter mot intern arkivtjeneste, innsyn og sporbarhet. Krever avtale, miljø og data vi har kontroll på. Ikke del av denne statiske siden.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="bg-white p-5 sm:p-7 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+      <h3 class="text-base font-bold text-slate-900">7. Pilot og sandkasse</h3>
+      <p class="text-sm text-slate-700 leading-relaxed">Tanken er en <strong>sandkasse</strong>: syntetiske saker, fiktiv veileder, mennesket i loopen, synlige kilder. Først når det er trygt og sporbar, kan man vurdere en lukket pilot mot intern mappe. Denne siden er kurs og prototype — ikke en produksjonspilot.</p>
+      <ul class="text-sm text-slate-700 space-y-1.5 list-disc pl-5">
+        <li>Start med saker vi eier og kan syntetisere.</li>
+        <li>Mål på om saksbehandler avviser feil, ikke på «hvor fort KI skriver».</li>
+        <li>Ingen automatisk sending. Ingen skyggevedtak.</li>
+      </ul>
+    </section>
+
+    <section class="bg-white p-5 sm:p-7 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+      <h3 class="text-base font-bold text-slate-900">Bygget nå, skissert videre</h3>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm border-collapse">
+          <thead>
+            <tr class="text-left border-b border-slate-200">
+              <th class="py-2 pr-3 font-semibold text-slate-900">Del</th>
+              <th class="py-2 pr-3 font-semibold text-slate-900">Status</th>
+              <th class="py-2 font-semibold text-slate-900">Hvor du prøver det</th>
+            </tr>
+          </thead>
+          <tbody class="text-slate-700">
+            <tr class="border-b border-slate-100"><td class="py-2.5 pr-3">Regler + sakskort + HITL</td><td class="py-2.5 pr-3"><span class="text-emerald-800 font-semibold">Bygget</span></td><td class="py-2.5"><a class="font-semibold text-violet-800 underline underline-offset-2" href="cockpit.html">cockpit.html</a></td></tr>
+            <tr class="border-b border-slate-100"><td class="py-2.5 pr-3">Live KI + synlig RAG</td><td class="py-2.5 pr-3"><span class="text-emerald-800 font-semibold">Bygget</span> (fallback hvis API feiler)</td><td class="py-2.5">Sakskortet, merket «ikke modell» ved fallback</td></tr>
+            <tr class="border-b border-slate-100"><td class="py-2.5 pr-3">Klage T-2629</td><td class="py-2.5 pr-3"><span class="text-emerald-800 font-semibold">Bygget</span> som to utkast</td><td class="py-2.5">Fane Klage i cockpiten</td></tr>
+            <tr class="border-b border-slate-100"><td class="py-2.5 pr-3">Slutt T-2631</td><td class="py-2.5 pr-3"><span class="text-emerald-800 font-semibold">Bygget</span> som tilbakekrevingsutkast</td><td class="py-2.5">Fane Slutt i cockpiten</td></tr>
+            <tr class="border-b border-slate-100"><td class="py-2.5 pr-3">Plantet feil T-2622</td><td class="py-2.5 pr-3"><span class="text-emerald-800 font-semibold">Bygget</span></td><td class="py-2.5">Avvis med grunn</td></tr>
+            <tr class="border-b border-slate-100"><td class="py-2.5 pr-3">Portefølje og ramme</td><td class="py-2.5 pr-3"><span class="text-emerald-800 font-semibold">Bygget</span> som øvelse</td><td class="py-2.5"><a class="font-semibold text-violet-800 underline underline-offset-2" href="kapittel-9.html">kapittel-9.html</a></td></tr>
+            <tr class="border-b border-slate-100"><td class="py-2.5 pr-3">RAG/LangGraph-idé</td><td class="py-2.5 pr-3"><span class="text-emerald-800 font-semibold">Forklart</span></td><td class="py-2.5"><a class="font-semibold text-violet-800 underline underline-offset-2" href="kapittel-12.html">kapittel-12.html</a></td></tr>
+            <tr class="border-b border-slate-100"><td class="py-2.5 pr-3">Elements / Noark / SvarUt</td><td class="py-2.5 pr-3 text-slate-500">Skissert — mock nå</td><td class="py-2.5">Mock-journal</td></tr>
+            <tr class="border-b border-slate-100"><td class="py-2.5 pr-3">Nemnd, frist, neste-år-læring</td><td class="py-2.5 pr-3 text-slate-500">Skissert</td><td class="py-2.5">Denne siden</td></tr>
+            <tr><td class="py-2.5 pr-3">Lukket pilot mot intern mappe</td><td class="py-2.5 pr-3 text-slate-500">Skissert</td><td class="py-2.5">Sandkasse-tanken over</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="text-xs text-slate-500">Les mer om hvorfor rekkefølgen er fast i <a href="kapittel-12.html" class="font-semibold text-violet-800 underline underline-offset-2">kapittel 12</a>. Prøv sakene i <a href="cockpit.html" class="font-semibold text-violet-800 underline underline-offset-2">cockpiten</a>.</p>
+    </section>
+  </main>
+
+  <footer class="max-w-6xl mx-auto px-4 sm:px-6 mt-16 pt-8 pb-4 border-t border-slate-200 text-center text-xs text-slate-500 font-medium space-y-1">
+    <p>Pedagogisk prototype. <strong>Ikke et Bufdir-verktøy.</strong> Ikke automatisert vedtak. Sist oppdatert 23. august 2026.</p>
+  </footer>
+
+  <div id="chapterNav" class="fixed bottom-0 inset-x-0 z-50 bg-white/95 backdrop-blur border-t border-slate-200 px-4 py-3 shadow-[0_-8px_24px_rgba(15,23,42,0.08)]">
+    <div class="max-w-6xl mx-auto flex items-center justify-between gap-3">
+      <button type="button" id="btnPrevChapter" onclick="stepChapter(-1)" class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed">← Forrige</button>
+      <div class="text-center min-w-0">
+        <p id="chapterPartLabel" class="text-[11px] font-bold uppercase tracking-widest text-slate-500 truncate">Del 4</p>
+        <p id="chapterStepLabel" class="text-sm font-semibold text-slate-800">Slik er løsningen bygget</p>
+      </div>
+      <button type="button" id="btnNextChapter" onclick="stepChapter(1)" class="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed">Neste →</button>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -21,10 +21,10 @@ Appen er en Vercel-side med `index.html` og serverless-ruten `/api/chat`. Prompt
 
 ## Sider
 
-Hvert punkt er en egen side. Start på `index.html`. Deretter `kapittel-1.html` … `kapittel-10.html`, `kapittel-12.html` og `teknisk.html`. Forrige/Neste og piltaster hopper mellom sidene.
+Hvert punkt er en egen side. Start på `index.html`. Deretter `kapittel-1.html` … `kapittel-10.html`, `kapittel-12.html`, `cockpit.html`, `slik-gjor-vi-det.html` og `teknisk.html`. Forrige/Neste og piltaster hopper mellom sidene.
 
 - **Del 1** — tokens, temperatur, ikke-determinisme, teknisk dypdykk
 - **Del 2** — Prompt Lab, trygg bruk, trafikklys og plikter
 - **Del 3** — kildeforankret KI og fiktiv datalab
-- **Del 4** — tilskuddsløp og personlig agent
+- **Del 4** — tilskuddsløp, cockpit, «slik er løsningen bygget», personlig agent
 - **Del 5** — forslag: lese, foreslå og forarbeid
