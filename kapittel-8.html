@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kapittel 8: Åpne data og KI-øvelse · Hvordan Fungerer Språkmodeller?</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Fira+Code:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="site.css">
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']]
+      },
+      svg: { fontCache: 'global' }
+    };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen pb-32" data-page="kapittel-8.html">
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <a href="index.html" class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-purple-600 via-indigo-600 to-blue-500 flex items-center justify-center text-white font-black text-xl shadow-md shadow-purple-200">AI</div>
+        <div>
+          <h1 class="text-lg font-bold text-slate-900 leading-tight">Hvordan Fungerer Språkmodeller?</h1>
+          <p class="text-xs text-slate-500">Hver side er ett punkt</p>
+        </div>
+      </a>
+      <div class="bg-slate-100 p-1 rounded-xl flex border border-slate-200 text-xs font-semibold">
+        <button id="btnSimple" onclick="toggleMode('simple')" class="px-3.5 py-1.5 rounded-lg bg-white text-purple-700 shadow-sm transition-all font-bold">🟢 Enkel forklaring</button>
+        <button id="btnTech" onclick="toggleMode('tech')" class="px-3.5 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition-all">🔬 Teknisk dypdykk</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-4 sm:px-6 mt-8 space-y-6">
+    <p class="text-[11px] font-bold uppercase tracking-widest text-slate-500">Del 3 · Verktøy i forvaltningen</p>
+    <section class="chapter-section practice-section space-y-6">
+      <div class="flex items-center gap-2">
+        <span class="w-8 h-8 rounded-lg bg-sky-100 text-sky-700 flex items-center justify-center font-bold text-sm">8</span>
+        <h2 class="text-xl font-bold text-slate-900">8. Åpne Data & KI: Tverretatlig Kunnskapsgrunnlag (f.eks. Bufdir)</h2>
+      </div>
+      <div class="section-body space-y-6">
+
+
+      <div class="bg-gradient-to-r from-sky-900 via-indigo-900 to-slate-900 text-white p-6 sm:p-8 rounded-3xl border border-sky-700/50 shadow-xl space-y-4">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sky-500/20 text-sky-300 border border-sky-500/30 text-xs font-semibold uppercase tracking-wider">
+          📊 Datadrevet forebygging & ressursplanlegging
+        </div>
+        <h4 class="text-xl sm:text-2xl font-extrabold text-white leading-snug">
+          Dette er et fiktivt scenario: hvordan man <em>kan</em> koble åpne data (SSB, KOSTRA, Geonorge) med interne fagdata. Det er ikke Bufdirs kunnskapsgrunnlag og ikke et verktøy du skal styre etter.
+        </h4>
+        <p class="text-xs text-sky-100/80 leading-relaxed max-w-3xl">
+          Dette kapittelet er et <strong>pedagogisk scenario</strong> med fiktive levekårstall og KI-generert syntese. Det er ikke et faktisk kunnskapsgrunnlag og skal ikke brukes som beslutningsstøtte.
+        </p>
+      </div>
+
+      <div id="sec8Datalab" onclick="expandCard(this)" class="bg-slate-900 border border-sky-800/80 rounded-3xl p-6 sm:p-8 text-white space-y-6 shadow-2xl relative overflow-hidden cursor-pointer hover:border-sky-400 transition-all">
+        <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-sky-800/60 pb-4">
+          <div>
+            <div class="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-md bg-sky-500/20 text-sky-300 border border-sky-500/30 text-[11px] font-bold uppercase tracking-wider">
+              ⚡ OpenAI + valgfri SSB-kobling
+            </div>
+            <h4 class="text-lg font-bold text-white mt-1">Interaktiv Datalab: Pedagogisk tverretatlig syntese</h4>
+            <p class="text-xs text-slate-300">
+              Velg et fiktivt kommunescenario, huk av datakilder, og hent gjerne folketall fra SSB. KI-svaret er en øvelse — ikke beslutningsstøtte.
+            </p>
+          </div>
+          <div class="flex flex-wrap gap-2 shrink-0" onclick="event.stopPropagation()">
+            <button onclick="fetchLiveSSBData()" class="px-3.5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1.5 transition-all shadow-md">
+              <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+              <span>🌐 Hent fra SSB API</span>
+            </button>
+            <button onclick="runCrossSectorAnalysis()" class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white font-bold text-xs flex items-center gap-2 transition-all shadow-lg">
+              <span>⚡ Kjør tverretatlig KI-analyse</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-6" onclick="event.stopPropagation()">
+          <div class="space-y-2 md:col-span-1">
+            <label class="text-xs font-bold text-sky-300 uppercase tracking-wide">1. Velg Kommune- / Bydelsprofil:</label>
+            <div class="space-y-1.5" id="scenarioRadioGroup">
+              <button onclick="selectDataScenario('bydelA')" id="scenBtnA" class="w-full text-left p-3 rounded-xl border border-sky-500/50 bg-sky-950/80 text-xs font-medium text-slate-200 transition-all">
+                <div class="font-bold text-white">🏙️ Bydel Stovner/Søndre (Storby)</div>
+                <div class="text-[11px] text-slate-400 mt-0.5">Høy trangboddhet & levekårsstress</div>
+              </button>
+              <button onclick="selectDataScenario('kommuneB')" id="scenBtnB" class="w-full text-left p-3 rounded-xl border border-slate-800 bg-slate-950 text-xs font-medium text-slate-400 transition-all hover:border-slate-700">
+                <div class="font-bold text-slate-200">🌊 Kystkommune (Vekst)</div>
+                <div class="text-[11px] text-slate-400 mt-0.5">Rask befolkningstilvekst & kapasitetsspress</div>
+              </button>
+              <button onclick="selectDataScenario('kommuneC')" id="scenBtnC" class="w-full text-left p-3 rounded-xl border border-slate-800 bg-slate-950 text-xs font-medium text-slate-400 transition-all hover:border-slate-700">
+                <div class="font-bold text-slate-200">🌲 Innlands-distrikt</div>
+                <div class="text-[11px] text-slate-400 mt-0.5">Fremtidige demografiske endringer & avstander</div>
+              </button>
+            </div>
+          </div>
+
+          <div class="space-y-2 md:col-span-2">
+            <label class="text-xs font-bold text-sky-300 uppercase tracking-wide">2. Velg datakilder fra andre sektorer som skal kobles:</label>
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              <label class="flex items-center gap-2 p-2.5 rounded-xl bg-slate-950 border border-slate-800 cursor-pointer text-xs hover:border-sky-500/50 transition-all">
+                <input type="checkbox" id="chkSSB" checked onchange="updateSectorDataSelection()" class="rounded border-slate-700 text-sky-500 focus:ring-sky-500">
+                <div>
+                  <div class="font-bold text-sky-300">📊 SSB / KOSTRA</div>
+                  <div class="text-[10px] text-slate-400">Lavinntekt & demografi</div>
+                </div>
+              </label>
+              <label class="flex items-center gap-2 p-2.5 rounded-xl bg-slate-950 border border-slate-800 cursor-pointer text-xs hover:border-sky-500/50 transition-all">
+                <input type="checkbox" id="chkUdir" checked onchange="updateSectorDataSelection()" class="rounded border-slate-700 text-sky-500 focus:ring-sky-500">
+                <div>
+                  <div class="font-bold text-blue-300">🎓 Udir (Skole)</div>
+                  <div class="text-[10px] text-slate-400">Fravær & mobbing</div>
+                </div>
+              </label>
+              <label class="flex items-center gap-2 p-2.5 rounded-xl bg-slate-950 border border-slate-800 cursor-pointer text-xs hover:border-sky-500/50 transition-all">
+                <input type="checkbox" id="chkFHI" checked onchange="updateSectorDataSelection()" class="rounded border-slate-700 text-sky-500 focus:ring-sky-500">
+                <div>
+                  <div class="font-bold text-rose-300">🏥 FHI (Helse)</div>
+                  <div class="text-[10px] text-slate-400">Ungdata & psykisk helse</div>
+                </div>
+              </label>
+              <label class="flex items-center gap-2 p-2.5 rounded-xl bg-slate-950 border border-slate-800 cursor-pointer text-xs hover:border-sky-500/50 transition-all">
+                <input type="checkbox" id="chkNAV" checked onchange="updateSectorDataSelection()" class="rounded border-slate-700 text-sky-500 focus:ring-sky-500">
+                <div>
+                  <div class="font-bold text-amber-300">💼 NAV</div>
+                  <div class="text-[10px] text-slate-400">Sosialhjelp & stønad</div>
+                </div>
+              </label>
+              <label class="flex items-center gap-2 p-2.5 rounded-xl bg-slate-950 border border-slate-800 cursor-pointer text-xs hover:border-sky-500/50 transition-all">
+                <input type="checkbox" id="chkPoliti" onchange="updateSectorDataSelection()" class="rounded border-slate-700 text-sky-500 focus:ring-sky-500">
+                <div>
+                  <div class="font-bold text-purple-300">👮 Politi / Krim</div>
+                  <div class="text-[10px] text-slate-400">Bekymringssamtaler</div>
+                </div>
+              </label>
+              <label class="flex items-center gap-2 p-2.5 rounded-xl bg-slate-950 border border-slate-800 cursor-pointer text-xs hover:border-sky-500/50 transition-all">
+                <input type="checkbox" id="chkGeo" onchange="updateSectorDataSelection()" class="rounded border-slate-700 text-sky-500 focus:ring-sky-500">
+                <div>
+                  <div class="font-bold text-teal-300">🗺️ Geonorge</div>
+                  <div class="text-[10px] text-slate-400">Fritidstilbud & parker</div>
+                </div>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div id="ssbApiStatus" class="hidden p-3 rounded-xl bg-emerald-950/80 border border-emerald-500/40 text-xs flex items-center justify-between text-emerald-300" onclick="event.stopPropagation()"></div>
+
+        <div class="grid md:grid-cols-2 gap-4 pt-2" onclick="event.stopPropagation()">
+          <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-3">
+            <div class="flex justify-between items-center text-xs border-b border-slate-800 pb-2">
+              <span class="font-bold text-sky-400 font-mono uppercase tracking-wide">📥 Innhentede data fra valgte sektorer</span>
+              <span id="dataCountTag" class="text-[10px] bg-sky-500/20 text-sky-300 px-2 py-0.5 rounded font-mono">4 datastrømmer aktive</span>
+            </div>
+            <div id="aggregatedDataList" class="space-y-2 text-xs font-mono text-slate-300"></div>
+          </div>
+
+          <div class="bg-slate-950 p-4 rounded-2xl border border-sky-800/80 space-y-3 relative">
+            <div class="flex justify-between items-center text-xs border-b border-slate-800 pb-2">
+              <span class="font-bold text-indigo-300 font-mono uppercase tracking-wide">🧠 KI-syntese (øvelse, ikke beslutningsstøtte)</span>
+              <span id="aiSynthesisStatus" class="text-[10px] text-emerald-400 font-mono">Status: Klar</span>
+            </div>
+            <div id="aiSynthesisOutput" class="text-xs text-slate-200 leading-relaxed font-mono whitespace-pre-wrap min-h-[140px]">
+              Klikk «⚡ Kjør tverretatlig KI-analyse» over for å generere et helhetlig sårbarhetsbilde og forebyggende anbefalinger basert på de valgte datakildene...
+            </div>
+          </div>
+        </div>
+
+        <div class="hidden modal-details space-y-3">
+          <strong class="text-slate-900 font-bold block text-xl">⚡ Interaktiv Datalab & Live Simulering: Tverretatlig Kunnskapsgrunnlag</strong>
+          <p class="text-slate-800 text-base">Slik kan åpne og interne data kobles i en øvelse — ikke som beslutningsstøtte:</p>
+          <ul class="list-disc pl-5 space-y-2 text-slate-800 text-base">
+            <li><strong>Åpne API-er (f.eks. SSB):</strong> Henter live tall om befolkning, trangboddhet og lavinntekt direkte fra Statistikkbanken.</li>
+            <li><strong>Sektorkobling:</strong> Kombinerer indikatorer fra Udir (skolefravær), FHI (Ungdata), NAV (stønader), Politi og Kartverket.</li>
+            <li><strong>Helhetlig KI-syntese:</strong> Modellen sammenstiller komplekse datasett til lettleste sårbarhetsbilder og forebyggende tiltak for forvaltningen.</li>
+            <li><strong>Forsvarlig bruk:</strong> Alt skjer på aggregert nivå (geografi/grupper) for å ivareta personvern og unngå individprofilering.</li>
+          </ul>
+        </div>
+        <span class="text-[10px] text-sky-400 font-semibold block pt-1">🔍 Klikk for forstørret popup-visning</span>
+      </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="cardModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md hidden flex items-center justify-center p-4 sm:p-6 transition-all duration-300" onclick="closeCardModal(event)">
+    <div class="bg-white rounded-3xl max-w-3xl w-full p-6 sm:p-10 border border-slate-200 shadow-2xl relative space-y-6 text-slate-900 max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+      <button onclick="closeCardModal()" class="absolute top-5 right-5 w-10 h-10 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-700 font-bold text-base transition-all shadow-sm">✕</button>
+      <div id="cardModalBody" class="space-y-4 pt-1"></div>
+      <div class="pt-4 border-t border-slate-100 flex justify-end">
+        <button onclick="closeCardModal()" class="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs transition-all shadow-md">Lukk forstørret visning</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="max-w-6xl mx-auto px-4 sm:px-6 mt-16 pt-8 pb-4 border-t border-slate-200 text-center text-xs text-slate-500 font-medium space-y-1">
+    <p>Pedagogisk øvelse om språkmodeller og tilskuddsforvaltning. <strong>Ikke et Bufdir-verktøy.</strong> Forskrift, policy, presedens og saker er oppdiktet.</p>
+    <p>Siden er et kursopplegg, ikke beslutningsstøtte og ikke automatisert saksbehandling. Sist oppdatert 23. august 2026.</p>
+  </footer>
+
+  <div id="chapterNav" class="fixed bottom-0 inset-x-0 z-50 bg-white/95 backdrop-blur border-t border-slate-200 px-4 py-3 shadow-[0_-8px_24px_rgba(15,23,42,0.08)]">
+    <div class="max-w-6xl mx-auto flex items-center justify-between gap-3">
+      <button type="button" id="btnPrevChapter" onclick="stepChapter(-1)" class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed">← Forrige</button>
+      <div class="text-center min-w-0">
+        <p id="chapterPartLabel" class="text-[11px] font-bold uppercase tracking-widest text-slate-500 truncate">Del 3 · Verktøy i forvaltningen</p>
+        <p id="chapterStepLabel" class="text-sm font-semibold text-slate-800">Kapittel 8: Åpne data og KI-øvelse</p>
+      </div>
+      <button type="button" id="btnNextChapter" onclick="stepChapter(1)" class="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed">Neste →</button>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

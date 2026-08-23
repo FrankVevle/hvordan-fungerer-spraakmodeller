@@ -8,6 +8,33 @@ let currentScenIdx = 0;
 let currentMode = 'simple';
 let currentChapterIdx = 0;
 
+const SITE_PAGES = [
+  { file: "index.html", title: "Oversikt", part: "Start" },
+  { file: "kapittel-1.html", title: "Kapittel 1 · Tokens og ordkart", part: "Del 1" },
+  { file: "kapittel-2.html", title: "Kapittel 2 · Neste ord og temperatur", part: "Del 1" },
+  { file: "kapittel-3.html", title: "Kapittel 3 · Ikke-determinisme", part: "Del 1" },
+  { file: "teknisk.html", title: "Teknisk dypdykk", part: "Del 1", tech: true },
+  { file: "kapittel-4.html", title: "Kapittel 4 · Prompt Lab", part: "Del 2" },
+  { file: "kapittel-5.html", title: "Kapittel 5 · Trygg bruk", part: "Del 2" },
+  { file: "kapittel-6.html", title: "Kapittel 6 · Trafikklys og plikter", part: "Del 2" },
+  { file: "kapittel-7.html", title: "Kapittel 7 · Kildeforankret KI", part: "Del 3" },
+  { file: "kapittel-8.html", title: "Kapittel 8 · Åpne data-øvelse", part: "Del 3" },
+  { file: "kapittel-9.html", title: "Kapittel 9 · Tilskuddsløpet", part: "Del 4" },
+  { file: "kapittel-10.html", title: "Kapittel 10 · Personlig agent", part: "Del 4" },
+  { file: "kapittel-11.html", title: "Kapittel 11 · Ta med deg", part: "Del 4" }
+];
+
+function currentPageFile() {
+  let name = (window.location.pathname.split("/").pop() || "index.html").split("?")[0];
+  if (!name || name === "presentasjon") return "index.html";
+  if (!name.includes(".")) name += ".html";
+  return name;
+}
+
+function visibleSitePages() {
+  return SITE_PAGES.filter((p) => !p.tech || currentMode === "tech");
+}
+
 async function callModelAPI(promptText, systemPromptText = "") {
   let delay = 800;
   for (let attempt = 0; attempt < 3; attempt++) {
@@ -61,68 +88,70 @@ function toggleMode(mode, opts = {}) {
     if (heroDesc) heroDesc.textContent = "Utdypende teknisk oversikt over Transformer-dekodere, matrisemultiplikasjon, causal masking, KV-cache minneberegning og temperaturskalert Softmax-entropi.";
   }
 
-  if (!opts.keepChapter) showChapter(0);
+  try { localStorage.setItem("guideMode", mode); } catch (_e) { /* ignore */ }
+
+  if (!opts.keepChapter) {
+    const file = currentPageFile();
+    if (mode === "tech" && file !== "teknisk.html") {
+      window.location.href = "teknisk.html";
+      return;
+    }
+    if (mode === "simple" && file === "teknisk.html") {
+      window.location.href = "kapittel-3.html";
+      return;
+    }
+  }
+  syncChapterNav();
 }
 
 function getChapterSections() {
-  return [...document.querySelectorAll('.chapter-section')].filter((sec) => {
-    if (sec.id === 'techDeepDiveSection') return currentMode === 'tech';
-    return true;
-  });
+  return [...document.querySelectorAll(".chapter-section")];
 }
 
-function showChapter(idx, opts = {}) {
-  const chapters = getChapterSections();
-  if (!chapters.length) return;
+function showChapter(idx) {
+  const pages = visibleSitePages();
+  const target = pages[Math.max(0, Math.min(idx, pages.length - 1))];
+  if (target && target.file !== currentPageFile()) window.location.href = target.file;
+}
 
-  currentChapterIdx = Math.max(0, Math.min(idx, chapters.length - 1));
-
-  document.querySelectorAll('.chapter-section').forEach((sec) => {
-    sec.classList.add('hidden');
-  });
-  document.querySelectorAll('.chapter-group').forEach((group) => {
-    group.classList.add('hidden');
-  });
-
-  const active = chapters[currentChapterIdx];
-  active.classList.remove('hidden');
-  const group = active.closest('.chapter-group');
-  if (group) group.classList.remove('hidden');
-
-  if (active.id === 'techDeepDiveSection' && window.MathJax && window.MathJax.typesetPromise) {
-    window.MathJax.typesetPromise([active]);
-  }
-
-  const partEl = document.getElementById('chapterPartLabel');
-  const stepEl = document.getElementById('chapterStepLabel');
-  if (partEl) partEl.textContent = group?.dataset.part || '';
-  if (stepEl) stepEl.textContent = `Kapittel ${currentChapterIdx + 1} av ${chapters.length}`;
-
-  const prev = document.getElementById('btnPrevChapter');
-  const next = document.getElementById('btnNextChapter');
-  if (prev) prev.disabled = currentChapterIdx === 0;
-  if (next) next.disabled = currentChapterIdx === chapters.length - 1;
-
-  const hero = document.getElementById('heroBanner');
-  if (hero) hero.classList.toggle('hidden', currentChapterIdx > 0);
-
-  if (!opts.skipHash) {
-    history.replaceState(null, '', `#kapittel-${currentChapterIdx + 1}`);
-  }
-
-  if (opts.scroll) {
-    active.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
+function syncChapterNav() {
+  const pages = visibleSitePages();
+  const file = currentPageFile();
+  const i = Math.max(0, pages.findIndex((p) => p.file === file));
+  currentChapterIdx = i;
+  const page = pages[i] || SITE_PAGES[0];
+  const partEl = document.getElementById("chapterPartLabel");
+  const stepEl = document.getElementById("chapterStepLabel");
+  if (partEl) partEl.textContent = page.part;
+  if (stepEl) stepEl.textContent = `${page.title} · ${i + 1} av ${pages.length}`;
+  const prev = document.getElementById("btnPrevChapter");
+  const next = document.getElementById("btnNextChapter");
+  if (prev) prev.disabled = i <= 0;
+  if (next) next.disabled = i >= pages.length - 1;
 }
 
 function applyHash(opts = {}) {
-  const raw = (window.location.hash || '').replace(/^#/, '');
+  const raw = (window.location.hash || "").replace(/^#/, "");
   const kap = raw.match(/^kapittel-(\d+)$/);
-  showChapter(kap ? parseInt(kap[1], 10) - 1 : 0, { skipHash: true, ...opts });
+  if (kap && currentPageFile() === "index.html") {
+    window.location.replace(`kapittel-${kap[1]}.html`);
+    return;
+  }
+  if (raw.startsWith("MS-") && currentPageFile() === "kapittel-10.html") {
+    openAgentSak(raw);
+    return;
+  }
+  if (raw.startsWith("T-") && currentPageFile() === "kapittel-9.html") {
+    if (!grantInboxLoaded) loadGrantInbox();
+    openGrantCase(raw);
+  }
 }
 
 function stepChapter(delta) {
-  showChapter(currentChapterIdx + delta, { scroll: true });
+  const pages = visibleSitePages();
+  const i = pages.findIndex((p) => p.file === currentPageFile());
+  const target = pages[i + delta];
+  if (target) window.location.href = target.file;
 }
 
 function closeCardModal(event) {
@@ -2090,16 +2119,18 @@ function setGrantDecision(id, action) {
 
 function goToAgentSak(msId) {
   closeCardModal();
-  const chapters = getChapterSections();
-  const idx = chapters.findIndex((sec) => (sec.querySelector("h2")?.textContent || "").includes("10."));
-  if (idx >= 0) showChapter(idx, { scroll: true });
+  if (currentPageFile() !== "kapittel-10.html") {
+    window.location.href = `kapittel-10.html#${msId}`;
+    return;
+  }
   openAgentSak(msId);
 }
 
 function goToGrantFromAgent(tid) {
-  const chapters = getChapterSections();
-  const idx = chapters.findIndex((sec) => (sec.querySelector("h2")?.textContent || "").includes("9."));
-  if (idx >= 0) showChapter(idx, { scroll: true });
+  if (currentPageFile() !== "kapittel-9.html") {
+    window.location.href = `kapittel-9.html#${tid}`;
+    return;
+  }
   if (!grantInboxLoaded) loadGrantInbox();
   openGrantCase(tid);
 }
@@ -2845,7 +2876,9 @@ function initAgentDesk() {
 }
 
 window.addEventListener('DOMContentLoaded', () => {
-  toggleMode('simple', { keepChapter: true });
+  try { currentMode = localStorage.getItem("guideMode") || "simple"; } catch (_e) { currentMode = "simple"; }
+  toggleMode(currentMode, { keepChapter: true });
+  syncChapterNav();
   applyHash();
   renderTokens();
   setScenario(0);
@@ -2857,4 +2890,7 @@ window.addEventListener('DOMContentLoaded', () => {
   initAgentDesk();
   renderGrantProcessRail();
   renderGrantJournal();
+  if (document.getElementById("techDeepDiveSection") && window.MathJax?.typesetPromise) {
+    window.MathJax.typesetPromise();
+  }
 });

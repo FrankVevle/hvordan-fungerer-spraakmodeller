@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kapittel 3: Hvorfor LLM-er ikke er deterministiske · Hvordan Fungerer Språkmodeller?</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Fira+Code:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="site.css">
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']]
+      },
+      svg: { fontCache: 'global' }
+    };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen pb-32" data-page="kapittel-3.html">
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <a href="index.html" class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-purple-600 via-indigo-600 to-blue-500 flex items-center justify-center text-white font-black text-xl shadow-md shadow-purple-200">AI</div>
+        <div>
+          <h1 class="text-lg font-bold text-slate-900 leading-tight">Hvordan Fungerer Språkmodeller?</h1>
+          <p class="text-xs text-slate-500">Hver side er ett punkt</p>
+        </div>
+      </a>
+      <div class="bg-slate-100 p-1 rounded-xl flex border border-slate-200 text-xs font-semibold">
+        <button id="btnSimple" onclick="toggleMode('simple')" class="px-3.5 py-1.5 rounded-lg bg-white text-purple-700 shadow-sm transition-all font-bold">🟢 Enkel forklaring</button>
+        <button id="btnTech" onclick="toggleMode('tech')" class="px-3.5 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition-all">🔬 Teknisk dypdykk</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-4 sm:px-6 mt-8 space-y-6">
+    <p class="text-[11px] font-bold uppercase tracking-widest text-slate-500">Del 1 · Slik fungerer modellen</p>
+    <section class="chapter-section guide-section space-y-6">
+      <div class="flex items-center gap-2">
+        <span class="w-8 h-8 rounded-lg bg-fuchsia-100 text-fuchsia-700 flex items-center justify-center font-bold text-sm">3</span>
+        <h2 class="text-xl font-bold text-slate-900">3. Hvorfor er LLM-er ikke-deterministiske? (Variasjon & Presisjon)</h2>
+      </div>
+      <div class="section-body space-y-6">
+
+
+      <div class="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+
+        <div class="space-y-3 border-b border-slate-200 pb-5">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-fuchsia-100 text-fuchsia-800 border border-fuchsia-200 text-xs font-bold uppercase tracking-wider">
+            🎲 Ikke-deterministisk natur (Stokastisk modell)
+          </div>
+          <h4 class="text-lg font-bold text-slate-900">
+            Hvorfor får du ulikt svar hver gang – og hva betyr det når du ber den om en oppgave?
+          </h4>
+          <p class="text-xs sm:text-sm text-slate-600 leading-relaxed">
+            I tradisjonell programvare er koden <strong>deterministisk</strong>: Hvis du taster inn $2 + 2$, får du <em>alltid</em> svar $4$ i eksakt samme regnebane.
+            En språkmodell er derimot en <strong>stokastisk sannsynlighetsberegner</strong>. Fordi den trekkingen baseres på en sannsynlighetsfordeling ($T > 0$), vil selv den <em>eksakt samme prompten</em> føre til at modellen tråkker litt ulike stier i ord-treet hver gang du trykker send.
+          </p>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-4">
+
+          <div onclick="expandCard(this)" class="p-5 rounded-2xl border border-slate-200 bg-slate-50/60 hover:border-fuchsia-400 transition-all cursor-pointer space-y-3">
+            <div class="flex justify-between items-center">
+              <span class="w-7 h-7 rounded-lg bg-indigo-100 text-indigo-700 font-bold text-xs flex items-center justify-center">🔍</span>
+              <span class="text-[10px] bg-indigo-50 text-indigo-700 font-mono px-2 py-0.5 rounded font-bold">Fakta & Søk</span>
+            </div>
+            <h5 class="font-bold text-sm text-slate-900">A. Hente frem informasjon</h5>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              Modellen "slår ikke opp i et leksikon", men genererer tekst fra bunnen. Svaret kan variere i hvilke fakta den trekker frem, eller oppdikte opplysninger (hallusinere) på to helt ulike måter hvis du spør på nytt.
+            </p>
+            <div class="bg-indigo-950/90 text-indigo-200 p-3 rounded-xl text-[11px] font-mono">
+              <strong>Eks:</strong> "Hva sier reglene om..." kan gi tre ulike tolkninger avhengig av formulering.
+            </div>
+            <div class="hidden modal-details space-y-3">
+              <strong class="text-slate-900 font-bold block text-xl">🔍 Hva betyr ikke-determinisme ved informasjonssøk?</strong>
+              <ul class="list-disc pl-5 space-y-2 text-slate-800 text-base">
+                <li><strong>Ingen databasematch:</strong> Modellen "husker" ikke fakta som en tabell. Den gjetter neste ord ut fra sannsynlighet.</li>
+                <li><strong>Varierende faktautvalg:</strong> Ber du om 3 punkter, vil den ofte velge 3 helt forskjellige punkter om du spør på nytt.</li>
+                <li><strong>Risiko for hallusinasjoner:</strong> Fordi trekkingen er stokastisk, kan den plutselig oppdikte en kilde eller et årstall i én kjøring, men ikke i neste.</li>
+                <li><strong>Råd:</strong> Bruk kildeforankrede verktøy (RAG, NotebookLM) når du krever 100 % eksakte fakta.</li>
+              </ul>
+            </div>
+            <span class="text-[10px] text-fuchsia-600 font-semibold block pt-1">🔍 Klikk for forstørret punktvisning</span>
+          </div>
+
+          <div onclick="expandCard(this)" class="p-5 rounded-2xl border border-slate-200 bg-slate-50/60 hover:border-fuchsia-400 transition-all cursor-pointer space-y-3">
+            <div class="flex justify-between items-center">
+              <span class="w-7 h-7 rounded-lg bg-amber-100 text-amber-700 font-bold text-xs flex items-center justify-center">✍️</span>
+              <span class="text-[10px] bg-amber-50 text-amber-700 font-mono px-2 py-0.5 rounded font-bold">Skrive om tekst</span>
+            </div>
+            <h5 class="font-bold text-sm text-slate-900">B. Skrive om brukerens tekst</h5>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              Når du ber den skrive om et vedtak eller et notat til klarspråk, vil nyanser, toneleie og faginnhold skifte. En uheldig ordvalg-variant kan utilsiktet endre det faglige eller juridiske innholdet.
+            </p>
+            <div class="bg-amber-950/90 text-amber-200 p-3 rounded-xl text-[11px] font-mono">
+              <strong>Eks:</strong> "Kan innvilges" kan skifte til "skal innvilges" hvis du er uforsiktig.
+            </div>
+            <div class="hidden modal-details space-y-3">
+              <strong class="text-slate-900 font-bold block text-xl">✍️ Hva betyr ikke-determinisme ved omskriving?</strong>
+              <ul class="list-disc pl-5 space-y-2 text-slate-800 text-base">
+                <li><strong>Nyanseforskyvninger:</strong> Hver omskriving benytter ulike synonymer som kan forandre den opprinnelige meningen i fagtekster eller juridiske dokumenter.</li>
+                <li><strong>Endret struktur:</strong> Modellen kan slå sammen eller fjerne viktige setninger uten at du ber om det.</li>
+                <li><strong>Mennesket i loopen:</strong> Du må alltid lese gjennom den omskrevne teksten og kontrollere at budskapet er 100 % inntakt.</li>
+              </ul>
+            </div>
+            <span class="text-[10px] text-fuchsia-600 font-semibold block pt-1">🔍 Klikk for forstørret punktvisning</span>
+          </div>
+
+          <div onclick="expandCard(this)" class="p-5 rounded-2xl border border-slate-200 bg-slate-50/60 hover:border-fuchsia-400 transition-all cursor-pointer space-y-3">
+            <div class="flex justify-between items-center">
+              <span class="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 font-bold text-xs flex items-center justify-center">⚙️</span>
+              <span class="text-[10px] bg-emerald-50 text-emerald-700 font-mono px-2 py-0.5 rounded font-bold">Instruks & Kode</span>
+            </div>
+            <h5 class="font-bold text-sm text-slate-900">C. Utføre oppgaver & kode</h5>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              Når du ber den løse en flerstegs oppgave eller skrive kode, kan logikken velge helt ulike biblioteker eller algoritme-stier for hver kjøring, noe som gir ulik ytelse.
+            </p>
+            <div class="bg-emerald-950/90 text-emerald-200 p-3 rounded-xl text-[11px] font-mono">
+              <strong>Eks:</strong> Én kjøring gir Python `pandas`, neste kjøring gir standard `csv`.
+            </div>
+            <div class="hidden modal-details space-y-3">
+              <strong class="text-slate-900 font-bold block text-xl">⚙️ Hva betyr ikke-determinisme for oppgaveløsning?</strong>
+              <ul class="list-disc pl-5 space-y-2 text-slate-800 text-base">
+                <li><strong>Varierende løsningsveier:</strong> Modellen kan velge helt ulike metoder eller formater for å løse samme problem.</li>
+                <li><strong>Slik håndterer du det:</strong> Sett temperatur lavt ($T \to 0$), be om faste formater (f.eks. JSON), og gi eksplisitte eksempler (Few-shot).</li>
+              </ul>
+            </div>
+            <span class="text-[10px] text-fuchsia-600 font-semibold block pt-1">🔍 Klikk for forstørret punktvisning</span>
+          </div>
+
+        </div>
+
+        <div onclick="expandCard(this)" class="bg-slate-900 text-white p-5 rounded-2xl space-y-4 border border-fuchsia-900/60 shadow-xl cursor-pointer hover:border-fuchsia-400 transition-all">
+          <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-800 pb-3">
+            <div>
+              <span class="text-xs font-mono text-fuchsia-400 font-bold uppercase tracking-wider">⚡ Live Eksperiment: Test non-determinisme</span>
+              <h5 class="text-sm font-bold text-white mt-0.5">Se hvordan 3 identiske kjøringer av "Skriv om til klarspråk" gir 3 ulike varianter:</h5>
+            </div>
+            <button onclick="event.stopPropagation(); runNonDeterminismDemo()" class="px-4 py-2 rounded-xl bg-fuchsia-600 hover:bg-fuchsia-500 text-white font-bold text-xs transition-all shadow-md shrink-0 flex items-center gap-1.5">
+              <span>🎲 Test 3 identiske kjøringer</span>
+            </button>
+          </div>
+
+          <div class="bg-slate-950 p-3.5 rounded-xl border border-slate-800 text-xs font-mono space-y-1" onclick="event.stopPropagation()">
+            <span class="text-slate-400 block text-[10px] font-bold uppercase">Original tekst innlastet av bruker:</span>
+            <p class="text-slate-200 italic">"Det vises til søknad om stønad. Vilkårene etter fvl. § 14 anses oppfylt, og utbetaling iverksettes f.o.m. neste termin."</p>
+          </div>
+
+          <div id="nonDetRunsOutput" class="grid sm:grid-cols-3 gap-3 font-mono text-xs" onclick="event.stopPropagation()">
+            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-1">
+              <span class="text-fuchsia-400 font-bold text-[11px] block">Kjøring #1:</span>
+              <p class="text-slate-300 text-[11px] leading-relaxed">Klikk på knappen over for å generere varianter...</p>
+            </div>
+            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-1">
+              <span class="text-fuchsia-400 font-bold text-[11px] block">Kjøring #2:</span>
+              <p class="text-slate-300 text-[11px] leading-relaxed">Klikk på knappen over for å generere varianter...</p>
+            </div>
+            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-1">
+              <span class="text-fuchsia-400 font-bold text-[11px] block">Kjøring #3:</span>
+              <p class="text-slate-300 text-[11px] leading-relaxed">Klikk på knappen over for å generere varianter...</p>
+            </div>
+          </div>
+
+          <div class="hidden modal-details space-y-3">
+            <strong class="text-slate-900 font-bold block text-xl">⚡ Live Eksperiment: Non-determinisme i Praksis</strong>
+            <p class="text-slate-800 text-base">Hvorfor gir samme prompt ulike svar fra gang til gang?</p>
+            <ul class="list-disc pl-5 space-y-2 text-slate-800 text-base">
+              <li><strong>Stokastisk ordvalg:</strong> Modellen velger neste token basert på sannsynlighetsfordelingen ($T > 0$).</li>
+              <li><strong>Mønsterfordeling:</strong> Selv med 100 % identisk instruks ("Skriv om til klarspråk"), vil modellen utforske marginalt ulike stier i ord-treet.</li>
+              <li><strong>Konsekvens for saksbehandling:</strong> Hver generert variant vil bruke litt forskjellige synonymer, setningsstrukturer og formuleringer. Sjekk alltid at faginnholdet ikke er forskjøvet.</li>
+            </ul>
+          </div>
+          <p class="text-[11px] text-fuchsia-200/90">I kapittel 9 ser du det samme på et tilskuddsbrev: tre kjøringer, samme beløp, ulik ordlyd — derfor kan ikke modellen være vedtaket.</p>
+          <span class="text-[10px] text-fuchsia-400 font-semibold block pt-1">🔍 Klikk for forstørret popup-visning</span>
+        </div>
+
+      </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="cardModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md hidden flex items-center justify-center p-4 sm:p-6 transition-all duration-300" onclick="closeCardModal(event)">
+    <div class="bg-white rounded-3xl max-w-3xl w-full p-6 sm:p-10 border border-slate-200 shadow-2xl relative space-y-6 text-slate-900 max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+      <button onclick="closeCardModal()" class="absolute top-5 right-5 w-10 h-10 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-700 font-bold text-base transition-all shadow-sm">✕</button>
+      <div id="cardModalBody" class="space-y-4 pt-1"></div>
+      <div class="pt-4 border-t border-slate-100 flex justify-end">
+        <button onclick="closeCardModal()" class="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs transition-all shadow-md">Lukk forstørret visning</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="max-w-6xl mx-auto px-4 sm:px-6 mt-16 pt-8 pb-4 border-t border-slate-200 text-center text-xs text-slate-500 font-medium space-y-1">
+    <p>Pedagogisk øvelse om språkmodeller og tilskuddsforvaltning. <strong>Ikke et Bufdir-verktøy.</strong> Forskrift, policy, presedens og saker er oppdiktet.</p>
+    <p>Siden er et kursopplegg, ikke beslutningsstøtte og ikke automatisert saksbehandling. Sist oppdatert 23. august 2026.</p>
+  </footer>
+
+  <div id="chapterNav" class="fixed bottom-0 inset-x-0 z-50 bg-white/95 backdrop-blur border-t border-slate-200 px-4 py-3 shadow-[0_-8px_24px_rgba(15,23,42,0.08)]">
+    <div class="max-w-6xl mx-auto flex items-center justify-between gap-3">
+      <button type="button" id="btnPrevChapter" onclick="stepChapter(-1)" class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed">← Forrige</button>
+      <div class="text-center min-w-0">
+        <p id="chapterPartLabel" class="text-[11px] font-bold uppercase tracking-widest text-slate-500 truncate">Del 1 · Slik fungerer modellen</p>
+        <p id="chapterStepLabel" class="text-sm font-semibold text-slate-800">Kapittel 3: Hvorfor LLM-er ikke er deterministiske</p>
+      </div>
+      <button type="button" id="btnNextChapter" onclick="stepChapter(1)" class="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed">Neste →</button>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

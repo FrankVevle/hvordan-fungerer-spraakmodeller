@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kapittel 6: Trafikklys og særlige plikter · Hvordan Fungerer Språkmodeller?</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Fira+Code:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="site.css">
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']]
+      },
+      svg: { fontCache: 'global' }
+    };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen pb-32" data-page="kapittel-6.html">
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <a href="index.html" class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-purple-600 via-indigo-600 to-blue-500 flex items-center justify-center text-white font-black text-xl shadow-md shadow-purple-200">AI</div>
+        <div>
+          <h1 class="text-lg font-bold text-slate-900 leading-tight">Hvordan Fungerer Språkmodeller?</h1>
+          <p class="text-xs text-slate-500">Hver side er ett punkt</p>
+        </div>
+      </a>
+      <div class="bg-slate-100 p-1 rounded-xl flex border border-slate-200 text-xs font-semibold">
+        <button id="btnSimple" onclick="toggleMode('simple')" class="px-3.5 py-1.5 rounded-lg bg-white text-purple-700 shadow-sm transition-all font-bold">🟢 Enkel forklaring</button>
+        <button id="btnTech" onclick="toggleMode('tech')" class="px-3.5 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition-all">🔬 Teknisk dypdykk</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-4 sm:px-6 mt-8 space-y-6">
+    <p class="text-[11px] font-bold uppercase tracking-widest text-slate-500">Del 2 · Bruk den smart og trygt</p>
+    <section class="chapter-section practice-section space-y-6">
+      <div class="flex items-center gap-2">
+        <span class="w-8 h-8 rounded-lg bg-rose-100 text-rose-700 flex items-center justify-center font-bold text-sm">6</span>
+        <h2 class="text-xl font-bold text-slate-900">6. Trafikklysmodellen for Data & Personvern</h2>
+      </div>
+      <div class="section-body space-y-6">
+
+
+      <div class="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+        <p class="text-xs sm:text-sm text-slate-600">
+          Klikk på lysene under for å se hva du trygt kan dele, hva du må anonymisere, og hva du aldri må legge inn:
+        </p>
+
+        <div class="grid grid-cols-3 gap-3">
+          <button onclick="setTraffic('green')" id="btnGreen" class="traffic-btn p-4 rounded-2xl bg-emerald-50 border-2 border-emerald-500 text-emerald-800 text-center font-bold text-sm flex flex-col items-center gap-2 shadow-sm">
+            <span class="w-4 h-4 rounded-full bg-emerald-500 shadow-md"></span>
+            🟢 Grønt Lys
+          </button>
+          <button onclick="setTraffic('yellow')" id="btnYellow" class="traffic-btn p-4 rounded-2xl bg-slate-50 border border-slate-200 text-slate-600 text-center font-bold text-sm flex flex-col items-center gap-2 hover:bg-amber-50">
+            <span class="w-4 h-4 rounded-full bg-amber-400 opacity-50"></span>
+            🟡 Gult Lys
+          </button>
+          <button onclick="setTraffic('red')" id="btnRed" class="traffic-btn p-4 rounded-2xl bg-slate-50 border border-slate-200 text-slate-600 text-center font-bold text-sm flex flex-col items-center gap-2 hover:bg-rose-50">
+            <span class="w-4 h-4 rounded-full bg-rose-500 opacity-50"></span>
+            🔴 Rødt Lys
+          </button>
+        </div>
+
+        <div id="trafficDetail" onclick="expandCard(this)" class="p-5 rounded-2xl border bg-slate-50 border-slate-200 text-xs sm:text-sm space-y-2 cursor-pointer hover:border-slate-400 transition-all"></div>
+      </div>
+
+      <div class="bg-gradient-to-r from-slate-900 to-indigo-950 text-white p-6 rounded-2xl border-2 border-amber-400/80 space-y-4 shadow-xl">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2 text-amber-300 font-bold text-base">
+            <span class="text-xl">🏛️</span>
+            <h4>Særskilte plikter for offentlige virksomheter</h4>
+          </div>
+          <span class="text-xs text-amber-300 italic">🔍 Klikk på et kort for forstørret punktvisning</span>
+        </div>
+        <p class="text-xs sm:text-sm text-slate-200 leading-relaxed">
+          Virksomheter som er underlagt <strong>forvaltningsloven</strong>, <strong>offentlighetsloven</strong>, <strong>arkivloven</strong> og <strong>KI-forordningen</strong> (beslutningsstøtte vs. automatisert vedtak) har særskilte plikter. Kortene under er krav. I kapittel 9 øver du innsyn og journal.
+        </p>
+
+        <div class="grid sm:grid-cols-3 gap-3 pt-2">
+
+          <div onclick="expandCard(this)" class="p-4 bg-slate-800/90 rounded-xl border border-amber-400/40 text-xs space-y-2 cursor-pointer hover:scale-[1.02] hover:border-amber-400 transition-all shadow-md">
+            <strong class="text-amber-300 font-bold block text-sm">🔍 Åpenhet og innsyn</strong>
+            <p class="text-slate-300 leading-relaxed">Bruk av KI må ikke stå i veien for kravet om innsyn i saksdokumenter og beslutningsprosesser.</p>
+            <div class="hidden modal-details space-y-2">
+              <strong class="text-amber-300 font-bold block text-xl">📌 Særskilte krav: Åpenhet og innsyn</strong>
+              <ul class="list-disc pl-5 space-y-2 text-slate-200 text-base">
+                <li><strong>Rettslig grunnlag:</strong> Medhjemlet i offentlighetsloven og forvaltningsrettslige ulovfestede prinsipper om transparens.</li>
+                <li><strong>Plikt til å gi innsyn:</strong> Dokumenter, notater eller analyser produsert med KI-støtte er i utgangspunktet omfattet av innsynsretten.</li>
+                <li><strong>Gjennomsiktighet:</strong> Innbyggere har rett til å vite om og hvordan KI er benyttet i behandling av deres saker.</li>
+              </ul>
+            </div>
+            <span class="text-[11px] text-amber-400 font-semibold block pt-1">🔍 Klikk for forstørret punktvisning</span>
+          </div>
+
+          <div onclick="expandCard(this)" class="p-4 bg-slate-800/90 rounded-xl border border-amber-400/40 text-xs space-y-2 cursor-pointer hover:scale-[1.02] hover:border-amber-400 transition-all shadow-md">
+            <strong class="text-amber-300 font-bold block text-sm">⚖️ Saksbehandling & Rettssikkerhet</strong>
+            <p class="text-slate-300 leading-relaxed">Bruk av KI i saksbehandling må være i samsvar med rettssikkerhet, partenes rettigheter og forsvarlig saksbehandling.</p>
+            <div class="hidden modal-details space-y-2">
+              <strong class="text-amber-300 font-bold block text-xl">📌 Særskilte krav: Saksbehandling & Rettssikkerhet</strong>
+              <ul class="list-disc pl-5 space-y-2 text-slate-200 text-base">
+                <li><strong>Forvaltningsloven § 17 (Utredningsplikt):</strong> Saken må være så godt opplyst som mulig før vedtak fattes. KI-genererte påstander må verifiseres.</li>
+                <li><strong>Partenes rettigheter:</strong> Parten har rett til å gjøre seg kjent med sakens opplysninger og uttale seg om KI-vurderinger.</li>
+                <li><strong>Automatiserte avgjørelser:</strong> Helautomatisk saksbehandling krever særskilt lovhjemmel. KI-forordningen skiller beslutningsstøtte (mennesket fatter vedtak) fra automatisert avgjørelse.</li>
+              </ul>
+            </div>
+            <span class="text-[11px] text-amber-400 font-semibold block pt-1">🔍 Klikk for forstørret punktvisning</span>
+          </div>
+
+          <div onclick="expandCard(this)" class="p-4 bg-slate-800/90 rounded-xl border border-amber-400/40 text-xs space-y-2 cursor-pointer hover:scale-[1.02] hover:border-amber-400 transition-all shadow-md">
+            <strong class="text-amber-300 font-bold block text-sm">📁 Arkivering & Dokumentasjon</strong>
+            <p class="text-slate-300 leading-relaxed">Informasjon produsert eller brukt av KI må håndteres i tråd med arkivloven og krav til sporbarhet.</p>
+            <div class="hidden modal-details space-y-2">
+              <strong class="text-amber-300 font-bold block text-xl">📌 Særskilte krav: Arkivering & Dokumentasjon</strong>
+              <ul class="list-disc pl-5 space-y-2 text-slate-200 text-base">
+                <li><strong>Arkivloven:</strong> Dokumenter som inngår i saksbehandlingen (inkludert relevante KI-prompter og svar) skal journalføres og oppbevares.</li>
+                <li><strong>Sporbarhet:</strong> Det må til enhver tid fremgå hvilke versjoner av modeller, kildedata og instruksjoner som har generert et resultat.</li>
+              </ul>
+            </div>
+            <span class="text-[11px] text-amber-400 font-semibold block pt-1">🔍 Klikk for forstørret punktvisning</span>
+          </div>
+
+        </div>
+      </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="cardModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md hidden flex items-center justify-center p-4 sm:p-6 transition-all duration-300" onclick="closeCardModal(event)">
+    <div class="bg-white rounded-3xl max-w-3xl w-full p-6 sm:p-10 border border-slate-200 shadow-2xl relative space-y-6 text-slate-900 max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+      <button onclick="closeCardModal()" class="absolute top-5 right-5 w-10 h-10 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-700 font-bold text-base transition-all shadow-sm">✕</button>
+      <div id="cardModalBody" class="space-y-4 pt-1"></div>
+      <div class="pt-4 border-t border-slate-100 flex justify-end">
+        <button onclick="closeCardModal()" class="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs transition-all shadow-md">Lukk forstørret visning</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="max-w-6xl mx-auto px-4 sm:px-6 mt-16 pt-8 pb-4 border-t border-slate-200 text-center text-xs text-slate-500 font-medium space-y-1">
+    <p>Pedagogisk øvelse om språkmodeller og tilskuddsforvaltning. <strong>Ikke et Bufdir-verktøy.</strong> Forskrift, policy, presedens og saker er oppdiktet.</p>
+    <p>Siden er et kursopplegg, ikke beslutningsstøtte og ikke automatisert saksbehandling. Sist oppdatert 23. august 2026.</p>
+  </footer>
+
+  <div id="chapterNav" class="fixed bottom-0 inset-x-0 z-50 bg-white/95 backdrop-blur border-t border-slate-200 px-4 py-3 shadow-[0_-8px_24px_rgba(15,23,42,0.08)]">
+    <div class="max-w-6xl mx-auto flex items-center justify-between gap-3">
+      <button type="button" id="btnPrevChapter" onclick="stepChapter(-1)" class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed">← Forrige</button>
+      <div class="text-center min-w-0">
+        <p id="chapterPartLabel" class="text-[11px] font-bold uppercase tracking-widest text-slate-500 truncate">Del 2 · Bruk den smart og trygt</p>
+        <p id="chapterStepLabel" class="text-sm font-semibold text-slate-800">Kapittel 6: Trafikklys og særlige plikter</p>
+      </div>
+      <button type="button" id="btnNextChapter" onclick="stepChapter(1)" class="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed">Neste →</button>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

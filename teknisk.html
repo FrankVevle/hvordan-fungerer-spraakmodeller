@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Teknisk: Fra token til neste-token-prediksjon · Hvordan Fungerer Språkmodeller?</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Fira+Code:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="site.css">
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']]
+      },
+      svg: { fontCache: 'global' }
+    };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen pb-32" data-page="teknisk.html" data-tech-page="1">
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <a href="index.html" class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-purple-600 via-indigo-600 to-blue-500 flex items-center justify-center text-white font-black text-xl shadow-md shadow-purple-200">AI</div>
+        <div>
+          <h1 class="text-lg font-bold text-slate-900 leading-tight">Hvordan Fungerer Språkmodeller?</h1>
+          <p class="text-xs text-slate-500">Hver side er ett punkt</p>
+        </div>
+      </a>
+      <div class="bg-slate-100 p-1 rounded-xl flex border border-slate-200 text-xs font-semibold">
+        <button id="btnSimple" onclick="toggleMode('simple')" class="px-3.5 py-1.5 rounded-lg bg-white text-purple-700 shadow-sm transition-all font-bold">🟢 Enkel forklaring</button>
+        <button id="btnTech" onclick="toggleMode('tech')" class="px-3.5 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition-all">🔬 Teknisk dypdykk</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-4 sm:px-6 mt-8 space-y-6">
+    <p class="text-[11px] font-bold uppercase tracking-widest text-slate-500">Del 1 · Teknisk dypdykk</p>
+    <section id="techDeepDiveSection" class="chapter-section guide-section space-y-6">
+      <div class="flex items-center gap-2">
+        <span class="w-8 h-8 rounded-lg bg-purple-900 text-white flex items-center justify-center font-bold text-sm">🔬</span>
+        <h2 class="text-xl font-bold text-slate-900">Teknisk Dypdykk: Fra token til neste-token-prediksjon</h2>
+      </div>
+            <div class="section-body space-y-8">
+
+        <div class="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+          <p class="text-[11px] font-mono font-bold uppercase tracking-widest text-purple-700">Teknisk artikkel · decoder-only transformer</p>
+          <h3 class="text-2xl sm:text-3xl font-extrabold text-slate-900">Slik er en moderne LLM faktisk bygget</h3>
+          <p class="text-base text-slate-700 leading-relaxed">
+            En LLM er en <strong>autoregressiv dekoder</strong>. Den lærer $P(x_i \mid x_{1:i-1})$ og trekker ett token om gangen. Det finnes ikke et internt leksikon, ingen separat «tenkemotor» og ingen sannhetsgaranti. Alt som skjer, er at residualstrømmen oppdateres gjennom $N$ like blokker, og at siste vektor projiseres til logits over vokabularet.
+          </p>
+          <p class="text-base text-slate-700 leading-relaxed">
+            Standardstabelen i GPT/LLaMA-familien er: <strong>tokeniser → embed + RoPE → $N\times$(RMSNorm → attention → residual → RMSNorm → FFN → residual) → final norm → unembed → softmax / sampling</strong>.
+          </p>
+        </div>
+
+        <div class="bg-slate-900 text-white p-6 sm:p-8 rounded-3xl border border-purple-800/50 space-y-5">
+          <h3 class="text-xl font-extrabold">Forward-pass: syv steg, én løkke</h3>
+          <ol class="space-y-3 text-sm sm:text-base text-slate-200 leading-relaxed list-decimal pl-6">
+            <li><strong>Tokeniser (BPE):</strong> rå tekst blir en sekvens av heltall $t_1,\dots,t_T$. Norsk har høyere «fertility» enn engelsk: samme innhold bruker flere tokens og spiser mer av kontekstvinduet.</li>
+            <li><strong>Embed:</strong> oppslag $E[t] \in \mathbb{R}^{d}$. Posisjon kodes ikke som et additivt vektorledd i LLaMA, men som rotasjon av $Q$ og $K$ (RoPE).</li>
+            <li><strong>$N$ identiske blokker:</strong> typisk 32 (8B) til 80–126 (70B/405B). Hver blokk gjør attention og et SwiGLU-FFN, begge med Pre-RMSNorm og residual-addisjon.</li>
+            <li><strong>Final RMSNorm</strong> på residualstrømmen.</li>
+            <li><strong>Unembed:</strong> $z = h W_U^\top \in \mathbb{R}^{V}$. $V$ er vokabularstørrelsen (ofte 32k–128k+).</li>
+            <li><strong>Softmax med temperatur:</strong> $p_i = e^{z_i/T} / \sum_j e^{z_j/T}$.</li>
+            <li><strong>Sample og append:</strong> trekk $x_{t+1}$, putt det bakerst, gjenta. Det er hele «samtalen».</li>
+          </ol>
+          <div class="math-formula text-sm text-center">$$P(x_{1:T})=\prod_{i=1}^{T} P_\theta(x_i \mid x_{1:i-1})$$</div>
+        </div>
+
+        <div class="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+          <h3 class="text-xl font-extrabold text-slate-900">1. Residualstrøm, Pre-LN og RMSNorm</h3>
+          <p class="text-base text-slate-700 leading-relaxed">
+            Informasjonen bor i residualstrømmen $x \in \mathbb{R}^{T \times d}$. Attention og FFN skriver <em>endringer</em> inn i den, de erstatter den ikke. Pre-LN (norm før sublaget) er mer stabilt i dype stabler enn Post-LN fra originalpapiret.
+          </p>
+          <div class="math-formula text-sm text-center">
+            $$\mathrm{RMSNorm}(x)=\frac{x}{\sqrt{\tfrac{1}{d}\sum_i x_i^2+\varepsilon}}\odot\gamma,\qquad x \leftarrow x + f(\mathrm{Norm}(x))$$
+          </div>
+          <ul class="list-disc pl-6 space-y-2 text-slate-800 text-sm sm:text-base">
+            <li>To residualer per blokk: først attention, så FFN.</li>
+            <li>RMSNorm sentrerer ikke (ingen middelverdi), bare RMS + lærbar skala $\gamma$. Ingen bias i LLaMA-stil.</li>
+            <li>Gradientene kan gå «rett gjennom» addisjonen, derfor kan man stable titalls lag.</li>
+          </ul>
+        </div>
+
+        <div class="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+          <h3 class="text-xl font-extrabold text-slate-900">2. Scaled dot-product attention og kausal maske</h3>
+          <p class="text-base text-slate-700 leading-relaxed">
+            Hvert token lager en <em>query</em> («hva leter jeg etter?»), alle tokens lager <em>keys</em> («hva tilbyr jeg?») og <em>values</em> («hva sender jeg videre?»). Prikkproduktet $QK^\top$ er en $T\times T$-matrise med relevansskår.
+          </p>
+          <div class="math-formula text-sm text-center">
+            $$\mathrm{Attention}(Q,K,V)=\mathrm{Softmax}\!\left(\frac{QK^\top}{\sqrt{d_k}}+M\right)V,\quad Q=XW_Q,\; K=XW_K,\; V=XW_V$$
+          </div>
+          <ul class="list-disc pl-6 space-y-2 text-slate-800 text-sm sm:text-base">
+            <li><strong>Skalering $\sqrt{d_k}$:</strong> uten den metter Softmax, og gradientene dør ($d_k$ er typisk 64–128).</li>
+            <li><strong>Kausal maske $M$:</strong> $M_{ij}=-\infty$ for $j>i$, så token $i$ ikke kan lese fremtiden. Det er hele «venstre-til-høyre»-egenskapen.</li>
+            <li><strong>Kompleksitet:</strong> naivt $\mathcal{O}(T^2 d)$ tid og minne. FlashAttention regner softmax i fliser og materialiserer ikke hele matrisen.</li>
+            <li><strong>Multi-head:</strong> $h$ parallelle hoder med $d_k=d/h$, konkateneres og projiseres med $W_O$. Ulike hoder spesialiserer seg (syntaks, kjerneferanse, posisjon).</li>
+          </ul>
+        </div>
+
+        <div class="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+          <h3 class="text-xl font-extrabold text-slate-900">3. GQA: hvorfor 70B-modellen ikke har 64 KV-hoder</h3>
+          <p class="text-base text-slate-700 leading-relaxed">
+            Full multi-head attention lagrer K og V for hvert hode i cachen. Det blir fort gigabytes ved lang kontekst. <strong>Grouped-Query Attention</strong> (LLaMA-3) lar mange query-hoder dele få KV-hoder.
+          </p>
+          <div class="math-formula text-sm text-center">$$\mathrm{MHA}=\mathrm{Concat}(\mathrm{head}_1,\dots,\mathrm{head}_h)W_O$$</div>
+          <ul class="list-disc pl-6 space-y-2 text-slate-800 text-sm sm:text-base">
+            <li><strong>MHA:</strong> like mange K/V som Q. Best kvalitet, størst cache.</li>
+            <li><strong>MQA:</strong> én delt K/V. Billigst, noe tap.</li>
+            <li><strong>GQA:</strong> f.eks. 64 Q-hoder og 8 KV-hoder. Det er det KV-kalkulatoren under antar for 8B/70B.</li>
+            <li>I decode-fasen er flaskehalsen nesten alltid <em>minnebåndbredde</em> til KV, ikke FLOPs.</li>
+          </ul>
+        </div>
+
+        <div class="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+          <h3 class="text-xl font-extrabold text-slate-900">4. RoPE: posisjon som rotasjon, ikke som et additivt vektorledd</h3>
+          <p class="text-base text-slate-700 leading-relaxed">
+            Original Transformer la en sinus/cosinus-vektor til embeddningen. RoPE roterer 2D-plan i $Q$ og $K$ med vinkel proporsjonal med tokenindeks $m$. Prikkproduktet avhenger da bare av <em>relativ</em> avstand $n-m$.
+          </p>
+          <div class="math-formula text-sm text-center">$$\langle R_m q,\, R_n k\rangle = q^\top R_{n-m} k,\qquad \theta_i = 10000^{-2i/d}$$</div>
+          <ul class="list-disc pl-6 space-y-2 text-slate-800 text-sm sm:text-base">
+            <li>Lave kanaler roterer sakte (lang rekkevidde). Høye kanaler roterer raskt (lokal syntaks).</li>
+            <li>Ren RoPE faller utenfor treningsvinduet. YaRN / NTK-skalering tøyer $\theta$ for lengre kontekst.</li>
+            <li>ALiBi (linear bias på skårene) er et enklere alternativ, mindre brukt i nyere LLaMA-linjer.</li>
+          </ul>
+        </div>
+
+        <div class="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+          <h3 class="text-xl font-extrabold text-slate-900">5. SwiGLU-FFN: der de fleste parametrene sitter</h3>
+          <p class="text-base text-slate-700 leading-relaxed">
+            Etter attention kommer et posisjonsvist flerlagsnett. I LLaMA/PaLM er det en <strong>gated</strong> enhet: én gren lager porten, den andre innholdet. Ofte ~2/3 av alle vekter bor her, ikke i attention.
+          </p>
+          <div class="math-formula text-sm text-center">
+            $$\mathrm{FFN}(x)=\bigl(\mathrm{SiLU}(xW_g)\odot xW_1\bigr)W_2,\qquad \mathrm{SiLU}(x)=x\cdot\sigma(x)$$
+          </div>
+          <ul class="list-disc pl-6 space-y-2 text-slate-800 text-sm sm:text-base">
+            <li>Bredde typisk $\approx 4d$, eller $\tfrac{8}{3}d$ med SwiGLU for å holde parameterantallet likt klassisk FFN.</li>
+            <li>SiLU/Swish er glatt og unngår «døde» ReLU-enheter.</li>
+            <li>I MoE (Mixtral) erstattes FFN av $E$ eksperter + ruter. Bare $k$ eksperter (f.eks. 2 av 8) kjører per token: høy kapasitet, lavere aktiv compute.</li>
+          </ul>
+        </div>
+
+        <div class="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+          <h3 class="text-xl font-extrabold text-slate-900">6. Trening: CLM-tap, teacher forcing og Chinchilla</h3>
+          <p class="text-base text-slate-700 leading-relaxed">
+            Pretrain er neste-token-prediksjon på trillioner av tokens. Gull-tokenet mates inn som kontekst (teacher forcing), ikke modellens eget sample. Det stabiliserer treningen, men skaper et gap mot inferens (exposure bias).
+          </p>
+          <div class="math-formula text-sm text-center">
+            $$\mathcal{L}_{\mathrm{CLM}}=-\frac{1}{N}\sum_{i=1}^{N}\log P_\theta(x_i\mid x_{1:i-1}),\qquad \mathrm{PPL}=\exp(\mathcal{L})$$
+          </div>
+          <ul class="list-disc pl-6 space-y-2 text-slate-800 text-sm sm:text-base">
+            <li><strong>PPL</strong> er geometrisk snitt av «hvor mange valg» modellen famler mellom. Ikke sammenlignbart på tvers av tokenizer.</li>
+            <li><strong>AdamW</strong>, cosine decay, warmup, gradient clipping, store batcher via accumulation.</li>
+            <li><strong>Chinchilla:</strong> for et gitt compute-budsjett bør antall trenings-tokens skalere omtrent lineært med parametrene (klassisk tommelfinger: ~20 tokens/parameter).</li>
+          </ul>
+        </div>
+
+        <div class="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+          <h3 class="text-xl font-extrabold text-slate-900">7. Etter pretrain: SFT, RLHF og DPO</h3>
+          <p class="text-base text-slate-700 leading-relaxed">
+            Pretrain gir en rå neste-token-maskin. <strong>SFT</strong> lærer format og «vær en assistent» på kuraterte par. <strong>RLHF</strong> trener en belønningsmodell på menneskelige rangeringer og optimaliserer policy med PPO (pluss KL-straff mot SFT). <strong>DPO</strong> dropper belønningsmodellen og lærer direkte fra vinner/taper-svar.
+          </p>
+          <div class="math-formula text-sm text-center">
+            $$\mathcal{L}_{\mathrm{DPO}}=-\log\sigma\!\left(\beta\log\frac{\pi_\theta(y_w\mid x)}{\pi_{\mathrm{ref}}(y_w\mid x)}-\beta\log\frac{\pi_\theta(y_l\mid x)}{\pi_{\mathrm{ref}}(y_l\mid x)}\right)$$
+          </div>
+          <p class="text-base text-slate-700 leading-relaxed">
+            Alignment <em>dreier</em> sannsynlighetsmassen. Den sletter ikke evnen til å fullføre skadelige mønstre. Derfor finnes jailbreaks.
+          </p>
+        </div>
+
+        <div class="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+          <h3 class="text-xl font-extrabold text-slate-900">8. Sampling: temperatur, top-k og top-p</h3>
+          <p class="text-base text-slate-700 leading-relaxed">
+            $T\to 0$ nærmer seg argmax (grådig, mer «faktisk»). Høy $T$ jevner ut. Top-$k$ kutter til $k$ merker. Top-$p$ (nucleus) tar det minste settet med kumulativ sannsynlighet $\ge p$. I en sikker setning kan $S$ være ett token; i en åpen setning mange.
+          </p>
+          <div class="math-formula text-sm text-center">
+            $$p_i=\frac{e^{z_i/T}}{\sum_j e^{z_j/T}},\qquad \text{top-}p=\min\bigl\{S:\sum_{i\in S}p_i\ge p\bigr\}$$
+          </div>
+          <ul class="list-disc pl-6 space-y-2 text-slate-800 text-sm sm:text-base">
+            <li>Repetition/frequency penalty trekker ned tokens som allerede er brukt (mot looper).</li>
+            <li>Beam search holder $B$ hypoteser. Vanlig i oversettelse, sjelden i chat (blir trygt og kjedelig).</li>
+            <li>Selv ved $T=0$ kan GPU-reduksjoner gi mikroskopisk ikke-determinisme.</li>
+          </ul>
+        </div>
+
+        <div class="bg-slate-900 text-white p-6 sm:p-8 rounded-3xl border border-purple-800/50 space-y-4">
+          <h3 class="text-xl font-extrabold">9. Inferens: prefill er compute, decode er minne</h3>
+          <p class="text-sm sm:text-base text-slate-200 leading-relaxed">
+            Prompten kjøres <strong>én gang i parallell</strong> (prefill). Deretter ett token om gangen (decode). KV-cachen lagrer $K$ og $V$ per lag, slik at gamle tokens ikke regnes på nytt.
+          </p>
+          <div class="math-formula text-sm text-center">$$\mathrm{KV}_t=\mathrm{concat}(\mathrm{KV}_{1:t-1},[k_t;v_t])$$</div>
+          <ul class="list-disc pl-6 space-y-2 text-slate-200 text-sm sm:text-base">
+            <li><strong>TTFT</strong> (tid til første token) styres av prefill $\approx\mathcal{O}(T_{\mathrm{prompt}}^2)$.</li>
+            <li><strong>Inter-token latency</strong> styres av hvor fort GPU-en kan lese hele cachen.</li>
+            <li>Kontinuerlig batching (vLLM) fletter nye requests inn mellom decode-steg.</li>
+            <li>Spekulativ dekoding: en liten modell foreslår $k$ tokens, stor modell verifiserer i ett steg.</li>
+          </ul>
+        </div>
+
+        <div class="bg-slate-950 p-6 rounded-2xl border border-purple-800/80 space-y-4 text-white">
+          <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+            <span class="text-xs font-mono font-bold text-purple-400 uppercase tracking-wider">Interaktiv Softmax, entropi og logits</span>
+            <span class="text-[10px] bg-purple-900/60 text-purple-200 px-2 py-0.5 rounded font-mono">Live</span>
+          </div>
+          <p class="text-sm text-slate-300">Endre logits og se hvordan temperaturen (slideren i kapittel 2, eller default $T=0.2$) flytter sannsynlighet og entropi.</p>
+          <div class="grid sm:grid-cols-4 gap-3 font-mono text-xs">
+            <div class="space-y-1 bg-slate-900 p-3 rounded-xl border border-slate-800">
+              <label class="text-slate-400 block text-[11px]">Logit $z_1$ ("treet"):</label>
+              <input type="number" id="logit1" value="4.2" step="0.2" oninput="calculateSoftmaxMath()" class="w-full bg-slate-950 px-2 py-1.5 rounded border border-purple-900 text-purple-300 focus:outline-none">
+            </div>
+            <div class="space-y-1 bg-slate-900 p-3 rounded-xl border border-slate-800">
+              <label class="text-slate-400 block text-[11px]">Logit $z_2$ ("sofaen"):</label>
+              <input type="number" id="logit2" value="2.8" step="0.2" oninput="calculateSoftmaxMath()" class="w-full bg-slate-950 px-2 py-1.5 rounded border border-purple-900 text-purple-300 focus:outline-none">
+            </div>
+            <div class="space-y-1 bg-slate-900 p-3 rounded-xl border border-slate-800">
+              <label class="text-slate-400 block text-[11px]">Logit $z_3$ ("gardinen"):</label>
+              <input type="number" id="logit3" value="1.5" step="0.2" oninput="calculateSoftmaxMath()" class="w-full bg-slate-950 px-2 py-1.5 rounded border border-purple-900 text-purple-300 focus:outline-none">
+            </div>
+            <div class="space-y-1 bg-slate-900 p-3 rounded-xl border border-slate-800">
+              <label class="text-slate-400 block text-[11px]">Logit $z_4$ ("bilen"):</label>
+              <input type="number" id="logit4" value="-0.5" step="0.2" oninput="calculateSoftmaxMath()" class="w-full bg-slate-950 px-2 py-1.5 rounded border border-purple-900 text-purple-300 focus:outline-none">
+            </div>
+          </div>
+          <div id="softmaxOutputDisplay" class="bg-slate-900 p-4 rounded-xl border border-slate-800 font-mono text-xs space-y-2"></div>
+        </div>
+
+        <div class="bg-slate-950 p-6 rounded-2xl border border-purple-800/80 space-y-4 text-white">
+          <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+            <span class="text-xs font-mono font-bold text-purple-400 uppercase tracking-wider">KV-cache og VRAM</span>
+            <span class="text-[10px] bg-purple-900/60 text-purple-200 px-2 py-0.5 rounded font-mono">GPU</span>
+          </div>
+          <p class="text-sm text-slate-300">$2\cdot L\cdot h_{\mathrm{kv}}\cdot d_{\mathrm{head}}\cdot T\cdot b$ byte for K+V (batch 1), pluss vektminne. Prøv 128k-kontekst på 70B: cachen alene blir stor.</p>
+          <div class="grid sm:grid-cols-3 gap-4 font-mono text-xs">
+            <div class="space-y-1 bg-slate-900 p-3 rounded-xl border border-slate-800">
+              <label class="text-slate-400 block text-[11px]">Modellstørrelse:</label>
+              <select id="kvModelSelect" onchange="calculateKVCache()" class="w-full bg-slate-950 px-2 py-1.5 rounded border border-purple-900 text-purple-300 focus:outline-none">
+                <option value="8B">LLaMA-3 8B (32 layers, 8 KV heads)</option>
+                <option value="70B" selected>LLaMA-3 70B (80 layers, 8 KV heads)</option>
+                <option value="405B">LLaMA-3 405B (126 layers, 16 KV heads)</option>
+              </select>
+            </div>
+            <div class="space-y-1 bg-slate-900 p-3 rounded-xl border border-slate-800">
+              <label class="text-slate-400 block text-[11px]">Kontekstlengde (Tokens):</label>
+              <select id="kvSeqLenSelect" onchange="calculateKVCache()" class="w-full bg-slate-950 px-2 py-1.5 rounded border border-purple-900 text-purple-300 focus:outline-none">
+                <option value="4096">4 096 Tokens</option>
+                <option value="32768" selected>32 768 Tokens</option>
+                <option value="131072">131 072 Tokens (128k)</option>
+              </select>
+            </div>
+            <div class="space-y-1 bg-slate-900 p-3 rounded-xl border border-slate-800">
+              <label class="text-slate-400 block text-[11px]">Presisjon / Kvantisering:</label>
+              <select id="kvPrecisionSelect" onchange="calculateKVCache()" class="w-full bg-slate-950 px-2 py-1.5 rounded border border-purple-900 text-purple-300 focus:outline-none">
+                <option value="2">FP16 / BF16 (2 Bytes/param)</option>
+                <option value="1" selected>FP8 / INT8 (1 Byte/param)</option>
+              </select>
+            </div>
+          </div>
+          <div id="kvCacheDisplay" class="bg-slate-900 p-4 rounded-xl border border-slate-800 font-mono text-xs space-y-2"></div>
+        </div>
+
+        <div class="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+          <h3 class="text-xl font-extrabold text-slate-900">10. Hva arkitekturen ikke gir deg</h3>
+          <ul class="list-disc pl-6 space-y-2 text-slate-800 text-sm sm:text-base">
+            <li><strong>Ingen grounding:</strong> uten RAG/verktøy er «fakta» bare høy sannsynlighet i treningsfordelingen.</li>
+            <li><strong>Lost-in-the-middle:</strong> start og slutt av lange prompts veier ofte mer enn midten.</li>
+            <li><strong>Tegn og tall:</strong> BPE splitter ujevnt, derfor svakt på reversert tekst og nøyaktig aritmetikk uten kalkulator.</li>
+            <li><strong>Kontekstvindu:</strong> utenfor $T_{\max}$ kuttes eller komprimeres historikk. RoPE-ekstrapolasjon er ujevn.</li>
+            <li><strong>Sikkerhet er ikke et filter i vekten:</strong> alignment dreier sannsynligheter, den fjerner ikke evnen.</li>
+          </ul>
+          <p class="text-sm text-slate-500 leading-relaxed pt-2">
+            Kjernelitteratur: Vaswani et al. 2017 · Su et al. (RoPE) · Shazeer (MQA, GLU) · Ainslie et al. (GQA) · Hoffmann et al. 2022 (Chinchilla) · Dao et al. (FlashAttention) · Rafailov et al. (DPO) · Touvron/Dubey (LLaMA). Dette er dekoder-varianten (GPT/LLaMA), ikke T5 eller BERT.
+          </p>
+        </div>
+
+      </div>
+    </section>
+  </main>
+
+  <div id="cardModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md hidden flex items-center justify-center p-4 sm:p-6 transition-all duration-300" onclick="closeCardModal(event)">
+    <div class="bg-white rounded-3xl max-w-3xl w-full p-6 sm:p-10 border border-slate-200 shadow-2xl relative space-y-6 text-slate-900 max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+      <button onclick="closeCardModal()" class="absolute top-5 right-5 w-10 h-10 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-700 font-bold text-base transition-all shadow-sm">✕</button>
+      <div id="cardModalBody" class="space-y-4 pt-1"></div>
+      <div class="pt-4 border-t border-slate-100 flex justify-end">
+        <button onclick="closeCardModal()" class="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs transition-all shadow-md">Lukk forstørret visning</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="max-w-6xl mx-auto px-4 sm:px-6 mt-16 pt-8 pb-4 border-t border-slate-200 text-center text-xs text-slate-500 font-medium space-y-1">
+    <p>Pedagogisk øvelse om språkmodeller og tilskuddsforvaltning. <strong>Ikke et Bufdir-verktøy.</strong> Forskrift, policy, presedens og saker er oppdiktet.</p>
+    <p>Siden er et kursopplegg, ikke beslutningsstøtte og ikke automatisert saksbehandling. Sist oppdatert 23. august 2026.</p>
+  </footer>
+
+  <div id="chapterNav" class="fixed bottom-0 inset-x-0 z-50 bg-white/95 backdrop-blur border-t border-slate-200 px-4 py-3 shadow-[0_-8px_24px_rgba(15,23,42,0.08)]">
+    <div class="max-w-6xl mx-auto flex items-center justify-between gap-3">
+      <button type="button" id="btnPrevChapter" onclick="stepChapter(-1)" class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed">← Forrige</button>
+      <div class="text-center min-w-0">
+        <p id="chapterPartLabel" class="text-[11px] font-bold uppercase tracking-widest text-slate-500 truncate">Del 1 · Teknisk dypdykk</p>
+        <p id="chapterStepLabel" class="text-sm font-semibold text-slate-800">Teknisk: Fra token til neste-token-prediksjon</p>
+      </div>
+      <button type="button" id="btnNextChapter" onclick="stepChapter(1)" class="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed">Neste →</button>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

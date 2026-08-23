@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kapittel 9: Hele tilskuddsløpet · Hvordan Fungerer Språkmodeller?</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Fira+Code:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="site.css">
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']]
+      },
+      svg: { fontCache: 'global' }
+    };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen pb-32" data-page="kapittel-9.html">
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <a href="index.html" class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-purple-600 via-indigo-600 to-blue-500 flex items-center justify-center text-white font-black text-xl shadow-md shadow-purple-200">AI</div>
+        <div>
+          <h1 class="text-lg font-bold text-slate-900 leading-tight">Hvordan Fungerer Språkmodeller?</h1>
+          <p class="text-xs text-slate-500">Hver side er ett punkt</p>
+        </div>
+      </a>
+      <div class="bg-slate-100 p-1 rounded-xl flex border border-slate-200 text-xs font-semibold">
+        <button id="btnSimple" onclick="toggleMode('simple')" class="px-3.5 py-1.5 rounded-lg bg-white text-purple-700 shadow-sm transition-all font-bold">🟢 Enkel forklaring</button>
+        <button id="btnTech" onclick="toggleMode('tech')" class="px-3.5 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition-all">🔬 Teknisk dypdykk</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-4 sm:px-6 mt-8 space-y-6">
+    <p class="text-[11px] font-bold uppercase tracking-widest text-slate-500">Del 4 · Tilskuddssimulator</p>
+    <section class="chapter-section practice-section space-y-6">
+        <div class="flex items-center gap-2">
+          <span class="w-8 h-8 rounded-lg bg-violet-100 text-violet-700 flex items-center justify-center font-bold text-sm">9</span>
+          <h2 class="text-xl font-bold text-slate-900">9. Hele tilskuddsløpet</h2>
+        </div>
+
+        <div class="bg-white p-5 sm:p-7 rounded-2xl border border-slate-200 shadow-sm space-y-5">
+          <div class="rounded-xl border border-violet-200 bg-violet-50 px-4 py-3 text-sm text-violet-950">
+            <strong>Øvelse, ikke beslutningsstøtte.</strong> Syntetisk portefølje for 2026. Hver sak står i ett steg. Vurderingene er forslag — minst ett er plantet feil. Du kan avvise, rette eller la saken stå. Kapittel 10 er <em>dine</em> saker fra samme dag, ikke en ny lek.
+          </div>
+
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <p id="grantStatus" class="text-xs font-mono text-slate-500">Porteføljen er tom. Last de syntetiske sakene for å se hele løpet.</p>
+            <div class="flex flex-wrap gap-2">
+              <button type="button" onclick="loadGrantInbox()" class="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold">
+                Last syntetisk portefølje
+              </button>
+              <button type="button" id="btnGrantAiView" onclick="toggleGrantAiView()" disabled class="px-4 py-2 rounded-xl bg-white border border-slate-300 hover:bg-slate-50 disabled:opacity-40 text-slate-800 text-xs font-semibold">
+                Hva KI vurderer
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <h3 class="text-sm font-bold text-slate-800">Prosess — hvor saken er</h3>
+              <span id="grantInboxCount" class="text-[11px] font-mono text-slate-500">0 saker</span>
+            </div>
+            <div id="grantProcessRail" class="flex flex-wrap gap-1.5"></div>
+            <p class="text-[11px] text-slate-500 mt-2">Klikk et steg for å filtrere. Åpne en sak for å se «du er her» og neste handling.</p>
+          </div>
+
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <h3 class="text-sm font-bold text-slate-800" id="grantListTitle">Saker</h3>
+              <span id="grantListHint" class="text-[11px] font-mono text-slate-500"></span>
+            </div>
+            <div id="grantInbox" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-2 min-h-[4rem] max-h-[28rem] overflow-y-auto rounded-xl border border-dashed border-slate-200 bg-slate-50 p-2"></div>
+          </div>
+
+          <div id="grantAiView" class="hidden rounded-2xl border border-slate-200 bg-slate-50 p-4 space-y-3">
+            <h3 class="text-sm font-bold text-slate-900">Åpen sjekkliste: dette vurderer «KI» i simuleringen</h3>
+            <p class="text-xs text-slate-600">Ingen skjulte poeng. Hvert kriterium er synlig, med utfall per sak. Dette er regel-sjekk, ikke skjønn om hvem som «fortjener» penger.</p>
+            <div id="grantAiRubric" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-2 text-xs"></div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-[11px] border-collapse">
+                <thead id="grantAiHead"></thead>
+                <tbody id="grantAiBody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div id="grantCols" class="hidden grid md:grid-cols-3 gap-3">
+            <p class="md:col-span-3 text-xs text-slate-600">I steget <strong>kontroll</strong> sorteres sakene i tre køer. Det er ikke vedtak.</p>
+            <div class="rounded-2xl border border-rose-200 bg-rose-50/60 p-3 space-y-2">
+              <div class="flex items-center justify-between gap-2">
+                <h3 class="text-sm font-bold text-rose-900">Avvist / utenfor</h3>
+                <span id="grantCountReject" class="text-[11px] font-mono text-rose-700">0</span>
+              </div>
+              <p class="text-[11px] text-rose-800/80">Åpenbart utenfor ordningen eller formelt ugyldig.</p>
+              <button type="button" onclick="writeGrantLetters('reject')" class="w-full py-1.5 rounded-lg bg-rose-700 text-white text-[11px] font-semibold">Skriv avslagsbrev til alle</button>
+              <div id="grantColReject" class="space-y-2 min-h-[3rem] max-h-[28rem] overflow-y-auto"></div>
+            </div>
+            <div class="rounded-2xl border border-amber-200 bg-amber-50/60 p-3 space-y-2">
+              <div class="flex items-center justify-between gap-2">
+                <h3 class="text-sm font-bold text-amber-900">Se nærmere</h3>
+                <span id="grantCountNeedinfo" class="text-[11px] font-mono text-amber-700">0</span>
+              </div>
+              <p class="text-[11px] text-amber-800/80">Mangler opplysninger eller uklare poster.</p>
+              <button type="button" onclick="writeGrantLetters('needinfo')" class="w-full py-1.5 rounded-lg bg-amber-700 text-white text-[11px] font-semibold">Skriv innhentingsbrev til alle</button>
+              <div id="grantColNeedinfo" class="space-y-2 min-h-[3rem] max-h-[28rem] overflow-y-auto"></div>
+            </div>
+            <div class="rounded-2xl border border-emerald-200 bg-emerald-50/60 p-3 space-y-2">
+              <div class="flex items-center justify-between gap-2">
+                <h3 class="text-sm font-bold text-emerald-900">Klar til vurdering</h3>
+                <span id="grantCountReady" class="text-[11px] font-mono text-emerald-700">0</span>
+              </div>
+              <p class="text-[11px] text-emerald-800/80">Formelt komplett. Brevet er utkast hvis saksbehandler innvilger.</p>
+              <button type="button" onclick="writeGrantLetters('ready')" class="w-full py-1.5 rounded-lg bg-emerald-700 text-white text-[11px] font-semibold">Skriv tilskuddsbrev til alle</button>
+              <div id="grantColReady" class="space-y-2 min-h-[3rem] max-h-[28rem] overflow-y-auto"></div>
+            </div>
+          </div>
+
+          <div class="rounded-2xl border border-slate-800 bg-slate-900 text-white overflow-hidden">
+            <div class="px-4 py-3 border-b border-slate-700 flex items-center justify-between gap-2">
+              <div>
+                <h3 class="text-sm font-bold">Dialog med vurderingen</h3>
+                <p class="text-[11px] text-slate-400">Svarer bare på sakene, stegene og vurderingene i denne porteføljen. Ikke nett, ikke andre saker.</p>
+              </div>
+              <span id="grantChatStatus" class="text-[10px] font-mono text-slate-400">Klar</span>
+            </div>
+            <div id="grantChatLog" class="p-4 space-y-2 max-h-72 overflow-y-auto text-sm min-h-[8rem]">
+              <p class="text-slate-400 text-xs">Last porteføljen først. Deretter kan du spørre f.eks. «Hvilke saker er i utbetaling?» eller «Hvor er T-2601 i løpet?»</p>
+            </div>
+            <div class="px-3 pb-2 flex flex-wrap gap-1.5" id="grantChatHints">
+              <button type="button" onclick="askGrantChat('Hvor mange saker er i hvert prosess-steg, og nevn ett saksnummer fra hvert steg?')" class="px-2 py-1 rounded-lg bg-slate-800 text-[11px] text-slate-200 hover:bg-slate-700">Fordeling per steg</button>
+              <button type="button" onclick="askGrantChat('Hvilke saker er i utbetaling eller oppfølging, og hva er neste handling?')" class="px-2 py-1 rounded-lg bg-slate-800 text-[11px] text-slate-200 hover:bg-slate-700">Etter vedtak</button>
+              <button type="button" onclick="askGrantChat('Hvor er T-2601 i løpet, og hva er vurderingen?')" class="px-2 py-1 rounded-lg bg-slate-800 text-[11px] text-slate-200 hover:bg-slate-700">Sak T-2601</button>
+            </div>
+            <form onsubmit="sendGrantChat(event)" class="p-3 border-t border-slate-700 flex gap-2">
+              <input id="grantChatInput" type="text" maxlength="500" placeholder="Spør bare om dataene i innboksen…" class="flex-1 px-3 py-2 rounded-xl bg-slate-800 border border-slate-600 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-500" />
+              <button type="submit" id="grantChatSend" class="px-4 py-2 rounded-xl bg-violet-600 hover:bg-violet-500 text-xs font-semibold disabled:opacity-40">Send</button>
+            </form>
+          </div>
+
+          <div id="grantLettersWrap" class="hidden space-y-2">
+            <div class="flex items-center justify-between gap-2">
+              <h3 class="text-sm font-bold text-slate-800">Brevutkast (simulert, ikke sendt)</h3>
+              <span id="grantLetterCount" class="text-[11px] font-mono text-slate-500"></span>
+            </div>
+            <div id="grantLetters" class="space-y-3 max-h-[32rem] overflow-y-auto"></div>
+          </div>
+
+          <div class="rounded-2xl border border-fuchsia-200 bg-fuchsia-50 p-4 space-y-3">
+            <h3 class="text-sm font-bold text-fuchsia-950">Samme sak, tre kjøringer — broen fra kapittel 2</h3>
+            <p class="text-xs text-fuchsia-950/90">I del 1 så du at temperatur gjør at samme prompt kan gi ulike svar. Her er tre ferdigskrevne «kjøringer» av tilskuddsbrevet for <strong>T-2601</strong>. Beløp og vilkår er like. Ordlyden er det ikke. Derfor kan en språkmodell ikke være vedtaket: likebehandling krever samme begrunnelse, ikke tre ulike formuleringer.</p>
+            <button type="button" onclick="showGrantReruns()" class="px-4 py-2 rounded-xl bg-fuchsia-800 hover:bg-fuchsia-900 text-white text-xs font-semibold">Vis tre kjøringer av T-2601</button>
+            <div id="grantReruns" class="hidden grid md:grid-cols-3 gap-2"></div>
+          </div>
+
+          <div class="rounded-2xl border border-slate-300 bg-white p-4 space-y-3">
+            <div class="flex flex-wrap items-start justify-between gap-2">
+              <div>
+                <h3 class="text-sm font-bold text-slate-900">Pliktene i praksis: journal og innsyn</h3>
+                <p class="text-xs text-slate-600 mt-1">Kapittel 6 sa at prompt og svar skal journalføres, og at parten kan be om innsyn. Her øver du det. <strong>KI-forordningen:</strong> dette er beslutningsstøtte. Appen fatter ikke automatisert vedtak — det ville krevd egen hjemmel.</p>
+              </div>
+              <button type="button" onclick="openGrantInnsyn()" class="px-4 py-2 rounded-xl bg-slate-900 text-white text-xs font-semibold">Parten ber om innsyn</button>
+            </div>
+            <p id="grantJournalStatus" class="text-[11px] font-mono text-slate-500">Journalen er tom til du laster porteføljen eller skriver brev.</p>
+            <div id="grantJournal" class="space-y-2 max-h-48 overflow-y-auto"></div>
+            <div id="grantInnsyn" class="hidden rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-800 whitespace-pre-wrap leading-relaxed"></div>
+          </div>
+        </div>
+      </section>
+  </main>
+
+  <div id="cardModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md hidden flex items-center justify-center p-4 sm:p-6 transition-all duration-300" onclick="closeCardModal(event)">
+    <div class="bg-white rounded-3xl max-w-3xl w-full p-6 sm:p-10 border border-slate-200 shadow-2xl relative space-y-6 text-slate-900 max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+      <button onclick="closeCardModal()" class="absolute top-5 right-5 w-10 h-10 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-700 font-bold text-base transition-all shadow-sm">✕</button>
+      <div id="cardModalBody" class="space-y-4 pt-1"></div>
+      <div class="pt-4 border-t border-slate-100 flex justify-end">
+        <button onclick="closeCardModal()" class="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs transition-all shadow-md">Lukk forstørret visning</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="max-w-6xl mx-auto px-4 sm:px-6 mt-16 pt-8 pb-4 border-t border-slate-200 text-center text-xs text-slate-500 font-medium space-y-1">
+    <p>Pedagogisk øvelse om språkmodeller og tilskuddsforvaltning. <strong>Ikke et Bufdir-verktøy.</strong> Forskrift, policy, presedens og saker er oppdiktet.</p>
+    <p>Siden er et kursopplegg, ikke beslutningsstøtte og ikke automatisert saksbehandling. Sist oppdatert 23. august 2026.</p>
+  </footer>
+
+  <div id="chapterNav" class="fixed bottom-0 inset-x-0 z-50 bg-white/95 backdrop-blur border-t border-slate-200 px-4 py-3 shadow-[0_-8px_24px_rgba(15,23,42,0.08)]">
+    <div class="max-w-6xl mx-auto flex items-center justify-between gap-3">
+      <button type="button" id="btnPrevChapter" onclick="stepChapter(-1)" class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed">← Forrige</button>
+      <div class="text-center min-w-0">
+        <p id="chapterPartLabel" class="text-[11px] font-bold uppercase tracking-widest text-slate-500 truncate">Del 4 · Tilskuddssimulator</p>
+        <p id="chapterStepLabel" class="text-sm font-semibold text-slate-800">Kapittel 9: Hele tilskuddsløpet</p>
+      </div>
+      <button type="button" id="btnNextChapter" onclick="stepChapter(1)" class="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed">Neste →</button>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

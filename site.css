@@ -1,0 +1,65 @@
+body { font-family: 'Inter', sans-serif; }
+    code, pre, .font-mono { font-family: 'Fira Code', monospace; }
+
+    #cardModalBody {
+      font-size: 1.15rem !important;
+      line-height: 1.8 !important;
+    }
+    #cardModalBody h3, #cardModalBody h4, #cardModalBody h5 {
+      font-size: 1.5rem !important;
+      font-weight: 800 !important;
+      line-height: 1.35 !important;
+      color: #0f172a !important;
+      display: block !important;
+      margin-bottom: 0.85rem !important;
+    }
+    #cardModalBody p {
+      font-size: 1.1rem !important;
+      line-height: 1.75 !important;
+      color: #334155 !important;
+      margin-bottom: 1rem !important;
+    }
+    #cardModalBody ul {
+      list-style-type: disc !important;
+      padding-left: 1.75rem !important;
+      margin-top: 1rem !important;
+      margin-bottom: 1rem !important;
+    }
+    #cardModalBody li {
+      font-size: 1.05rem !important;
+      line-height: 1.8 !important;
+      margin-bottom: 0.75rem !important;
+      color: #1e293b !important;
+    }
+    .math-formula {
+      font-family: 'Fira Code', monospace;
+      background-color: #0f172a;
+      color: #c084fc;
+      padding: 0.75rem 1rem;
+      border-radius: 0.75rem;
+      border: 1px solid #581c87;
+      overflow-x: auto;
+    }
+
+    .chapter-section.hidden, .chapter-group.hidden { display: none; }
+
+    @keyframes grantIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .grant-card { animation: grantIn 0.35s ease both; }
+
+    .modal-details {
+      display: block !important;
+      margin-top: 0.75rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid rgb(226 232 240);
+    }
+    .bg-slate-800\/80 .modal-details,
+    .bg-slate-900 .modal-details,
+    #sec8Datalab .modal-details {
+      background: rgba(255,255,255,0.96);
+      padding: 0.75rem 1rem;
+      border-radius: 0.75rem;
+      border-top: none;
+    }

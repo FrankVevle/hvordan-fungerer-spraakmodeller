@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kapittel 5: Retningslinjer og trygg bruk · Hvordan Fungerer Språkmodeller?</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Fira+Code:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="site.css">
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']]
+      },
+      svg: { fontCache: 'global' }
+    };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen pb-32" data-page="kapittel-5.html">
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <a href="index.html" class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-purple-600 via-indigo-600 to-blue-500 flex items-center justify-center text-white font-black text-xl shadow-md shadow-purple-200">AI</div>
+        <div>
+          <h1 class="text-lg font-bold text-slate-900 leading-tight">Hvordan Fungerer Språkmodeller?</h1>
+          <p class="text-xs text-slate-500">Hver side er ett punkt</p>
+        </div>
+      </a>
+      <div class="bg-slate-100 p-1 rounded-xl flex border border-slate-200 text-xs font-semibold">
+        <button id="btnSimple" onclick="toggleMode('simple')" class="px-3.5 py-1.5 rounded-lg bg-white text-purple-700 shadow-sm transition-all font-bold">🟢 Enkel forklaring</button>
+        <button id="btnTech" onclick="toggleMode('tech')" class="px-3.5 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition-all">🔬 Teknisk dypdykk</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-4 sm:px-6 mt-8 space-y-6">
+    <p class="text-[11px] font-bold uppercase tracking-widest text-slate-500">Del 2 · Bruk den smart og trygt</p>
+    <section class="chapter-section practice-section space-y-6">
+      <div class="flex items-center gap-2">
+        <span class="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-sm">5</span>
+        <h2 class="text-xl font-bold text-slate-900">5. Retningslinjer & Trygg Bruk (NAVs 4 Gullregler)</h2>
+      </div>
+      <div class="section-body space-y-6">
+
+        <span class="text-xs text-slate-500 italic">🔍 Klikk på et kort for stor tekst og punktvisning</span>
+
+
+      <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+
+        <div onclick="expandCard(this)" class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-2 cursor-pointer hover:border-indigo-400 hover:shadow-md transition-all">
+          <div class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold text-sm">1</div>
+          <h5 class="font-bold text-sm text-slate-900">Mennesket i loopen</h5>
+          <p class="text-xs text-slate-600">Du har alltid ansvaret for sluttresultatet. Sjekk fakta før du bruker svaret.</p>
+          <div class="hidden modal-details space-y-2">
+            <strong class="text-slate-900 font-bold block text-lg">📌 Punktvis oppsummering & retningslinjer:</strong>
+            <ul class="list-disc pl-5 space-y-1 text-slate-700 text-sm">
+              <li><strong>Ansvar:</strong> Du er alltid juridisk og faglig ansvarlig for innhold du publiserer eller sender ut.</li>
+              <li><strong>Kvalitetskontroll:</strong> Verifiser alltid fakta, referanser, tall og lovhenvisninger før bruk.</li>
+              <li><strong>Egen vurdering:</strong> Bruk KI som en assistent eller sparringspartner, aldri som en uavhengig beslutningstaker.</li>
+            </ul>
+          </div>
+          <span class="text-[10px] text-indigo-600 font-semibold block pt-1">🔍 Klikk for forstørret punktvisning</span>
+        </div>
+
+        <div onclick="expandCard(this)" class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-2 cursor-pointer hover:border-emerald-400 hover:shadow-md transition-all">
+          <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-sm">2</div>
+          <h5 class="font-bold text-sm text-slate-900">Personvern & Skjerming</h5>
+          <p class="text-xs text-slate-600">Aldri lim inn fødselsnumre, taushetsbelagte opplysninger eller persondata i åpne verktøy.</p>
+          <div class="hidden modal-details space-y-2">
+            <strong class="text-slate-900 font-bold block text-lg">📌 Punktvis oppsummering & retningslinjer:</strong>
+            <ul class="list-disc pl-5 space-y-1 text-slate-700 text-sm">
+              <li><strong>Skjerming:</strong> Fjern alltid navn, fødselsnumre, adresser, saksnumre og sensitive helseopplysninger.</li>
+              <li><strong>Sikre verktøy:</strong> Bruk kun virksomhetens godkjente, lukkede KI-løsninger ved saksbehandling.</li>
+              <li><strong>Åpne modeller:</strong> Alt du limer inn i åpne chatronoter kan potensielt brukes til videre trening.</li>
+            </ul>
+          </div>
+          <span class="text-[10px] text-emerald-600 font-semibold block pt-1">🔍 Klikk for forstørret punktvisning</span>
+        </div>
+
+        <div onclick="expandCard(this)" class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-2 cursor-pointer hover:border-amber-400 hover:shadow-md transition-all">
+          <div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center font-bold text-sm">3</div>
+          <h5 class="font-bold text-sm text-slate-900">Klarspråk</h5>
+          <p class="text-xs text-slate-600">Bruk KI til å forenkle tungt fagspråk slik at mottakeren enkelt forstår budskapet.</p>
+          <div class="hidden modal-details space-y-2">
+            <strong class="text-slate-900 font-bold block text-lg">📌 Punktvis oppsummering & retningslinjer:</strong>
+            <ul class="list-disc pl-5 space-y-1 text-slate-700 text-sm">
+              <li><strong>Forenkling:</strong> Be KI skrive om vanskelige lovtekster og byråkratiske formuleringer.</li>
+              <li><strong>Målgruppetilpasning:</strong> Instruer om B2-nivå, korte setninger, aktive verb og punktlister.</li>
+              <li><strong>Mottakervennlig:</strong> Sikre at innbyggere og brukere forstår sine rettigheter og plikter.</li>
+            </ul>
+          </div>
+          <span class="text-[10px] text-amber-600 font-semibold block pt-1">🔍 Klikk for forstørret punktvisning</span>
+        </div>
+
+        <div onclick="expandCard(this)" class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-2 cursor-pointer hover:border-rose-400 hover:shadow-md transition-all">
+          <div class="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center font-bold text-sm">4</div>
+          <h5 class="font-bold text-sm text-slate-900">Åpenhet</h5>
+          <p class="text-xs text-slate-600">Vær åpen om at du har brukt KI som støtteverktøy der det er relevant.</p>
+          <div class="hidden modal-details space-y-2">
+            <strong class="text-slate-900 font-bold block text-lg">📌 Punktvis oppsummering & retningslinjer:</strong>
+            <ul class="list-disc pl-5 space-y-1 text-slate-700 text-sm">
+              <li><strong>Transparens:</strong> Oppgi når tekst eller analyser er vesentlig utarbeidet med KI-støtte.</li>
+              <li><strong>Etterrettelighet:</strong> Dokumenter hvilke instruksjoner/kilder som er brukt.</li>
+              <li><strong>Tillit:</strong> Bygg tillit til forvaltningen ved å være åpen om metodikk og verktøy.</li>
+            </ul>
+          </div>
+          <span class="text-[10px] text-rose-600 font-semibold block pt-1">🔍 Klikk for forstørret punktvisning</span>
+        </div>
+
+      </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="cardModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md hidden flex items-center justify-center p-4 sm:p-6 transition-all duration-300" onclick="closeCardModal(event)">
+    <div class="bg-white rounded-3xl max-w-3xl w-full p-6 sm:p-10 border border-slate-200 shadow-2xl relative space-y-6 text-slate-900 max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+      <button onclick="closeCardModal()" class="absolute top-5 right-5 w-10 h-10 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-700 font-bold text-base transition-all shadow-sm">✕</button>
+      <div id="cardModalBody" class="space-y-4 pt-1"></div>
+      <div class="pt-4 border-t border-slate-100 flex justify-end">
+        <button onclick="closeCardModal()" class="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs transition-all shadow-md">Lukk forstørret visning</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="max-w-6xl mx-auto px-4 sm:px-6 mt-16 pt-8 pb-4 border-t border-slate-200 text-center text-xs text-slate-500 font-medium space-y-1">
+    <p>Pedagogisk øvelse om språkmodeller og tilskuddsforvaltning. <strong>Ikke et Bufdir-verktøy.</strong> Forskrift, policy, presedens og saker er oppdiktet.</p>
+    <p>Siden er et kursopplegg, ikke beslutningsstøtte og ikke automatisert saksbehandling. Sist oppdatert 23. august 2026.</p>
+  </footer>
+
+  <div id="chapterNav" class="fixed bottom-0 inset-x-0 z-50 bg-white/95 backdrop-blur border-t border-slate-200 px-4 py-3 shadow-[0_-8px_24px_rgba(15,23,42,0.08)]">
+    <div class="max-w-6xl mx-auto flex items-center justify-between gap-3">
+      <button type="button" id="btnPrevChapter" onclick="stepChapter(-1)" class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed">← Forrige</button>
+      <div class="text-center min-w-0">
+        <p id="chapterPartLabel" class="text-[11px] font-bold uppercase tracking-widest text-slate-500 truncate">Del 2 · Bruk den smart og trygt</p>
+        <p id="chapterStepLabel" class="text-sm font-semibold text-slate-800">Kapittel 5: Retningslinjer og trygg bruk</p>
+      </div>
+      <button type="button" id="btnNextChapter" onclick="stepChapter(1)" class="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed">Neste →</button>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

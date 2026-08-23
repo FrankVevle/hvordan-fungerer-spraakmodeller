@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kapittel 4: Prompt Lab · Hvordan Fungerer Språkmodeller?</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Fira+Code:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="site.css">
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']]
+      },
+      svg: { fontCache: 'global' }
+    };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen pb-32" data-page="kapittel-4.html">
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <a href="index.html" class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-purple-600 via-indigo-600 to-blue-500 flex items-center justify-center text-white font-black text-xl shadow-md shadow-purple-200">AI</div>
+        <div>
+          <h1 class="text-lg font-bold text-slate-900 leading-tight">Hvordan Fungerer Språkmodeller?</h1>
+          <p class="text-xs text-slate-500">Hver side er ett punkt</p>
+        </div>
+      </a>
+      <div class="bg-slate-100 p-1 rounded-xl flex border border-slate-200 text-xs font-semibold">
+        <button id="btnSimple" onclick="toggleMode('simple')" class="px-3.5 py-1.5 rounded-lg bg-white text-purple-700 shadow-sm transition-all font-bold">🟢 Enkel forklaring</button>
+        <button id="btnTech" onclick="toggleMode('tech')" class="px-3.5 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition-all">🔬 Teknisk dypdykk</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-4 sm:px-6 mt-8 space-y-6">
+    <p class="text-[11px] font-bold uppercase tracking-widest text-slate-500">Del 2 · Bruk den smart og trygt</p>
+    <section class="chapter-section practice-section space-y-6">
+      <div class="flex items-center gap-2">
+        <span class="w-8 h-8 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center font-bold text-sm">4</span>
+        <h2 class="text-xl font-bold text-slate-900">4. Hvordan bruker vi den smart? (Prompt Lab)</h2>
+      </div>
+      <div class="section-body space-y-6">
+
+
+      <div class="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+        <div>
+          <span class="text-xs font-semibold text-amber-600 uppercase tracking-wider">Prompt Lab</span>
+          <h4 class="text-lg font-bold text-slate-900">Menneskets instruks gjør hele forskjellen</h4>
+          <p class="text-xs text-slate-600 mt-1">
+            Under ligger et fiktivt, tungt tilskuddsvedtak fra Bufdir. Kjør omskrivingen og se hvor mye enklere det kan bli — uten å endre meningen.
+          </p>
+        </div>
+
+        <div class="rounded-2xl border border-amber-200 bg-amber-50/70 p-4 sm:p-5 space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <span class="text-xs font-bold uppercase tracking-wider text-amber-800">Original · Bufdir tilskuddsvedtak</span>
+            <span class="text-[11px] font-mono text-amber-700">Fiktivt eksempel · ingen ekte sak</span>
+          </div>
+          <div id="byrakratiTekst" class="bg-white rounded-xl border border-amber-100 p-4 text-sm text-slate-800 leading-relaxed max-h-64 overflow-y-auto whitespace-pre-wrap font-serif">Barne-, ungdoms- og familiedirektoratet viser til søknad av 31.10.2025, mottatt i søknadsportalen, vedrørende tilskudd til inkludering av barn og unge for tilskuddsåret 2026, aktivitetstype 4.1 Kultur-, fritids- og ferieaktivitet, innsendt av Fjordheim frivilligsentral (org.nr. 999 888 777) med Fjordheim kommune som deltakende kommune.
+
+Etter en samlet vurdering av søknaden opp mot forskrift om tilskudd til inkludering av barn og unge, formålet med ordningen, de tilgjengelige midlene på posten og den dokumenterte målgruppebeskrivelsen, treffer direktoratet slikt vedtak:
+
+Søknaden innvilges delvis. Det søkte beløpet på kr 1 240 000,- reduseres til kr 780 000,- for perioden 01.01.2026–31.12.2026. Reduksjonen begrunnes med at utgiftspostene «prosjektledelse 80 %» og «generell administrasjon» ikke i tilstrekkelig grad er knyttet til gjennomføring av aktivitet for målgruppen, samt at det er søkt om utstyr som faller utenfor godkjente kostnader. Tilskuddet kan anvendes til ferieleir, gruppetilbud etter skoletid og nødvendig aktivitetskostnad for deltakere i målgruppen. Tilskuddet kan ikke anvendes til ordinær drift av søkerorganisasjonen, gjeldende lån eller investeringer i varige driftsmidler utover det som er særskilt godkjent i vedlagt budsjett.
+
+Utbetaling skjer i to terminer: 70 prosent innen 30 dager etter at dette vedtaket er kommet frem, og 30 prosent etter at tilfredsstillende underveisrapportering er mottatt, dog senest 15. september 2026. Tilskuddsmottaker plikter uten ugrunnet opphold å underrette direktoratet om vesentlige avvik fra godkjent plan og budsjett. Ubenyttede midler skal tilbakebetales. Feilutbetaling og bruk i strid med vilkårene kan medføre avkortning og tilbakekreving.
+
+Rapport og revidert regnskap for tilskuddet skal leveres i søknadsportalen innen 1. april 2027. Vedtaket kan påklages innen tre uker fra det tidspunkt underretning er kommet frem, jf. forvaltningsloven §§ 28–29. Klage sendes til Barne-, ungdoms- og familiedirektoratet. Klage har ikke oppsettende virkning med mindre dette særskilt besluttes.</div>
+          <button type="button" onclick="runKlarsprakDemo()" class="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-sm font-semibold shadow-sm">
+            Skriv om til klarspråk
+          </button>
+        </div>
+
+        <div class="flex flex-wrap gap-2 border-b border-slate-200 pb-3" id="promptTabs">
+          <button onclick="setPromptTab(0)" class="prompt-tab-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-500 text-white">
+            ✍️ Klarspråk & Tekst
+          </button>
+          <button onclick="setPromptTab(1)" class="prompt-tab-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200">
+            💡 Idémyldring
+          </button>
+          <button onclick="setPromptTab(2)" class="prompt-tab-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200">
+            💻 Kodepartner
+          </button>
+        </div>
+
+        <div id="promptComparison" class="grid sm:grid-cols-2 gap-4"></div>
+
+        <div onclick="expandCard(this)" class="mt-6 border border-slate-200 rounded-2xl bg-slate-900 text-white overflow-hidden shadow-lg cursor-pointer hover:border-amber-400 transition-all">
+          <div class="bg-slate-800/80 px-4 py-3 border-b border-slate-700/80 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="w-3 h-3 rounded-full bg-blue-400 animate-pulse"></span>
+              <span class="text-xs font-bold text-slate-200 tracking-wide flex items-center gap-1.5">
+                <svg class="w-4 h-4 text-blue-400 inline" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z"/></svg>
+                OpenAI-svar
+              </span>
+            </div>
+            <div id="geminiMeta" class="text-[11px] text-slate-400 font-mono">
+              Modell: gpt-4o-mini (via /api/chat)
+            </div>
+          </div>
+
+          <div class="p-5 space-y-4" onclick="event.stopPropagation()">
+            <div class="flex items-start gap-3 bg-slate-800/50 p-3 rounded-xl border border-slate-700/50 text-xs">
+              <span class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-mono font-bold text-[10px]">PROMPT</span>
+              <p id="geminiActivePrompt" class="text-slate-300 font-mono italic leading-relaxed">
+                "Klikk på «Kjør svak/sterk prompt» over for å starte..."
+              </p>
+            </div>
+
+            <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 font-mono text-xs text-slate-200 min-h-[120px] relative">
+              <div id="geminiOutput" class="whitespace-pre-wrap leading-relaxed">
+                <span class="text-slate-500 italic">Venter på at du skal starte...</span>
+              </div>
+            </div>
+
+            <div class="flex justify-between items-center text-[11px] text-slate-400">
+              <span id="geminiStatus" class="flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-slate-600"></span> Klar
+              </span>
+              <span id="geminiTokenStats" class="font-mono">0 tokens generert</span>
+            </div>
+          </div>
+
+          <div class="hidden modal-details space-y-2 p-2">
+            <strong class="text-slate-900 font-bold block text-xl">📌 Slik bygger du en god Prompt (Instruks):</strong>
+            <ul class="list-disc pl-5 space-y-2 text-slate-800 text-base">
+              <li><strong>Rolle:</strong> Definér hvem KI skal være (f.eks. *«Du er en rådgiver i offentlig sektor»*).</li>
+              <li><strong>Kontekst & Målgruppe:</strong> Forklar hvem teksten er for og hvilket nivå språket bør ha.</li>
+              <li><strong>Format:</strong> Spesifiser ønsket struktur (f.eks. *korte avsnitt, punktlister, tabeller*).</li>
+              <li><strong>Eksplisitte begrensninger:</strong> Si hva modellen *ikke* skal gjøre.</li>
+            </ul>
+          </div>
+          <div class="px-5 pb-3">
+            <span class="text-[10px] text-amber-400 font-semibold block">🔍 Klikk for forstørret punktvisning</span>
+          </div>
+        </div>
+
+      </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="cardModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md hidden flex items-center justify-center p-4 sm:p-6 transition-all duration-300" onclick="closeCardModal(event)">
+    <div class="bg-white rounded-3xl max-w-3xl w-full p-6 sm:p-10 border border-slate-200 shadow-2xl relative space-y-6 text-slate-900 max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+      <button onclick="closeCardModal()" class="absolute top-5 right-5 w-10 h-10 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-700 font-bold text-base transition-all shadow-sm">✕</button>
+      <div id="cardModalBody" class="space-y-4 pt-1"></div>
+      <div class="pt-4 border-t border-slate-100 flex justify-end">
+        <button onclick="closeCardModal()" class="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs transition-all shadow-md">Lukk forstørret visning</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="max-w-6xl mx-auto px-4 sm:px-6 mt-16 pt-8 pb-4 border-t border-slate-200 text-center text-xs text-slate-500 font-medium space-y-1">
+    <p>Pedagogisk øvelse om språkmodeller og tilskuddsforvaltning. <strong>Ikke et Bufdir-verktøy.</strong> Forskrift, policy, presedens og saker er oppdiktet.</p>
+    <p>Siden er et kursopplegg, ikke beslutningsstøtte og ikke automatisert saksbehandling. Sist oppdatert 23. august 2026.</p>
+  </footer>
+
+  <div id="chapterNav" class="fixed bottom-0 inset-x-0 z-50 bg-white/95 backdrop-blur border-t border-slate-200 px-4 py-3 shadow-[0_-8px_24px_rgba(15,23,42,0.08)]">
+    <div class="max-w-6xl mx-auto flex items-center justify-between gap-3">
+      <button type="button" id="btnPrevChapter" onclick="stepChapter(-1)" class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed">← Forrige</button>
+      <div class="text-center min-w-0">
+        <p id="chapterPartLabel" class="text-[11px] font-bold uppercase tracking-widest text-slate-500 truncate">Del 2 · Bruk den smart og trygt</p>
+        <p id="chapterStepLabel" class="text-sm font-semibold text-slate-800">Kapittel 4: Prompt Lab</p>
+      </div>
+      <button type="button" id="btnNextChapter" onclick="stepChapter(1)" class="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed">Neste →</button>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
