@@ -1,6 +1,7 @@
 const RAMME = 1000000;
 const ARCHIVE_KEY = "ovelseArkivMapper";
 const PORTAL_KEY = "ovelsePortalSaker";
+const TRACE_KEY = "ovelseKiSpor";
 
 const SAKER = [
   {
@@ -173,42 +174,42 @@ const FALLBACK = {
     malgruppe: { score: 4, sitat: "Gratis instrumentgruppe etter skoletid, 24 barn." },
     medvirkning: { score: null, sitat: "ikke oppgitt" },
     gratis: { score: 5, sitat: "Gratis instrumentgruppe" },
-    notat: "Tiltaket treffer. Admin er 32 % mot 15 %. Foreslått avkorting av overskytende prosjektledelse. Innstillingsforslag, ikke vedtak.",
+    tenkning: "1. Jeg leste at prosjektledelse er 32 % av 410 000 kr.\n2. Øvelsesregelen sier maks 15 % admin — det er det eneste jeg bruker til kuttet.\n3. «Gratis instrumentgruppe, 24 barn» bruker jeg til målgruppe og gratis.\n4. Medvirkning står ikke i teksten — jeg skriver «ikke oppgitt».\n5. Jeg fatter ikke vedtak. Beløpet er et forslag.",
     brev: "Utkast — ikke vedtak\n\nDere søkte 410 000 kr. Formålet treffer. Prosjektledelse utgjør 32 %. Etter øvelsesregel 2026 (15 % admin) foreslås avkorting av den overskytende delen."
   },
   "T-2632": {
     malgruppe: { score: 5, sitat: "lønnet praksis for 28 ungdommer" },
     medvirkning: { score: null, sitat: "ikke oppgitt" },
     gratis: { score: 4, sitat: "lønnet praksis" },
-    notat: "Formelt komplett. Admin innenfor 15 %. Beløpet tvinger prioritering mot potten. KI rangerer ikke kuttene.",
+    tenkning: "1. Formalia ser komplette ut i teksten jeg fikk.\n2. Admin 11 % er under 15 % — jeg foreslår ikke admin-kutt.\n3. 890 000 kr mot potten på 1 000 000 kr er et prioriteringsspørsmål. Jeg rangerer ikke hvem som skal kuttes.\n4. Medvirkning: ikke oppgitt.",
     brev: "Utkast — ikke vedtak\n\nSøknaden om 890 000 kr er formelt i orden. Innstilling mot ramme gjenstår hos deg."
   },
   "T-2603": {
     malgruppe: { score: 1, sitat: "Ferieaktivitet for ansattebarn." },
     medvirkning: { score: null, sitat: "ikke oppgitt" },
     gratis: { score: null, sitat: "ikke oppgitt" },
-    notat: "Søker er AS og står ikke som frivillig. Formålet er egne ansattebarn. Forslag: utenfor ordningen.",
+    tenkning: "1. Søker er et AS. Øvelsesregelen sier at kommersielt AS uten frivillig registrering ikke kan søke.\n2. Formålet er «ansattebarn» / rekruttering — det treffer ikke inkludering.\n3. Jeg foreslår utenfor ordningen. Ikke vedtak.",
     brev: "Utkast til avslag — ikke vedtak\n\nDere kan etter øvelsesregelen 2026 ikke søke som kommersielt AS uten frivillig registrering."
   },
   "T-2622": {
     malgruppe: { score: 4, sitat: "Deltidsjobb og CV-kurs for 12 ungdommer." },
     medvirkning: { score: null, sitat: "ikke oppgitt" },
     gratis: { score: 4, sitat: "Deltidsjobb og CV-kurs" },
-    notat: "Anbefalt avslag. KI viser til § 14 om investering. Golfklubben Fjord (T-2621) fikk avslag på liknende aktivitet.",
+    tenkning: "1. Jeg hentet utdraget om § 14 og Golfklubben Fjord og bruker det som lik sak.\n2. Jeg ser at søknaden handler om jobb og CV-kurs, men jeg holder likevel på avslag etter § 14.\n3. Dette er den plantede feilen i øvelsen: feil paragraf og feil presedens.",
     brev: "Utkast til avslag — ikke vedtak\n\nSøknaden avslås med henvisning til § 14 (investering) og Golfklubben Fjord (T-2621)."
   },
   "T-2612": {
     malgruppe: { score: 4, sitat: "Leksehjelp og teaterlek etter skoletid" },
     medvirkning: { score: null, sitat: "ikke oppgitt" },
     gratis: { score: 5, sitat: "Gratis." },
-    notat: "Tiltaket treffer. Fjorårets rapport mangler. Rødt historikkflagg. Du avgjør purring eller tilbakehold.",
+    tenkning: "1. Teksten beskriver gratis leksehjelp og teaterlek — det treffer målgruppe.\n2. Historikkflagget (manglende rapport) kommer fra reglene, ikke fra søknadsteksten.\n3. Jeg foreslår flagg, ikke automatisk avslag.",
     brev: "Utkast — ikke vedtak\n\nSluttregnskap etter øvelsesfristen mangler. Saken flagges."
   },
   "T-2631": {
     malgruppe: { score: 3, sitat: "inkluderende trening" },
     medvirkning: { score: null, sitat: "ikke oppgitt" },
     gratis: { score: null, sitat: "ikke oppgitt" },
-    notat: "140 000 kr til gressbane er ikke godkjent. 80 000 kr til aktivitet kan stå. Utkast: tilbakekreving 140 000 kr.",
+    tenkning: "1. Jeg skiller to poster: 80 000 kr trening (kan stå) og 140 000 kr gressbane (ikke godkjent).\n2. Tilbakekreving er forholdsmessig — bare anlegget.\n3. Dette er utkast. Ingen innkreving.",
     brev: "Utkast — ikke vedtak\n\n140 000 kr gikk til ny gressbane. Utkast: krev den delen tilbake."
   }
 };
@@ -216,7 +217,16 @@ const FALLBACK = {
 const SYS = `Du er forvaltningsrådgiver i en pedagogisk øvelse (2026). Du fatter ALDRI vedtak. Du er ikke Bufdir.
 Du får KUN søknadstekst og utdrag under. Hvis noe mangler: skriv «ikke oppgitt».
 Admin 15 % og revisor 200 000 kr er øvelsesregler 2026.
-Svar på norsk:
+Svar på norsk. Start ALLTID med tenkning — skriv høyt hva du gjør, før du konkluderer.
+
+## Tenkning
+Nummererte setninger (5–8):
+- Hva du leste i søknaden
+- Hvilke utdrag du faktisk brukte
+- Hva du lot være å bruke, og hvorfor
+- Hva som er usikkert eller «ikke oppgitt»
+- At du ikke fatter vedtak
+Ikke finn på kilder.
 
 ## Semantikk
 Målgruppe: N/5
@@ -232,12 +242,16 @@ Kort innstillingsforslag. Ikke fatt vedtak.
 ## Brevutkast
 Første linje: Utkast — ikke vedtak`;
 
-const SYS_KLAGE = `Du er forvaltningsrådgiver i en øvelse. Du fatter aldri vedtak. Svar på norsk:
+const SYS_KLAGE = `Du er forvaltningsrådgiver i en øvelse. Du fatter aldri vedtak. Svar på norsk.
+Start med ## Tenkning (nummererte setninger: hva som er nytt, hva du bruker, hva du ikke avgjør).
+Deretter:
 ## Vurdering
 ## Utkast omgjøring
 ## Utkast opprettholdelse`;
 
-const SYS_SLUTT = `Du er forvaltningsrådgiver i en øvelse. Ingen innkreving, ingen vedtak. Svar på norsk:
+const SYS_SLUTT = `Du er forvaltningsrådgiver i en øvelse. Ingen innkreving, ingen vedtak. Svar på norsk.
+Start med ## Tenkning (nummererte setninger: hva som er avvik, hva som kan stå, at du ikke krever inn).
+Deretter:
 ## Vurdering
 ## Utkast tilbakekreving
 ## Alternativ`;
@@ -246,8 +260,8 @@ const work = {};
 const journal = [];
 let selected = null;
 let kiSeq = 0;
-const klage = { running: false, live: null, vurdering: "", omgjoring: "", opprettholdelse: "", error: "" };
-const slutt = { running: false, live: null, vurdering: "", tilbake: "", alternativ: "", error: "" };
+const klage = { running: false, live: null, tenkning: "", vurdering: "", omgjoring: "", opprettholdelse: "", error: "", traceId: "" };
+const slutt = { running: false, live: null, tenkning: "", vurdering: "", tilbake: "", alternativ: "", error: "", traceId: "" };
 
 function $(id) { return document.getElementById(id); }
 function esc(s) {
@@ -350,16 +364,31 @@ function parseKi(text) {
     const m = String(raw).match(/(\d)\s*\/\s*5/);
     return m ? Number(m[1]) : null;
   };
+  const tenkning = (text.split(/##\s*Tenkning/i)[1] || "").split(/##\s*Semantikk/i)[0].trim();
   const note = (text.split(/##\s*Saksnotat/i)[1] || "").split(/##\s*Brevutkast/i)[0].trim();
   const brev = (text.split(/##\s*Brevutkast/i)[1] || "").trim();
   return {
     malgruppe: { score: score(grab("Målgruppe")), sitat: grab("Sitat målgruppe") || "ikke oppgitt" },
     medvirkning: { score: score(grab("Medvirkning")), sitat: grab("Sitat medvirkning") || "ikke oppgitt" },
     gratis: { score: score(grab("Gratis")), sitat: grab("Sitat gratis") || "ikke oppgitt" },
+    tenkning,
     notat: note || text.trim(),
     brev: brev || "",
     raw: text
   };
+}
+
+function saveTrace(trace) {
+  const list = loadJson(TRACE_KEY, []);
+  const row = {
+    id: `${Date.now()}-${Math.random().toString(16).slice(2, 7)}`,
+    at: new Date().toISOString(),
+    atVis: new Date().toLocaleString("no-NO", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }),
+    ...trace
+  };
+  list.unshift(row);
+  saveJson(TRACE_KEY, list.slice(0, 40));
+  return row.id;
 }
 
 function ensure(id) {
@@ -502,6 +531,7 @@ function renderCard() {
         ${checks}
         <h3>Det KI sier om teksten</h3>
         ${sem}
+        ${w.semantic?.tenkning ? `<div class="think"><strong>Hva KI skrev mens den jobbet</strong><p class="mono">${esc(w.semantic.tenkning)}</p><p><a href="transparens.html${w.traceId ? `#${w.traceId}` : ""}">Åpne hele tankeloggen →</a></p></div>` : `<p class="hint"><a href="transparens.html">Se hva KI tenkte (egen side)</a></p>`}
         <label class="field">Foreslått beløp (du kan rette)
           <input id="belop" type="number" value="${w.recommended}" />
         </label>
@@ -558,8 +588,9 @@ async function runKI(id, force) {
   renderCard();
   const seq = ++kiSeq;
   const rag = ragFor(sak).map((r) => `### ${r.tittel}\n${r.tekst}`).join("\n\n");
-  const prompt = `Saksnummer: ${sak.id}\nOrganisasjon: ${sak.org}\nSøkt: ${sak.belop} kr\n\nSØKNADSTEKST:\n${sak.soknad}\n\nUTDRAG (fiktiv øvelse 2026):\n${rag}\n\nSkriv semantikk, notat og brev. Ikke fatt vedtak.`;
+  const prompt = `Saksnummer: ${sak.id}\nOrganisasjon: ${sak.org}\nSøkt: ${sak.belop} kr\n\nSØKNADSTEKST:\n${sak.soknad}\n\nUTDRAG (fiktiv øvelse 2026):\n${rag}\n\nSkriv først ## Tenkning, deretter semantikk, notat og brev. Ikke fatt vedtak.`;
   addJournal({ type: "ki", sak: id, svar: force ? "Kjører KI på nytt" : "Første KI-kall" });
+  const kilder = ragFor(sak).map((r) => r.tittel);
   try {
     const text = await callModelAPI(prompt, SYS);
     if (seq !== kiSeq) return;
@@ -568,6 +599,19 @@ async function runKI(id, force) {
     w.note = parsed.notat;
     w.letter = parsed.brev || parsed.notat;
     w.live = true;
+    w.traceId = saveTrace({
+      sak: id,
+      org: sak.org,
+      oppgave: "Sakskort — vurdering og utkast",
+      live: true,
+      kilder,
+      prompt,
+      system: SYS,
+      tenkning: parsed.tenkning,
+      utkast: parsed.notat,
+      brev: parsed.brev,
+      raw: text
+    });
   } catch (e) {
     if (seq !== kiSeq) return;
     const fb = FALLBACK[id] || FALLBACK["T-2629"];
@@ -576,6 +620,20 @@ async function runKI(id, force) {
     w.letter = fb.brev;
     w.live = false;
     w.error = e?.simulation ? "ingen nøkkel" : (e?.message || "feil");
+    w.traceId = saveTrace({
+      sak: id,
+      org: sak.org,
+      oppgave: "Sakskort — vurdering og utkast",
+      live: false,
+      kilder,
+      prompt,
+      system: SYS,
+      tenkning: fb.tenkning,
+      utkast: fb.notat,
+      brev: fb.brev,
+      raw: "",
+      error: w.error
+    });
   }
   w.running = false;
   w.pipeline = "utkast";
@@ -648,7 +706,8 @@ function renderKlage() {
     box.innerHTML = `<p class="hint">${klage.running ? "Skriver to utkast…" : "Trykk «Kjør KI» eller vent — vi starter automatisk."}</p>`;
     return;
   }
-  box.innerHTML = `<h3>Hva som er nytt</h3><p class="mono">${esc(klage.vurdering)}</p>
+  box.innerHTML = `${klage.tenkning ? `<div class="think"><strong>Hva KI skrev mens den jobbet</strong><p class="mono">${esc(klage.tenkning)}</p><p><a href="transparens.html${klage.traceId ? `#${klage.traceId}` : ""}">Åpne hele tankeloggen →</a></p></div>` : ""}
+    <h3>Hva som er nytt</h3><p class="mono">${esc(klage.vurdering)}</p>
     <h3>Hvis du godtar kursleder-forklaringen</h3><p class="mono">${esc(klage.omgjoring)}</p>
     <h3>Hvis du ikke godtar den</h3><p class="mono">${esc(klage.opprettholdelse)}</p>`;
 }
@@ -662,7 +721,8 @@ function renderSlutt() {
     box.innerHTML = `<p class="hint">${slutt.running ? "Skriver utkast…" : "Starter KI."}</p>`;
     return;
   }
-  box.innerHTML = `<h3>Hva som er avvik</h3><p class="mono">${esc(slutt.vurdering)}</p>
+  box.innerHTML = `${slutt.tenkning ? `<div class="think"><strong>Hva KI skrev mens den jobbet</strong><p class="mono">${esc(slutt.tenkning)}</p><p><a href="transparens.html${slutt.traceId ? `#${slutt.traceId}` : ""}">Åpne hele tankeloggen →</a></p></div>` : ""}
+    <h3>Hva som er avvik</h3><p class="mono">${esc(slutt.vurdering)}</p>
     <h3>Utkast til tilbakekreving</h3><p class="mono">${esc(slutt.tilbake)}</p>
     <h3>Hvis mer dokumentasjon kommer</h3><p>${esc(slutt.alternativ)}</p>`;
 }
@@ -672,19 +732,23 @@ async function runKlage(force) {
   const sak = findSak("T-2629");
   klage.running = true;
   renderKlage();
-  const prompt = `Klage på T-2629. Opprinnelig: avkorting fordi admin var 32 %. Nytt faktum: 40 000 kr var kursleder (fag), ikke admin.\nSøknad: ${sak.soknad}\nUtdrag: ${RAG.admin.tekst}\n${RAG.klage.tekst}\nSkriv vurdering, omgjøring og opprettholdelse. Ikke vedtak.`;
+  const prompt = `Klage på T-2629. Opprinnelig: avkorting fordi admin var 32 %. Nytt faktum: 40 000 kr var kursleder (fag), ikke admin.\nSøknad: ${sak.soknad}\nUtdrag: ${RAG.admin.tekst}\n${RAG.klage.tekst}\nSkriv først ## Tenkning, deretter vurdering, omgjøring og opprettholdelse. Ikke vedtak.`;
   try {
     const text = await callModelAPI(prompt, SYS_KLAGE);
+    const tnk = (text.split(/##\s*Tenkning/i)[1] || "").split(/##\s*Vurdering/i)[0].trim();
     const v = (text.split(/##\s*Vurdering/i)[1] || text).split(/##\s*Utkast omgjøring/i)[0].trim();
     const o = (text.split(/##\s*Utkast omgjøring/i)[1] || "").split(/##\s*Utkast opprettholdelse/i)[0].trim();
     const p = (text.split(/##\s*Utkast opprettholdelse/i)[1] || "").trim();
-    klage.vurdering = v; klage.omgjoring = o; klage.opprettholdelse = p; klage.live = true;
+    klage.tenkning = tnk; klage.vurdering = v; klage.omgjoring = o; klage.opprettholdelse = p; klage.live = true;
+    klage.traceId = saveTrace({ sak: "T-2629", org: sak.org, oppgave: "Klage — to utkast", live: true, kilder: [RAG.admin.tittel, RAG.klage.tittel], prompt, system: SYS_KLAGE, tenkning: tnk, utkast: v, brev: o, raw: text });
   } catch (e) {
+    klage.tenkning = "1. Jeg leser at 40 000 kr skal være kursleder, ikke admin.\n2. Hvis det stemmer, synker adminandelen under 15 %.\n3. Jeg skriver to utkast. Du velger. Ikke vedtak.\nForhåndstekst — ikke modell.";
     klage.vurdering = "Nytt faktum: 40 000 kr var kursleder. Hvis du godtar det, synker adminandelen. Forhåndstekst — ikke modell.";
     klage.omgjoring = "Utkast — ikke vedtak\n\nGodta kursleder som aktivitet. Avkortingen blir mindre.";
     klage.opprettholdelse = "Utkast — ikke vedtak\n\nBehold opprinnelig avkorting mot 15 % admin.";
     klage.live = false;
     klage.error = e?.message || "feil";
+    klage.traceId = saveTrace({ sak: "T-2629", org: sak.org, oppgave: "Klage — to utkast", live: false, kilder: [RAG.admin.tittel, RAG.klage.tittel], prompt, system: SYS_KLAGE, tenkning: klage.tenkning, utkast: klage.vurdering, brev: klage.omgjoring, raw: "", error: klage.error });
   }
   klage.running = false;
   renderKlage();
@@ -695,19 +759,23 @@ async function runSlutt(force) {
   const sak = findSak("T-2631");
   slutt.running = true;
   renderSlutt();
-  const prompt = `Slutt T-2631. Innvilget 220 000. Brukt 140 000 på gressbane (ikke godkjent) og 80 000 på trening.\n${sak.soknad}\n${RAG.slutt.tekst}\nSkriv vurdering, tilbakekreving og alternativ. Ikke vedtak.`;
+  const prompt = `Slutt T-2631. Innvilget 220 000. Brukt 140 000 på gressbane (ikke godkjent) og 80 000 på trening.\n${sak.soknad}\n${RAG.slutt.tekst}\nSkriv først ## Tenkning, deretter vurdering, tilbakekreving og alternativ. Ikke vedtak.`;
   try {
     const text = await callModelAPI(prompt, SYS_SLUTT);
+    slutt.tenkning = (text.split(/##\s*Tenkning/i)[1] || "").split(/##\s*Vurdering/i)[0].trim();
     slutt.vurdering = (text.split(/##\s*Vurdering/i)[1] || text).split(/##\s*Utkast tilbakekreving/i)[0].trim();
     slutt.tilbake = (text.split(/##\s*Utkast tilbakekreving/i)[1] || "").split(/##\s*Alternativ/i)[0].trim();
     slutt.alternativ = (text.split(/##\s*Alternativ/i)[1] || "").trim();
     slutt.live = true;
+    slutt.traceId = saveTrace({ sak: "T-2631", org: sak.org, oppgave: "Slutt — tilbakekreving", live: true, kilder: [RAG.slutt.tittel], prompt, system: SYS_SLUTT, tenkning: slutt.tenkning, utkast: slutt.vurdering, brev: slutt.tilbake, raw: text });
   } catch (e) {
+    slutt.tenkning = "1. Jeg deler 220 000 kr i 140 000 anlegg og 80 000 trening.\n2. Anlegg er ikke godkjent. Trening kan stå.\n3. Utkast til tilbakekreving — ikke innkreving.\nForhåndstekst — ikke modell.";
     slutt.vurdering = "140 000 kr til gressbane er avvik. 80 000 kr trening kan stå. Forhåndstekst — ikke modell.";
     slutt.tilbake = "Utkast — ikke vedtak\n\nKrev 140 000 kr tilbake. Ikke innkreving.";
     slutt.alternativ = "Hvis anlegget likevel var godkjent, vurderer du saken på nytt.";
     slutt.live = false;
     slutt.error = e?.message || "feil";
+    slutt.traceId = saveTrace({ sak: "T-2631", org: sak.org, oppgave: "Slutt — tilbakekreving", live: false, kilder: [RAG.slutt.tittel], prompt, system: SYS_SLUTT, tenkning: slutt.tenkning, utkast: slutt.vurdering, brev: slutt.tilbake, raw: "", error: slutt.error });
   }
   slutt.running = false;
   renderSlutt();
@@ -785,7 +853,53 @@ window.lookupRegister = lookupRegister;
 window.submitSoknad = submitSoknad;
 window.fillPortalFromRegister = fillPortalFromRegister;
 
+function renderTransparens() {
+  const listBox = $("sporListe");
+  const det = $("sporDetalj");
+  if (!listBox || !det) return;
+  const list = loadJson(TRACE_KEY, []);
+  const hash = (location.hash || "").replace("#", "");
+  const sel = list.find((t) => t.id === hash) || list[0] || null;
+  if (!list.length) {
+    listBox.innerHTML = `<p class="hint">Ingen spor ennå. Åpne en sak på arbeidslisten og la KI kjøre — så dukker tenkningen opp her.</p>`;
+    det.innerHTML = `<p class="hint">Siden viser det KI skrev <em>før</em> notatet: hva den leste, hva den brukte, og hva den lot være. Det er modellens egne arbeidsnotater — ikke skjulte vekter inne i modellen.</p>`;
+    return;
+  }
+  listBox.innerHTML = list.map((t) => `
+    <button type="button" class="${sel && sel.id === t.id ? "on" : ""}" onclick="location.hash='${t.id}'; renderTransparens()">
+      <div class="meta"><span>${esc(t.sak)}</span><span class="tag ${t.live ? "tag-ok" : "tag-avkorting"}">${t.live ? "Live KI" : "Ikke modell"}</span></div>
+      <h3>${esc(t.org || t.sak)}</h3>
+      <p class="job">${esc(t.oppgave)} · ${esc(t.atVis)}</p>
+    </button>`).join("");
+  det.innerHTML = `
+    <p class="mono" style="color:#4f46e5;font-weight:700;margin:0">${esc(sel.sak)} · ${esc(sel.atVis)}</p>
+    <h2 style="margin:0.3rem 0">${esc(sel.oppgave)}</h2>
+    <p class="hint">${sel.live ? "Dette kom fra live KI via /api/chat." : `Forhåndstekst — ikke modell${sel.error ? ` (${esc(sel.error)})` : ""}.`}</p>
+    <div class="think">
+      <strong>Tenkning (skrevet før konklusjonen)</strong>
+      <p class="mono">${esc(sel.tenkning || "Ikke oppgitt i svaret.")}</p>
+    </div>
+    <h3>Kilder den fikk</h3>
+    <ul>${(sel.kilder || []).map((k) => `<li>${esc(k)}</li>`).join("") || "<li>ikke oppgitt</li>"}</ul>
+    <h3>Utkast etter tenkning</h3>
+    <p class="mono">${esc(sel.utkast || "ikke oppgitt")}</p>
+    ${sel.brev ? `<h3>Brev / andre utkast</h3><p class="mono">${esc(sel.brev)}</p>` : ""}
+    <details>
+      <summary>Hele prompten som ble sendt</summary>
+      <p class="mono" style="font-size:0.78rem">${esc(sel.prompt || "")}</p>
+    </details>
+    <p class="hint">Vi viser det modellen ble bedt om å skrive høyt. Vi ser ikke «skjult resonnering» inne i vektenettverket.</p>
+    <p><a class="btn btn-primary" href="behandle.html#${esc(sel.sak)}">Tilbake til saken</a></p>
+  `;
+}
+
+window.renderTransparens = renderTransparens;
+
 document.addEventListener("DOMContentLoaded", () => {
+  if ($("sporListe")) {
+    renderTransparens();
+    window.addEventListener("hashchange", renderTransparens);
+  }
   if ($("liste")) {
     renderRamme();
     renderList();
