@@ -37,21 +37,22 @@
       <a href="cockpit.html" class="px-3 py-1.5 rounded-lg bg-violet-800 hover:bg-violet-900 text-white text-xs font-semibold">Åpne prototypen →</a>
     </div>
 
-    <div class="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-950">
-      <strong>Prototype og øvelse.</strong> Ikke Bufdir. Ikke beslutningsstøtte i drift. Ikke automatisert vedtak. Ordningen, forskriften og sakene er fiktive. Admin 15 % og revisor 200 000 kr er <em>øvelsesregler 2026</em>. KI leser, foreslår og gjør forarbeid. <strong>Mennesket fatter vedtaket</strong> — i virkeligheten. Her journalføres bare mock.
+    <div class="rounded-xl border border-amber-300 bg-amber-50 px-4 py-2.5 text-sm text-amber-950">
+      <strong>Øvelse · fiktiv ordning · KI fatter ikke vedtak.</strong>
     </div>
+    <p class="text-xs text-slate-600">Ikke Bufdir. Admin 15 % og revisor 200 000 kr er øvelsesregler 2026. Kjører som statisk prototype, ikke container-suite.</p>
 
     <div class="bg-white p-5 sm:p-7 rounded-2xl border border-slate-200 shadow-sm space-y-5">
-      <p class="text-slate-800 leading-relaxed">Helheten er en <strong>hybrid pipeline</strong>: først det som kan sjekkes med regler, deretter språkmodell med utdrag fra <em>vår</em> mappe, så utkast, så deg. Cockpiten viser det som er bygget nå. Resten av denne siden er forslaget — hva som er på plass, og hva som bare er skissert videre.</p>
+      <p class="text-slate-800 leading-relaxed">Saken går i fire steg: først det som kan sjekkes med regler, deretter språkmodell med utdrag fra <em>vår</em> mappe, så utkast, så deg. Cockpiten viser det som er bygget nå. Neste fase (register, portal, arkiv) er <strong>simulert i prototypen</strong> — ikke koblet til ekte systemer.</p>
 
       <div class="grid sm:grid-cols-2 gap-2 text-xs">
         <div class="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-3 text-emerald-950">
           <p class="font-bold text-sm mb-1">Bygget nå</p>
-          Statisk side + <code class="font-mono">/api/chat</code>. Regler, synlig RAG, live semantikk/saksnotat/brev, klage- og sluttutkast, human-in-the-loop, mock-journal. Fallback merket «ikke modell».
+          Live KI på saken, synlige kilder, lastestatus, «Kjør på nytt», fallback merket «ikke modell». Klage og slutt på samme motor. Skjønnsramme på arbeidslista. T-2622 som øvelse. Simulert register, søkerportal og mock-arkiv.
         </div>
         <div class="rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 text-slate-800">
-          <p class="font-bold text-sm mb-1">Skissert videre</p>
-          Ekte Elements/Noark, SvarUt, nemnd, friststyring, læring til neste år, sandkasse mot intern mappe. Ikke FastAPI, ikke Next.js, ikke Sikri i denne prototypen.
+          <p class="font-bold text-sm mb-1">Ikke koblet til ekte systemer</p>
+          Ekte Enhetsregister, Elements/Sikri, SvarUt, Maskinporten og Docker-suite. Nemnd, friststyring og læring til neste år er fortsatt bare skissert.
         </div>
       </div>
     </div>
@@ -70,7 +71,7 @@
           <div class="flex-1 rounded-lg bg-slate-900 text-white px-2 py-3">4. Du<br><span class="font-normal text-slate-300">bekreft, juster, avvis, la stå</span></div>
         </div>
       </div>
-      <p class="text-xs text-slate-500">Bygget nå i cockpiten som fire klosser øverst på arbeidslisten. Live KI er førstevalg når <code class="font-mono">/api/chat</code> virker.</p>
+      <p class="text-xs text-slate-500">Bygget nå i cockpiten som fire klosser øverst på arbeidslisten. Live KI er førstevalg. Hvis kallet feiler, vises forhåndstekst merket «ikke modell».</p>
     </section>
 
     <section class="bg-white p-5 sm:p-7 rounded-2xl border border-slate-200 shadow-sm space-y-4">
@@ -85,7 +86,7 @@
         <article class="rounded-xl border border-slate-200 p-4 space-y-2">
           <p class="text-[11px] font-bold uppercase tracking-wider text-violet-700">Modul B · Semantikk</p>
           <p class="text-sm font-semibold text-slate-900">LLM + synlig RAG</p>
-          <p class="text-sm text-slate-600 leading-relaxed">Modellen scorer målgruppe, medvirkning og gratisprinsipp mot søknadstekst og fiktive utdrag. Mangler teksten noe, skal den skrive «ikke oppgitt». Kildene vises på sakskortet — ikke later som Bufdir-forskrift.</p>
+          <p class="text-sm text-slate-600 leading-relaxed">Modellen scorer målgruppe, medvirkning og gratisprinsipp mot søknadstekst og fiktive utdrag. På sakskortet ser du hva den fikk og kildelista. Mangler teksten noe, skal den skrive «ikke oppgitt».</p>
           <p class="text-[11px] font-semibold text-emerald-800">Bygget nå (live, med fallback)</p>
         </article>
         <article class="rounded-xl border border-slate-200 p-4 space-y-2">
@@ -159,16 +160,21 @@
     </section>
 
     <section class="bg-white p-5 sm:p-7 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-      <h3 class="text-base font-bold text-slate-900">6. Arkiv: målbilde, ikke Sikri</h3>
-      <p class="text-sm text-slate-700 leading-relaxed">I et ekte fagsystem ville prompt, svar og din handling gått i journal (Elements / Noark-tanken) via en adapter. <strong>Prototypen gjør ikke det.</strong> Mock-journalen lever i nettleseren. Ingenting sendes til Elements, Noark, Maskinporten eller SvarUt.</p>
+      <h3 class="text-base font-bold text-slate-900">6. Neste fase — simulert i prototypen</h3>
+      <p class="text-sm text-slate-700 leading-relaxed">Målbildet er Enhetsregister, søkerportal, Elements/Noark og en kjørbar test-suite. <strong>Her er det ærlig simulering</strong> — ikke live Brønnøysund, ikke Sikri, ikke Docker. Adapter-merking: <code class="font-mono text-xs">ARCHIVE_DRIVER=mock</code>.</p>
       <div class="grid md:grid-cols-2 gap-3 text-sm">
-        <div class="rounded-xl border border-amber-200 bg-amber-50 p-4 text-amber-950">
-          <p class="font-bold">Nå: mock-adapter</p>
-          <p class="mt-1 text-xs leading-relaxed">Samme felter som kapittel 9: tid, sak, handling, resultat. Forsvinner når du laster siden på nytt. Ærlig merking på sakskortet.</p>
+        <div class="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-950">
+          <p class="font-bold">Bygget nå (simulert)</p>
+          <ul class="mt-1 text-xs leading-relaxed space-y-1 list-disc pl-4">
+            <li>Enhetsregister: hardkodet oppslag i øvelsestabellen.</li>
+            <li>Søkerportal: fiktiv innsending som lager syntetisk sak i nettleseren.</li>
+            <li>Arkiv: saksmappe med poster I / N / U, «arkivert» etter godkjenning, tekst-PDF-lignende utkast.</li>
+          </ul>
+          <p class="mt-2 text-xs">Prøv fanen «Neste fase» i <a class="font-semibold underline underline-offset-2" href="cockpit.html">cockpiten</a> eller <a class="font-semibold underline underline-offset-2" href="portal.html">portal.html</a>.</p>
         </div>
         <div class="rounded-xl border border-slate-200 bg-slate-50 p-4 text-slate-800">
-          <p class="font-bold">Videre: ekte journal</p>
-          <p class="mt-1 text-xs leading-relaxed">Adapter mot intern arkivtjeneste, innsyn og sporbarhet. Krever avtale, miljø og data vi har kontroll på. Ikke del av denne statiske siden.</p>
+          <p class="font-bold">Ikke koblet / målbilde</p>
+          <p class="mt-1 text-xs leading-relaxed">Ekte register-API, Elements, Maskinporten og SvarUt. Docker-suite er målbilde: samme regler og mock-data i en isolert kjøring. Denne siden kjører som statisk prototype, ikke container-suite.</p>
         </div>
       </div>
     </section>
@@ -196,13 +202,13 @@
           </thead>
           <tbody class="text-slate-700">
             <tr class="border-b border-slate-100"><td class="py-2.5 pr-3">Regler + sakskort + HITL</td><td class="py-2.5 pr-3"><span class="text-emerald-800 font-semibold">Bygget</span></td><td class="py-2.5"><a class="font-semibold text-violet-800 underline underline-offset-2" href="cockpit.html">cockpit.html</a></td></tr>
-            <tr class="border-b border-slate-100"><td class="py-2.5 pr-3">Live KI + synlig RAG</td><td class="py-2.5 pr-3"><span class="text-emerald-800 font-semibold">Bygget</span> (fallback hvis API feiler)</td><td class="py-2.5">Sakskortet, merket «ikke modell» ved fallback</td></tr>
-            <tr class="border-b border-slate-100"><td class="py-2.5 pr-3">Klage T-2629</td><td class="py-2.5 pr-3"><span class="text-emerald-800 font-semibold">Bygget</span> som to utkast</td><td class="py-2.5">Fane Klage i cockpiten</td></tr>
-            <tr class="border-b border-slate-100"><td class="py-2.5 pr-3">Slutt T-2631</td><td class="py-2.5 pr-3"><span class="text-emerald-800 font-semibold">Bygget</span> som tilbakekrevingsutkast</td><td class="py-2.5">Fane Slutt i cockpiten</td></tr>
+            <tr class="border-b border-slate-100"><td class="py-2.5 pr-3">Live KI + kilder + «hva modellen fikk»</td><td class="py-2.5 pr-3"><span class="text-emerald-800 font-semibold">Bygget</span> (fallback merket «ikke modell»)</td><td class="py-2.5">Sakskortet</td></tr>
+            <tr class="border-b border-slate-100"><td class="py-2.5 pr-3">Klage T-2629 og slutt T-2631</td><td class="py-2.5 pr-3"><span class="text-emerald-800 font-semibold">Bygget</span> på samme motor</td><td class="py-2.5">Faner i cockpiten</td></tr>
+            <tr class="border-b border-slate-100"><td class="py-2.5 pr-3">Skjønnsramme (T-2632-familien)</td><td class="py-2.5 pr-3"><span class="text-emerald-800 font-semibold">Bygget</span></td><td class="py-2.5">Øverst på arbeidslista</td></tr>
             <tr class="border-b border-slate-100"><td class="py-2.5 pr-3">Plantet feil T-2622</td><td class="py-2.5 pr-3"><span class="text-emerald-800 font-semibold">Bygget</span></td><td class="py-2.5">Avvis med grunn</td></tr>
-            <tr class="border-b border-slate-100"><td class="py-2.5 pr-3">Portefølje og ramme</td><td class="py-2.5 pr-3"><span class="text-emerald-800 font-semibold">Bygget</span> som øvelse</td><td class="py-2.5"><a class="font-semibold text-violet-800 underline underline-offset-2" href="kapittel-9.html">kapittel-9.html</a></td></tr>
-            <tr class="border-b border-slate-100"><td class="py-2.5 pr-3">RAG/LangGraph-idé</td><td class="py-2.5 pr-3"><span class="text-emerald-800 font-semibold">Forklart</span></td><td class="py-2.5"><a class="font-semibold text-violet-800 underline underline-offset-2" href="kapittel-12.html">kapittel-12.html</a></td></tr>
-            <tr class="border-b border-slate-100"><td class="py-2.5 pr-3">Elements / Noark / SvarUt</td><td class="py-2.5 pr-3 text-slate-500">Skissert — mock nå</td><td class="py-2.5">Mock-journal</td></tr>
+            <tr class="border-b border-slate-100"><td class="py-2.5 pr-3">Portefølje og ramme (større øvelse)</td><td class="py-2.5 pr-3"><span class="text-emerald-800 font-semibold">Bygget</span></td><td class="py-2.5"><a class="font-semibold text-violet-800 underline underline-offset-2" href="kapittel-9.html">kapittel 9</a></td></tr>
+            <tr class="border-b border-slate-100"><td class="py-2.5 pr-3">Kildeforankring og fast rekkefølge</td><td class="py-2.5 pr-3"><span class="text-emerald-800 font-semibold">Forklart</span></td><td class="py-2.5"><a class="font-semibold text-violet-800 underline underline-offset-2" href="kapittel-12.html">kapittel 12</a></td></tr>
+            <tr class="border-b border-slate-100"><td class="py-2.5 pr-3">Register, portal, arkiv</td><td class="py-2.5 pr-3"><span class="text-emerald-800 font-semibold">Simulert</span> — ikke ekte systemer</td><td class="py-2.5"><a class="font-semibold text-violet-800 underline underline-offset-2" href="cockpit.html">Neste fase</a>, <a class="font-semibold text-violet-800 underline underline-offset-2" href="portal.html">portal</a></td></tr>
             <tr class="border-b border-slate-100"><td class="py-2.5 pr-3">Nemnd, frist, neste-år-læring</td><td class="py-2.5 pr-3 text-slate-500">Skissert</td><td class="py-2.5">Denne siden</td></tr>
             <tr><td class="py-2.5 pr-3">Lukket pilot mot intern mappe</td><td class="py-2.5 pr-3 text-slate-500">Skissert</td><td class="py-2.5">Sandkasse-tanken over</td></tr>
           </tbody>
@@ -213,7 +219,7 @@
   </main>
 
   <footer class="max-w-6xl mx-auto px-4 sm:px-6 mt-16 pt-8 pb-4 border-t border-slate-200 text-center text-xs text-slate-500 font-medium space-y-1">
-    <p>Pedagogisk prototype. <strong>Ikke et Bufdir-verktøy.</strong> Ikke automatisert vedtak. Sist oppdatert 23. august 2026.</p>
+    <p>Pedagogisk prototype. <strong>Ikke et Bufdir-verktøy.</strong> Ikke automatisert vedtak. Sist oppdatert 24. august 2026.</p>
   </footer>
 
   <div id="chapterNav" class="fixed bottom-0 inset-x-0 z-50 bg-white/95 backdrop-blur border-t border-slate-200 px-4 py-3 shadow-[0_-8px_24px_rgba(15,23,42,0.08)]">

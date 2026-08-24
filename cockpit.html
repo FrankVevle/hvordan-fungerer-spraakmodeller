@@ -37,25 +37,28 @@
       <a href="slik-gjor-vi-det.html" class="px-3 py-1.5 rounded-lg bg-white border border-slate-300 hover:border-violet-400 text-xs font-semibold text-slate-800">Slik er løsningen bygget</a>
     </div>
 
-    <div class="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-950">
-      <strong>Prototype og øvelse.</strong> Ikke Bufdir. Ikke beslutningsstøtte i drift. Ikke automatisert vedtak. Forskrift, register og journal er fiktive. Admin 15 % og revisor 200 000 kr er <em>øvelsesregler 2026</em>, ikke evig forskrift. Enhetsregister og Frivillighetsregister er en hardkodet tabell. Journalen er mock i nettleseren — ikke Elements, Noark eller Maskinporten.
+    <div class="rounded-xl border border-amber-300 bg-amber-50 px-4 py-2.5 text-sm text-amber-950">
+      <strong>Øvelse · fiktiv ordning · KI fatter ikke vedtak.</strong>
     </div>
+    <p class="text-xs text-slate-600">Ikke Bufdir. Admin 15 % og revisor 200 000 kr er øvelsesregler 2026. Journal og register er mock. Kjører som statisk prototype, ikke container-suite.</p>
 
     <div class="flex flex-wrap gap-1.5" role="tablist">
       <button type="button" id="cockpitTabArbeid" onclick="setCockpitTab('arbeid')" class="px-3 py-1.5 rounded-lg bg-slate-900 text-white text-xs font-semibold">Arbeidsliste</button>
       <button type="button" id="cockpitTabKlage" onclick="setCockpitTab('klage')" class="px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-xs font-semibold">Klage · T-2629</button>
       <button type="button" id="cockpitTabSlutt" onclick="setCockpitTab('slutt')" class="px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-xs font-semibold">Slutt · T-2631</button>
+      <button type="button" id="cockpitTabNeste" onclick="setCockpitTab('neste')" class="px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-xs font-semibold">Neste fase (simulert)</button>
     </div>
 
     <div id="cockpitArbeid" class="space-y-5">
+      <div id="cockpitRamme"></div>
       <div id="cockpitPipeline" class="grid grid-cols-2 md:grid-cols-4 gap-2"></div>
-      <p id="cockpitKiStatus" class="text-xs font-mono text-slate-600">Velg en sak. Reglene kjøres først. Deretter live KI via /api/chat (fallback bare hvis API feiler).</p>
+      <p id="cockpitKiStatus" class="text-xs text-slate-600">Velg en sak. Reglene kjøres først. Deretter live KI. Fallback merkes «ikke modell».</p>
 
       <div class="grid lg:grid-cols-12 gap-4">
         <section class="lg:col-span-4 bg-white rounded-2xl border border-slate-200 shadow-sm p-4 space-y-3">
           <div class="flex items-center justify-between gap-2">
             <h3 class="text-sm font-bold text-slate-900">Saker i øvelsen</h3>
-            <span class="text-[10px] font-mono text-slate-500">6 syntetiske</span>
+            <span id="cockpitListCount" class="text-[10px] font-mono text-slate-500">syntetiske saker</span>
           </div>
           <div id="cockpitList" class="space-y-2"></div>
         </section>
@@ -67,7 +70,7 @@
           <div class="rounded-2xl border border-slate-300 bg-white p-4 space-y-3">
             <div>
               <h3 class="text-sm font-bold text-slate-900">Mock-journal</h3>
-              <p class="text-xs text-slate-600 mt-1">Samme idé som kapittel 9. Prompt, svar og din handling lagres her. Ingenting sendes til Elements eller SvarUt.</p>
+              <p class="text-xs text-slate-600 mt-1"><code class="font-mono text-[11px]">ARCHIVE_DRIVER=mock</code> — ikke Elements, ikke Noark, ikke SvarUt.</p>
             </div>
             <p id="cockpitJournalStatus" class="text-[11px] font-mono text-slate-500">Journalen er tom til du åpner en sak eller trykker en knapp.</p>
             <div id="cockpitJournal" class="space-y-2 max-h-56 overflow-y-auto"></div>
@@ -119,10 +122,41 @@
       </div>
       <p id="cockpitSluttStatus" class="text-xs text-slate-600">Ingen handling ennå. Ikke innkreving, ikke SvarUt.</p>
     </div>
+
+    <div id="cockpitNeste" class="hidden space-y-4">
+      <div class="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800">
+        <p><strong>Bygget nå (simulert)</strong> i denne fanen og på <a class="font-semibold text-violet-800 underline underline-offset-2" href="portal.html">søkerportalen</a>. <strong>Ikke koblet</strong> til ekte Enhetsregister, Sikri/Elements, Maskinporten eller Docker-suite.</p>
+      </div>
+      <div class="grid lg:grid-cols-2 gap-4">
+        <section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 space-y-3">
+          <h3 class="text-sm font-bold text-slate-900">Simulert Enhetsregister</h3>
+          <p class="text-xs text-slate-600">Hardkodet øvelsestabell. Ingen Brønnøysund-kall.</p>
+          <label class="block text-xs font-semibold text-slate-700">Organisasjonsnummer
+            <input id="registerOrgnr" type="text" placeholder="999 626 727" class="mt-1 w-full px-3 py-2 rounded-lg border border-slate-300 text-sm font-normal" />
+          </label>
+          <button type="button" onclick="lookupSimulertRegister()" class="px-3 py-1.5 rounded-lg bg-slate-900 text-white text-xs font-semibold">Slå opp (simulert)</button>
+          <div id="registerResultat" class="text-sm text-slate-700"></div>
+        </section>
+        <section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 space-y-3">
+          <h3 class="text-sm font-bold text-slate-900">Søkerportal (øvelse)</h3>
+          <p class="text-xs text-slate-600">Fiktiv innsending lagres i nettleseren og dukker opp på arbeidslista. Ikke ekte portal.</p>
+          <a href="portal.html" class="inline-block px-3 py-1.5 rounded-lg bg-violet-800 text-white text-xs font-semibold">Åpne søkerportalen →</a>
+          <div id="portalSakerListe" class="text-xs text-slate-600"></div>
+        </section>
+      </div>
+      <section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 space-y-3">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <h3 class="text-sm font-bold text-slate-900">Elements / Noark (mock)</h3>
+          <span class="text-[10px] font-mono font-semibold text-slate-500">ARCHIVE_DRIVER=mock</span>
+        </div>
+        <p class="text-xs text-slate-600">Saksmappe med journalposter I / N / U. Etter godkjenning vises «arkivert» og et tekst-PDF-lignende utkast. Ingen Sikri.</p>
+        <div id="cockpitArkiv"></div>
+      </section>
+    </div>
   </main>
 
   <footer class="max-w-7xl mx-auto px-4 sm:px-6 mt-16 pt-8 pb-4 border-t border-slate-200 text-center text-xs text-slate-500 font-medium space-y-1">
-    <p>Pedagogisk prototype. <strong>Ikke et Bufdir-verktøy.</strong> Ikke automatisert vedtak. Sist oppdatert 23. august 2026.</p>
+    <p>Pedagogisk prototype. <strong>Ikke et Bufdir-verktøy.</strong> Ikke automatisert vedtak. Sist oppdatert 24. august 2026.</p>
   </footer>
 
   <div id="chapterNav" class="fixed bottom-0 inset-x-0 z-50 bg-white/95 backdrop-blur border-t border-slate-200 px-4 py-3 shadow-[0_-8px_24px_rgba(15,23,42,0.08)]">

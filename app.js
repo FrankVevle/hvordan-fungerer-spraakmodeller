@@ -22,6 +22,7 @@ const SITE_PAGES = [
   { file: "kapittel-9.html", title: "Kapittel 9 · Tilskuddsløpet", part: "Del 4" },
   { file: "cockpit.html", title: "Prototype · Tilskuddscockpit", part: "Del 4" },
   { file: "slik-gjor-vi-det.html", title: "Slik er løsningen bygget", part: "Del 4" },
+  { file: "portal.html", title: "Søkerportal (øvelse)", part: "Del 4" },
   { file: "kapittel-10.html", title: "Kapittel 10 · Personlig agent", part: "Del 4" },
   { file: "kapittel-12.html", title: "Kapittel 12 · RAG og LangGraph", part: "Del 5" }
 ];
@@ -3296,6 +3297,10 @@ function initLangGraphForslag() {
 }
 
 const COCKPIT_CASE_IDS = ["T-2629", "T-2632", "T-2603", "T-2622", "T-2631", "T-2612"];
+const COCKPIT_SKJONN_IDS = ["T-2629", "T-2632", "T-2622"];
+const ARCHIVE_DRIVER = "mock";
+const PORTAL_STORAGE_KEY = "ovelsePortalSaker";
+const ARKIV_STORAGE_KEY = "ovelseArkivMapper";
 
 const OVELSESREGISTER = [
   { orgnr: "999 626 727", navn: "Fjordheim kulturskolevenner", form: "forening", enhet: true, frivillig: true },
@@ -3548,7 +3553,70 @@ function escHtml(s) {
 }
 
 function lookupOvelsesregister(orgnr) {
-  return OVELSESREGISTER.find((r) => r.orgnr === orgnr) || null;
+  const norm = String(orgnr || "").replace(/\s/g, "");
+  return OVELSESREGISTER.find((r) => r.orgnr.replace(/\s/g, "") === norm) || null;
+}
+
+function loadPortalSaker() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(PORTAL_STORAGE_KEY) || "[]");
+    return Array.isArray(raw) ? raw : [];
+  } catch (_e) {
+    return [];
+  }
+}
+
+function savePortalSaker(list) {
+  try { localStorage.setItem(PORTAL_STORAGE_KEY, JSON.stringify(list)); } catch (_e) { /* ignore */ }
+}
+
+function loadArkivMapper() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(ARKIV_STORAGE_KEY) || "{}");
+    return raw && typeof raw === "object" ? raw : {};
+  } catch (_e) {
+    return {};
+  }
+}
+
+function saveArkivMapper(map) {
+  try { localStorage.setItem(ARKIV_STORAGE_KEY, JSON.stringify(map)); } catch (_e) { /* ignore */ }
+}
+
+function ensurePortalCasesInSaker() {
+  loadPortalSaker().forEach((p) => {
+    if (!tilskuddSaker.some((s) => s.id === p.id)) {
+      tilskuddSaker.push({
+        id: p.id,
+        org: p.org,
+        orgnr: p.orgnr,
+        kommune: "Øvelse",
+        aktivitet: p.aktivitet,
+        belop: Number(p.belop) || 0,
+        mottatt: p.at || "",
+        queue: "ready",
+        soknad: p.soknad,
+        reasons: [{ label: "Fra søkerportal", detail: "Syntetisk innsending i nettleseren." }]
+      });
+    }
+    if (!COCKPIT_EXTRA[p.id]) {
+      COCKPIT_EXTRA[p.id] = {
+        flag: "ok",
+        adminPct: 8,
+        adminBelop: Math.round((Number(p.belop) || 0) * 0.08),
+        rapportFjor: true,
+        budsjett: [
+          { post: "Aktivitet (portaløvelse)", belop: Number(p.belop) || 0, type: "aktivitet" }
+        ],
+        vedlegg: [{ navn: "Budsjett", status: "ok" }]
+      };
+    }
+  });
+}
+
+function cockpitListIds() {
+  const extra = loadPortalSaker().map((p) => p.id);
+  return [...COCKPIT_CASE_IDS, ...extra.filter((id) => !COCKPIT_CASE_IDS.includes(id))];
 }
 
 function cockpitSak(id) {
@@ -3708,7 +3776,13 @@ function parseCockpitKi(text) {
 }
 
 function applyCockpitFallback(id) {
-  const fb = COCKPIT_FALLBACK[id];
+  const fb = COCKPIT_FALLBACK[id] || {
+    malgruppe: { score: null, sitat: "ikke oppgitt" },
+    medvirkning: { score: null, sitat: "ikke oppgitt" },
+    gratis: { score: null, sitat: "ikke oppgitt" },
+    notat: "Forhåndstekst — ikke et modell-svar. Syntetisk portalsak. Ikke vedtak.",
+    brev: "Utkast — ikke vedtak\n\nDette er fallback, ikke live KI."
+  };
   return {
     malgruppe: fb.malgruppe,
     medvirkning: fb.medvirkning,
@@ -3747,6 +3821,7 @@ function ensureCockpitWork(id) {
       kiStatus: "Regler ferdige. Starter live KI…",
       kiLive: null,
       kiError: "",
+      lastPrompt: "",
       hitl: null,
       running: false
     };
@@ -3803,12 +3878,36 @@ function renderCockpitPipeline(work) {
   }).join("");
 }
 
+function renderCockpitRamme() {
+  const box = document.getElementById("cockpitRamme");
+  if (!box) return;
+  const saker = COCKPIT_SKJONN_IDS.map(cockpitSak).filter(Boolean);
+  const sumSøkt = saker.reduce((n, s) => n + s.belop, 0);
+  const over = sumSøkt - GRANT_SKJONN_RAMME;
+  const pct = Math.min(100, Math.round((sumSøkt / GRANT_SKJONN_RAMME) * 100));
+  box.innerHTML = `
+    <div class="rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-3 text-sm text-indigo-950">
+      <div class="flex flex-wrap items-baseline justify-between gap-2">
+        <p class="font-bold">Skjønnsramme (øvelse 2026)</p>
+        <p class="text-xs font-mono">${formatGrantKroner(GRANT_SKJONN_RAMME)}</p>
+      </div>
+      <p class="text-xs mt-1">T-2632-familien på arbeidslista (T-2629, T-2632, T-2622): søkt <strong>${formatGrantKroner(sumSøkt)}</strong>. ${over > 0 ? `Sprekk ${formatGrantKroner(over)} — KI kutter ikke. Du prioriterer.` : "Innenfor potten."} Ikke vedtak.</p>
+      <div class="mt-2 h-2 rounded-full bg-white/80 overflow-hidden border border-indigo-200">
+        <div class="h-full ${over > 0 ? "bg-amber-500" : "bg-indigo-600"}" style="width:${pct}%"></div>
+      </div>
+    </div>`;
+}
+
 function renderCockpitList() {
   const box = document.getElementById("cockpitList");
+  const count = document.getElementById("cockpitListCount");
+  ensurePortalCasesInSaker();
+  const ids = cockpitListIds();
+  if (count) count.textContent = `${ids.length} syntetiske`;
   if (!box) return;
-  box.innerHTML = COCKPIT_CASE_IDS.map((id) => {
+  box.innerHTML = ids.map((id) => {
     const sak = cockpitSak(id);
-    const extra = COCKPIT_EXTRA[id];
+    const extra = COCKPIT_EXTRA[id] || { flag: "ok" };
     const flag = cockpitFlagMeta(extra.flag);
     const on = cockpitSelectedId === id;
     return `
@@ -3837,6 +3936,7 @@ function renderCockpitCard() {
   const box = document.getElementById("cockpitCard");
   const status = document.getElementById("cockpitKiStatus");
   if (!box) return;
+  renderCockpitRamme();
   if (!cockpitSelectedId) {
     renderCockpitPipeline(null);
     if (status) status.textContent = "Velg en sak. Reglene kjøres først. Deretter KI.";
@@ -3844,16 +3944,16 @@ function renderCockpitCard() {
     return;
   }
   const sak = cockpitSak(cockpitSelectedId);
-  const extra = COCKPIT_EXTRA[sak.id];
+  const extra = COCKPIT_EXTRA[sak.id] || { vedlegg: [], budsjett: [], adminPct: 0, flag: "ok" };
   const work = ensureCockpitWork(sak.id);
   renderCockpitPipeline(work);
   if (status) status.textContent = work.kiStatus;
   const planted = work.semantic ? plantedCheck(sak.id, work.semantic) : null;
-  const vedleggHtml = extra.vedlegg.map((v) => {
+  const vedleggHtml = (extra.vedlegg || []).map((v) => {
     const ok = v.status === "ok";
     return `<li class="flex justify-between gap-2 text-xs"><span>${escHtml(v.navn)}</span><span class="${ok ? "text-emerald-700" : "text-rose-700"} font-semibold">${ok ? "OK" : "Mangler"}</span></li>`;
   }).join("");
-  const budsjettHtml = extra.budsjett.map((b) => `
+  const budsjettHtml = (extra.budsjett || []).map((b) => `
     <tr class="border-b border-slate-100">
       <td class="py-1 pr-2">${escHtml(b.post)}</td>
       <td class="py-1 pr-2 text-right font-mono">${formatGrantKroner(b.belop)}</td>
@@ -3925,6 +4025,16 @@ function renderCockpitCard() {
           <div class="space-y-1.5 mt-1">${checksHtml}</div>
         </div>
         ${ragPanelHtml(ragItems, "Øvelsesregler 2026: admin 15 % og revisor 200 000 kr.")}
+        <details class="rounded-xl border border-slate-200 bg-white px-3 py-2">
+          <summary class="text-xs font-bold text-slate-800 cursor-pointer">Hva modellen fikk</summary>
+          <p class="text-[11px] text-slate-600 mt-2">Søknadstekst, saksfakta og kildelista under ble sendt til live KI. Ingenting annet.</p>
+          <ul class="mt-2 text-[11px] text-slate-700 list-disc pl-4 space-y-0.5">
+            <li>${escHtml(sak.id)} · ${escHtml(sak.org)} · ${formatGrantKroner(sak.belop)}</li>
+            <li>Aktivitet: ${escHtml(sak.aktivitet)}</li>
+            <li>Kilder: ${escHtml(ragItems.map((r) => r.tittel).join("; "))}</li>
+          </ul>
+          <pre class="mt-2 text-[10px] font-mono whitespace-pre-wrap bg-slate-50 border border-slate-200 rounded-lg p-2 max-h-40 overflow-auto">${escHtml(work.lastPrompt || "Prompten settes når KI kjører.")}</pre>
+        </details>
         <div>
           <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500">KI-semantikk</h4>
           <div class="mt-1">${semHtml}</div>
@@ -3984,6 +4094,7 @@ async function runCockpitKI(id, force) {
   const ragItems = cockpitRagFor(sak);
   const rag = formatCockpitRag(sak);
   const userPrompt = `Saksnummer: ${sak.id}\nOrganisasjon: ${sak.org}\nSøkt beløp: ${sak.belop} kr\nAktivitet: ${sak.aktivitet}\nAdminandel i øvelsen: ${COCKPIT_EXTRA[id]?.adminPct ?? "ikke oppgitt"} %\n\nSØKNADSTEKST:\n${sak.soknad}\n\nRAG-UTDRAG (fiktiv veileder/forskrift, øvelse 2026 — ikke Bufdir):\n${rag}\n\nKilder sendt inn: ${ragItems.map((r) => r.tittel).join("; ")}\n\nSkriv semantikk, saksnotat og brevutkast. Ikke fatt vedtak.`;
+  work.lastPrompt = userPrompt;
   journaliser({
     type: "ki-kall",
     sak: id,
@@ -4068,6 +4179,7 @@ function cockpitHitl(action) {
   if (action === "bekreft") {
     work.hitl = `Du bekreftet forslaget på ${formatGrantKroner(work.recommended)}. Fortsatt ikke et vedtak.`;
     journaliser({ type: "hitl", sak: cockpitSelectedId, prompt: "Bekreft forslag", svar: work.hitl });
+    arkiverCockpitSak(cockpitSelectedId, work, "bekreft");
   } else if (action === "juster") {
     work.hitl = `Du justerte til ${formatGrantKroner(work.recommended)}. ${grunn || "Ingen skriftlig grunn."} Ikke vedtak.`;
     journaliser({ type: "hitl", sak: cockpitSelectedId, prompt: "Juster", svar: work.hitl });
@@ -4091,13 +4203,15 @@ function setCockpitTab(tab) {
   const arbeid = document.getElementById("cockpitArbeid");
   const klage = document.getElementById("cockpitKlage");
   const slutt = document.getElementById("cockpitSlutt");
+  const neste = document.getElementById("cockpitNeste");
   if (arbeid) arbeid.classList.toggle("hidden", tab !== "arbeid");
   if (klage) klage.classList.toggle("hidden", tab !== "klage");
   if (slutt) slutt.classList.toggle("hidden", tab !== "slutt");
-  ["Arbeid", "Klage", "Slutt"].forEach((name) => {
+  if (neste) neste.classList.toggle("hidden", tab !== "neste");
+  ["Arbeid", "Klage", "Slutt", "Neste"].forEach((name) => {
     const btn = document.getElementById(`cockpitTab${name}`);
     if (!btn) return;
-    const on = (name === "Arbeid" && tab === "arbeid") || (name === "Klage" && tab === "klage") || (name === "Slutt" && tab === "slutt");
+    const on = (name === "Arbeid" && tab === "arbeid") || (name === "Klage" && tab === "klage") || (name === "Slutt" && tab === "slutt") || (name === "Neste" && tab === "neste");
     btn.className = on
       ? "px-3 py-1.5 rounded-lg bg-slate-900 text-white text-xs font-semibold"
       : "px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-xs font-semibold";
@@ -4110,6 +4224,7 @@ function setCockpitTab(tab) {
     renderCockpitSlutt();
     if (!cockpitSlutt.vurdering && !cockpitSlutt.running) runCockpitSluttKI(false);
   }
+  if (tab === "neste") renderNesteFase();
 }
 
 function parseKlageKi(text) {
@@ -4304,6 +4419,11 @@ function journaliserCockpitKlage(valg) {
     prompt: valg === "godta" ? "Human-in-the-loop: foreslå omgjøring" : "Human-in-the-loop: foreslå opprettholdelse",
     svar: tekst
   });
+  arkiverCockpitSak("T-2629", {
+    recommended: 0,
+    note: cockpitKlage.vurdering,
+    letter: valg === "godta" ? cockpitKlage.omgjoring : cockpitKlage.opprettholdelse
+  }, valg === "godta" ? "klage-omgjor" : "klage-oppretthold");
 }
 
 function journaliserCockpitSlutt(valg) {
@@ -4318,16 +4438,195 @@ function journaliserCockpitSlutt(valg) {
     prompt: valg === "tilbake" ? "Human-in-the-loop: tilbakekrevingsutkast" : "Human-in-the-loop: la slutt stå",
     svar: tekst
   });
+  if (valg === "tilbake") {
+    arkiverCockpitSak("T-2631", {
+      recommended: 140000,
+      note: cockpitSlutt.vurdering,
+      letter: cockpitSlutt.tilbake
+    }, "slutt-tilbake");
+  }
+}
+
+function arkiverCockpitSak(id, work, handling) {
+  const sak = cockpitSak(id);
+  if (!sak) return;
+  const map = loadArkivMapper();
+  const now = new Date().toLocaleString("no-NO", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
+  const pdf = [
+    "UTKAST — IKKE VEDTAK",
+    `ARCHIVE_DRIVER=${ARCHIVE_DRIVER}`,
+    `Sak ${id} · ${sak.org}`,
+    `Handling: ${handling}`,
+    `Anbefalt beløp i øvelsen: ${work.recommended ?? "—"}`,
+    "",
+    "— Saksnotat —",
+    work.note || "ikke oppgitt",
+    "",
+    "— Brevutkast —",
+    work.letter || "ikke oppgitt",
+    "",
+    "Ikke Elements. Ikke Noark. Ikke SvarUt. Mock i nettleseren."
+  ].join("\n");
+  map[id] = {
+    sak: id,
+    org: sak.org,
+    driver: ARCHIVE_DRIVER,
+    arkivert: true,
+    at: now,
+    handling,
+    pdf,
+    poster: [
+      { art: "I", tittel: "Søknad / henvendelse mottatt", tekst: sak.soknad, at: now },
+      { art: "N", tittel: "Internt notat (KI + saksbehandler)", tekst: work.note || "ikke oppgitt", at: now },
+      { art: "U", tittel: "Utgående utkast arkivert", tekst: (work.letter || "").slice(0, 400), at: now }
+    ]
+  };
+  saveArkivMapper(map);
+  renderCockpitArkiv();
+}
+
+function renderCockpitArkiv() {
+  const box = document.getElementById("cockpitArkiv");
+  if (!box) return;
+  const map = loadArkivMapper();
+  const ids = Object.keys(map);
+  if (!ids.length) {
+    box.innerHTML = `<p class="text-xs text-slate-600">Ingen arkiverte mapper ennå. Bekreft et forslag på arbeidslista, eller ta et klage-/sluttutkast, så vises I/N/U her.</p>`;
+    return;
+  }
+  box.innerHTML = ids.map((id) => {
+    const m = map[id];
+    const posters = (m.poster || []).map((p) => `
+      <li class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+        <p class="text-[10px] font-mono font-bold text-slate-500">${escHtml(p.art)} · ${escHtml(p.at)}</p>
+        <p class="text-xs font-semibold text-slate-900">${escHtml(p.tittel)}</p>
+        <p class="text-[11px] text-slate-600 mt-0.5">${escHtml((p.tekst || "").slice(0, 220))}</p>
+      </li>`).join("");
+    return `<article class="rounded-xl border border-slate-200 p-3 space-y-2">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <p class="text-sm font-bold text-slate-900">${escHtml(id)} · ${escHtml(m.org)}</p>
+        <span class="text-[10px] font-bold uppercase tracking-wider ${m.arkivert ? "text-emerald-800" : "text-slate-500"}">${m.arkivert ? "Arkivert (mock)" : "Åpen"}</span>
+      </div>
+      <p class="text-[11px] text-slate-500">Driver: ${escHtml(m.driver || ARCHIVE_DRIVER)} · ${escHtml(m.at || "")}</p>
+      <ul class="space-y-1.5">${posters}</ul>
+      <button type="button" onclick="lastNedArkivUtkast('${id}')" class="px-3 py-1.5 rounded-lg bg-white border border-slate-300 text-xs font-semibold">Last ned tekst-PDF-lignende utkast</button>
+    </article>`;
+  }).join("");
+}
+
+function lastNedArkivUtkast(id) {
+  const m = loadArkivMapper()[id];
+  if (!m) return;
+  const blob = new Blob([m.pdf || ""], { type: "text/plain;charset=utf-8" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `${id}-utkast-mock.txt`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function renderNesteFase() {
+  renderPortalSakerListe();
+  renderCockpitArkiv();
+}
+
+function renderPortalSakerListe() {
+  const box = document.getElementById("portalSakerListe");
+  if (!box) return;
+  const list = loadPortalSaker();
+  box.innerHTML = list.length
+    ? list.map((p) => `<p><a class="font-semibold text-violet-800 underline underline-offset-2" href="cockpit.html#${p.id}">${escHtml(p.id)}</a> · ${escHtml(p.org)} · ${formatGrantKroner(p.belop)}</p>`).join("")
+    : `<p>Ingen portalsaker ennå. Send en i <a class="font-semibold text-violet-800 underline underline-offset-2" href="portal.html">søkerportalen</a>.</p>`;
+}
+
+function lookupSimulertRegister() {
+  const input = document.getElementById("registerOrgnr");
+  const out = document.getElementById("registerResultat");
+  if (!out) return;
+  const hit = lookupOvelsesregister(input ? input.value : "");
+  if (!hit) {
+    out.innerHTML = `<p class="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-rose-950">Ikke funnet i øvelsestabellen. Simulert register — ikke Brønnøysund.</p>`;
+    return;
+  }
+  out.innerHTML = `<div class="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-emerald-950">
+    <p class="font-bold">${escHtml(hit.navn)}</p>
+    <p class="text-xs mt-1">${escHtml(hit.orgnr)} · ${escHtml(hit.form)} · Enhet ${hit.enhet ? "ja" : "nei"} · Frivillig ${hit.frivillig ? "ja" : "nei"}</p>
+    <p class="text-[11px] mt-1">Simulert register. Ikke live API.</p>
+  </div>`;
+}
+
+function lookupPortalRegister() {
+  const input = document.getElementById("portalOrgnr");
+  const status = document.getElementById("portalRegisterStatus");
+  const org = document.getElementById("portalOrg");
+  const hit = lookupOvelsesregister(input ? input.value : "");
+  if (!hit) {
+    if (status) status.textContent = "Ikke i simulert register. Du kan likevel sende inn — saken flagges i cockpiten.";
+    return;
+  }
+  if (org) org.value = hit.navn;
+  if (status) status.textContent = `${hit.navn}: ${hit.form}. Enhet ${hit.enhet ? "ja" : "nei"}, frivillig ${hit.frivillig ? "ja" : "nei"}. Simulert register.`;
+}
+
+function submitPortalSoknad() {
+  const orgnr = (document.getElementById("portalOrgnr")?.value || "").trim();
+  const org = (document.getElementById("portalOrg")?.value || "").trim();
+  const aktivitet = document.getElementById("portalAktivitet")?.value || "4.1 Kultur-, fritids- og ferieaktivitet";
+  const belop = Number(document.getElementById("portalBelop")?.value || 0);
+  const soknad = (document.getElementById("portalSoknad")?.value || "").trim();
+  const status = document.getElementById("portalSubmitStatus");
+  if (!orgnr || !org || !soknad || !belop) {
+    if (status) status.textContent = "Fyll ut org.nr., navn, beløp og tekst.";
+    return;
+  }
+  const list = loadPortalSaker();
+  const existing = list.find((p) => p.orgnr.replace(/\s/g, "") === orgnr.replace(/\s/g, ""));
+  const id = existing ? existing.id : `T-9${String(100 + list.length).slice(-3)}`;
+  const row = {
+    id,
+    orgnr,
+    org,
+    aktivitet,
+    belop,
+    soknad,
+    at: new Date().toLocaleString("no-NO", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })
+  };
+  const next = existing ? list.map((p) => (p.id === id ? row : p)) : [...list, row];
+  savePortalSaker(next);
+  ensurePortalCasesInSaker();
+  if (status) status.textContent = existing
+    ? `Oppdatert ${id} (øvelse). Åpne cockpiten for å se saken.`
+    : `Opprettet ${id} (øvelse). Åpne cockpiten for å se saken.`;
+  renderPortalMineSaker();
+  renderPortalSakerListe();
+}
+
+function renderPortalMineSaker() {
+  const box = document.getElementById("portalMineSaker");
+  if (!box) return;
+  const list = loadPortalSaker();
+  box.innerHTML = list.length
+    ? `<ul class="space-y-1">${list.map((p) => `<li>${escHtml(p.id)} · ${escHtml(p.org)} · ${formatGrantKroner(p.belop)} · <a class="font-semibold text-violet-800 underline underline-offset-2" href="cockpit.html#${p.id}">åpne i cockpit</a></li>`).join("")}</ul>`
+    : `<p class="text-slate-500">Ingen innsendinger i denne nettleseren.</p>`;
+}
+
+function initPortalPage() {
+  if (!document.getElementById("portalOrgnr")) return;
+  lookupPortalRegister();
+  renderPortalMineSaker();
 }
 
 function initCockpit() {
   if (!document.getElementById("cockpitRoot")) return;
+  ensurePortalCasesInSaker();
+  renderCockpitRamme();
   renderCockpitList();
   renderCockpitJournal();
   renderCockpitPipeline(null);
   renderCockpitCard();
   renderCockpitKlage();
   renderCockpitSlutt();
+  renderNesteFase();
 }
 
 window.addEventListener('DOMContentLoaded', () => {
@@ -4335,6 +4634,7 @@ window.addEventListener('DOMContentLoaded', () => {
   toggleMode(currentMode, { keepChapter: true });
   syncChapterNav();
   initCockpit();
+  initPortalPage();
   applyHash();
   renderTokens();
   setScenario(0);
