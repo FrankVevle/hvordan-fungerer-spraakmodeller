@@ -3,7 +3,7 @@ const ARCHIVE_KEY = "ovelseArkivMapper";
 const PORTAL_KEY = "ovelsePortalSaker";
 const TRACE_KEY = "ovelseKiSpor";
 
-const SAKER = [
+const BASE_SAKER = [
   {
     id: "T-2629",
     org: "Fjordheim kulturskolevenner",
@@ -149,14 +149,129 @@ const SAKER = [
   }
 ];
 
-const REGISTER = [
-  { orgnr: "999626727", navn: "Fjordheim kulturskolevenner", form: "forening", frivillig: true },
-  { orgnr: "999303808", navn: "Storøy ungdomsverksted", form: "forening", frivillig: true },
-  { orgnr: "999333001", navn: "AS Fjord Byggdrift", form: "AS", frivillig: false },
-  { orgnr: "999222333", navn: "Brobyggerne Oslo", form: "forening", frivillig: true },
-  { orgnr: "999101202", navn: "Myr idrettslag anlegg", form: "idrettslag", frivillig: true },
-  { orgnr: "999555666", navn: "Åsby bibliotekvenner", form: "forening", frivillig: true }
+const NYE_SAKER_FRO = [
+  ["ok", "Elveleia speidere", "Havblik", "4.1", 64000, 9, "Helgeleir for 14 barn via SFO. Gratis. Budsjett for mat og buss."],
+  ["ok", "Nordhei korpsforeldre", "Nordhei", "4.1", 88000, 10, "Instrumentlån og dirigent. Gratis for barn i husholdninger med lav inntekt."],
+  ["ok", "Sørvika ungdomsklubb", "Sørvik", "4.8", 120000, 12, "Åpen møteplass to kvelder i uken. Unge vertskap. Ingen egenandel."],
+  ["ok", "Tjeldøya friluftslag", "Tjeldøya", "4.1", 95000, 8, "Ferieuke med telt og kano. Rekruttering via helsestasjon."],
+  ["ok", "Kirkebukta menighetsungdom", "Kirkebukta", "4.1", 54000, 7, "Åpen sommerleir også for barn utenfor menigheten. Gratis."],
+  ["ok", "Sandnesøy 4H", "Sandnesøy", "4.1", 71000, 11, "Gårdsuke for 16 barn. Mat og utstyr dekket. Ingen kontingent."],
+  ["ok", "Vestvåg ungdomsteater", "Vestvåg", "4.1", 99000, 13, "Teaterverksted etter skoletid. Kostymer og instruktør. Gratis."],
+  ["ok", "Indre dalen idrettslag", "Indre dalen", "4.3", 150000, 10, "Utstyrssentral ski og fotball. Gratis utlån. Lager allerede på plass."],
+  ["ok", "Østbrygga husflidslag", "Østbrygga", "4.1", 43000, 9, "Søndagsverksted strikking og tre. Barn 8–14. Gratis."],
+  ["ok", "Lilleøya Røde Kors", "Lilleøya", "4.2", 175000, 12, "Deltidsjobb og førstehjelpskurs for 10 ungdommer. Avtale med kommunen."],
+  ["ok", "Fjellheim speidergruppe", "Fjellheim", "4.1", 38000, 6, "Overnattingstur. Mat og buss. Rekruttert via skole."],
+  ["ok", "Møllebakken kor", "Møllebakken", "4.1", 67000, 10, "Barnekor to kvelder. Notehefter og pianist. Gratis."],
+  ["avkorting", "Stormyra kulturlag", "Stormyra", "4.1", 280000, 28, "Gratis filmverksted. Prosjektledelse er 28 % av budsjettet."],
+  ["avkorting", "Havna musikkverksted", "Havna", "4.1", 310000, 24, "Studio etter skoletid. Administrasjon og honorar til leder 24 %."],
+  ["avkorting", "Dalstranda ungdomsforum", "Dalstranda", "4.8", 190000, 22, "Åpen kafé. Lederhonorar trekker admin over 15 %."],
+  ["avkorting", "Grønnlia frivilligsentral", "Grønnlia", "4.1", 240000, 31, "Ferieklubb. Kontor og prosjektledelse utgjør 31 %."],
+  ["avkorting", "Kystlaget Sør", "Sørkyst", "4.1", 205000, 19, "Seilhelg for 20 barn. Koordinatorposten er 19 %."],
+  ["avkorting", "Åsnes aktivitetslag", "Åsnes", "4.1", 165000, 27, "Gratis klatrekurs. Drift og ledelse 27 %."],
+  ["avkorting", "Bukta kulturhusvenner", "Bukta", "4.1", 355000, 21, "Scenekunstuke. Produsentpost over 15 % admin."],
+  ["avkorting", "Reinåsen ildsjelene", "Reinåsen", "4.11", 142000, 33, "Aktivitetsdag. Mye «koordinering» i budsjettet (33 %)."],
+  ["formalia", "AS Barnas Eventbyrå", "Oslo", "4.1", 390000, 9, "Aksjeselskap søker ferieleir for kunder og ansattebarn. Ikke frivillig."],
+  ["formalia", "AS Fjord Camp Drift", "Fjordheim", "4.1", 510000, 8, "Kommersiell camp. Formålet er salg av plasser, ikke inkludering."],
+  ["formalia", "AS Ung Jobb Partner", "Bergen", "4.2", 270000, 10, "AS uten frivillig registrering. Vil ha tilskudd til egen bemanning."],
+  ["formalia", "AS Leirplass Vest", "Vestvåg", "4.1", 440000, 7, "Søker som utleieselskap. Ingen frivillig formålsparagraf."],
+  ["formalia", "Privatperson L. Holm", "Tromsø", "4.4", 22000, 0, "Privatperson søker kontingent til datterens håndball. Ikke i registeret."],
+  ["formalia", "AS Fritidskasse Pro", "Trondheim", "4.4", 180000, 11, "Kommersielt selskap vil administrere fritidskasse mot provisjon."],
+  ["historikk", "Ørnes bibliotekvenner", "Ørnes", "4.1", 61000, 9, "Leksehjelp. Tiltaket treffer. Fjorårets sluttrapport mangler."],
+  ["historikk", "Sletta idrettslag", "Sletta", "4.1", 88000, 10, "Inkluderende trening. Rapport 2025 er ikke godkjent."],
+  ["historikk", "Vika speidere", "Vika", "4.1", 47000, 8, "Helgeleir. Forrige tildeling uten innlevert regnskap."],
+  ["historikk", "Holt ungdomskorps", "Holt", "4.1", 79000, 11, "Instrumentlån. Årsrapport for i fjor mangler i øvelsen."],
+  ["historikk", "Nesodden fritidsnett", "Nesodden", "4.8", 134000, 12, "Møteplass. Underveisrapport fra fjorårets sak er åpen."],
+  ["historikk", "Kroken 4H", "Kroken", "4.1", 56000, 9, "Gårdshelg. Sluttregnskap 2025 ikke levert."],
+  ["ramme", "Storbyen jobbhub", "Oslo", "4.2", 620000, 12, "28 praksisplasser. Formelt komplett. Beløpet sprenger potten alene nesten."],
+  ["ramme", "Region Vest ungdomsløft", "Bergen", "4.2", 540000, 11, "Veiledning og lønn i 8 uker. Stor sak mot fiktiv ramme."],
+  ["ramme", "Nordland inkluderingsnett", "Bodø", "4.2", 480000, 10, "Jobb og kurs i tre kommuner. Prioritering mot ramme gjenstår."],
+  ["ramme", "Innlandet praksisallianse", "Lillehammer", "4.2", 410000, 13, "Lønnet praksis. Formalia OK. Du må se potten."],
+  ["avvik", "Sanden idrettspark", "Sanden", "4.1", 200000, 6, "Innvilget til trening. 120 000 kr gikk til ny tribune. Resten aktivitet."],
+  ["avvik", "Holmen seilforening", "Holmen", "4.1", 175000, 5, "Innvilget seilkurs. 90 000 kr brukt på ny jolle, ikke kurs."],
+  ["avvik", "Brua svømmeklubb", "Brua", "4.1", 160000, 7, "Innvilget svømmetilbud. 70 000 kr til bassengvarme (drift/anlegg)."],
+  ["avvik", "Moen ridelag", "Moen", "4.1", 145000, 8, "Innvilget ridning for barn. 80 000 kr til ridehalltak."],
+  ["plantet", "Jobbsprett Grorud", "Oslo", "4.2", 188000, 11, "CV-kurs og deltidsjobb. KI kan blande inn § 14 og golfklubb."],
+  ["plantet", "Ung i arbeid Lofoten", "Svolvær", "4.2", 172000, 10, "Praksis i butikk. Samme plantede feilrisiko: feil paragraf."],
+  ["ok", "Havblik Røde Kors ungdom", "Havblik", "4.2", 198000, 12, "Lik sak i øvelsen: jobbtilbud, ikke anlegg. Bruk denne som presedens."],
+  ["ok", "Tangen åpen hall", "Tangen", "4.8", 110000, 9, "Lørdagshall. Unge vakter. Gratis inngang."],
+  ["ok", "Røst kulturminnelag", "Røst", "4.11", 36000, 8, "Engangsdag med fortelling og mat. Lite beløp, komplett."],
+  ["ok", "Alvdal lesevenner", "Alvdal", "4.1", 41000, 7, "Høytlesing etter SFO. Bøker allerede på biblioteket."],
+  ["ok", "Selbu sjakk-klubb junior", "Selbu", "4.1", 29000, 5, "Sjakkgruppe. Brett lånes. Ingen egenandel."],
+  ["ok", "Oppdal klatrevenner", "Oppdal", "4.1", 82000, 10, "Innendørs klatring for 12 barn. Utstyr lånes ut."],
+  ["ok", "Fauske filmklubb ung", "Fauske", "4.1", 53000, 9, "Filmverksted. Kamera fra skolen. Gratis."],
+  ["ok", "Vadsø ungdomsradio", "Vadsø", "4.1", 76000, 11, "Radiokurs. Utstyr på plass. Rekruttering via ungdomsråd."]
 ];
+
+function utvidNySak(row, i) {
+  const [flag, org, kommune, aktKode, belop, adminPct, soknad] = row;
+  const aktivitet = {
+    "4.1": "4.1 Kultur, fritid og ferie",
+    "4.2": "4.2 Jobbtilbud og veiledning",
+    "4.3": "4.3 Utstyrssentral",
+    "4.4": "4.4 Lokal fritidskasse",
+    "4.8": "4.8 Åpen møteplass",
+    "4.11": "4.11 Annen lokal aktivitet"
+  }[aktKode] || aktKode;
+  const adminBelop = Math.round(belop * (adminPct / 100));
+  const orgnr = `998 ${String(100 + i).padStart(3, "0")} ${String(200 + i).padStart(3, "0")}`;
+  const jobb = {
+    ok: "Formalia ser greie ut. Les teksten og si om du vil innstille.",
+    avkorting: "Se adminandelen. Foreslå kutt eller la stå.",
+    formalia: "Sjekk om søker i det hele tatt kan søke.",
+    historikk: "Tiltaket kan treffe, men fjorårets rapport mangler.",
+    ramme: "Formalia OK. Beløpet presser potten. Du prioriterer.",
+    avvik: "Sluttregnskap: penger brukt utenfor vilkår. Vurder tilbakekreving.",
+    plantet: "Pass på feil paragraf. Avvis med grunn hvis KI blander § 14 og golf."
+  }[flag];
+  const frivillig = flag !== "formalia";
+  const form = /AS |Privatperson/.test(org) ? (/Privatperson/.test(org) ? "privat" : "AS") : "forening";
+  const attestOk = belop <= 200000 || (flag !== "avkorting" && flag !== "formalia");
+  const rapportFjor = flag !== "historikk";
+  const aktivitetBelop = Math.max(0, belop - adminBelop);
+  let budsjett = [
+    { post: flag === "avvik" ? "Godkjent aktivitet (brukt)" : "Aktivitet", belop: flag === "avvik" ? Math.round(belop * 0.4) : aktivitetBelop, type: "aktivitet" },
+    { post: "Administrasjon", belop: adminBelop, type: "admin" }
+  ];
+  if (flag === "avvik") {
+    budsjett = [
+      { post: "Godkjent aktivitet (brukt)", belop: Math.round(belop * 0.4), type: "aktivitet" },
+      { post: "Anlegg / utstyr uten vilkår", belop: Math.round(belop * 0.6), type: "avvik" }
+    ];
+  }
+  const vedlegg = [
+    { navn: "Budsjett", status: "ok" },
+    { navn: "Vedtekter", status: flag === "formalia" && form === "privat" ? "mangler" : "ok" },
+    { navn: "Revisorattest", status: attestOk ? "ok" : "mangler" },
+    { navn: "Fjorårets rapport", status: rapportFjor ? "ok" : "mangler" }
+  ];
+  return {
+    id: `T-27${String(i + 1).padStart(2, "0")}`,
+    org,
+    orgnr,
+    kommune,
+    aktivitet,
+    belop,
+    jobb,
+    soknad,
+    flag,
+    adminPct,
+    adminBelop,
+    rapportFjor,
+    form,
+    frivillig,
+    budsjett,
+    vedlegg
+  };
+}
+
+const SAKER = BASE_SAKER.concat(NYE_SAKER_FRO.map(utvidNySak));
+
+const REGISTER = SAKER.filter((s) => !/Privatperson/.test(s.org)).map((s) => ({
+  orgnr: String(s.orgnr || "").replace(/\s/g, ""),
+  navn: s.org,
+  form: s.form || (/AS /.test(s.org) ? "AS" : "forening"),
+  frivillig: s.frivillig !== false && !/AS /.test(s.org)
+})).filter((r, i, arr) => arr.findIndex((x) => x.orgnr === r.orgnr) === i);
 
 const RAG = {
   admin: { tittel: "Øvelsesregel 2026 · administrasjon", tekst: "Prosjektledelse og generell administrasjon skal som hovedregel ikke overstige 15 % av søknadssummen. Overskytende kan foreslås avkortet. Dette er øvelse, ikke evig forskrift. Avkorting er forslag, ikke vedtak." },
@@ -214,6 +329,22 @@ const FALLBACK = {
   }
 };
 
+function fallbackFromSak(sak) {
+  const planted = sak.flag === "plantet";
+  return {
+    malgruppe: { score: planted ? 4 : 3, sitat: sak.soknad.slice(0, 90) },
+    medvirkning: { score: null, sitat: "ikke oppgitt" },
+    gratis: { score: /gratis/i.test(sak.soknad) ? 5 : null, sitat: /gratis/i.test(sak.soknad) ? "Gratis" : "ikke oppgitt" },
+    tenkning: planted
+      ? `1. Jeg henter § 14 og Golfklubben Fjord som lik sak.\n2. Søknaden gjelder ${sak.aktivitet}, men jeg holder likevel på avslag.\n3. Dette er plantet feil i øvelsen.`
+      : `1. Jeg leste søknaden til ${sak.org}.\n2. Flagget i øvelsen er ${sak.flag}.\n3. Jeg skriver utkast, ikke vedtak.`,
+    notat: planted
+      ? "Anbefalt avslag med henvisning til § 14 og Golfklubben Fjord (T-2621)."
+      : `Øvelsesutkast for ${sak.id}. ${sak.jobb} Ikke vedtak.`,
+    brev: `Utkast — ikke vedtak\n\nTil ${sak.org}\n\n${sak.soknad}\n\nDette er et forslag til saksbehandler.`
+  };
+}
+
 const SYS = `Du er forvaltningsrådgiver i en pedagogisk øvelse (2026). Du fatter ALDRI vedtak. Du er ikke Bufdir.
 Du får KUN søknadstekst og utdrag under. Hvis noe mangler: skriv «ikke oppgitt».
 Admin 15 % og revisor 200 000 kr er øvelsesregler 2026.
@@ -259,6 +390,7 @@ Deretter:
 const work = {};
 const journal = [];
 let selected = null;
+let listFilter = "alle";
 let kiSeq = 0;
 const klage = { running: false, live: null, tenkning: "", vurdering: "", omgjoring: "", opprettholdelse: "", error: "", traceId: "" };
 const slutt = { running: false, live: null, tenkning: "", vurdering: "", tilbake: "", alternativ: "", error: "", traceId: "" };
@@ -311,21 +443,22 @@ function runGrantRules(sak) {
   } else {
     checks.push({ status: "green", label: "Historikk", text: "Ingen åpen rapportmangel i øvelsen." });
   }
-  if (sak.id === "T-2632" && recommended > 0) {
+  if ((sak.flag === "ramme" || sak.id === "T-2632") && recommended > 0) {
     checks.push({ status: "yellow", label: "Ramme", text: `Stort beløp mot potten ${kr(RAMME)}. KI kutter ikke. Du prioriterer.` });
   }
-  if (sak.id === "T-2631") {
+  if (sak.flag === "avvik" || sak.id === "T-2631") {
     recommended = 0;
-    checks.push({ status: "red", label: "Slutt", text: "140 000 kr til gressbane er ikke godkjent kostnad." });
+    checks.push({ status: "red", label: "Slutt", text: "Deler av beløpet er brukt utenfor vilkår. Utkast: tilbakekreving. Ikke innkreving." });
   }
   return { checks, recommended };
 }
 
 function ragFor(sak) {
   const items = [RAG.soker, RAG.admin, RAG.revisor, RAG.mal];
-  if (sak.id === "T-2622") items.push(RAG.jobb, RAG.planted);
+  if (sak.flag === "plantet" || sak.id === "T-2622") items.push(RAG.jobb, RAG.planted);
+  else if (String(sak.aktivitet).includes("4.2")) items.push(RAG.jobb);
   if (sak.id === "T-2629") items.push(RAG.klage);
-  if (sak.id === "T-2631") items.push(RAG.slutt);
+  if (sak.flag === "avvik" || sak.id === "T-2631") items.push(RAG.slutt);
   return items;
 }
 
@@ -448,22 +581,39 @@ function renderPipe(w) {
 function renderRamme() {
   const el = $("ramme");
   if (!el) return;
-  const ids = ["T-2629", "T-2632", "T-2622"];
-  const sum = ids.map(findSak).reduce((n, s) => n + s.belop, 0);
+  const sum = SAKER.reduce((n, s) => n + s.belop, 0);
   const pct = Math.min(100, Math.round((sum / RAMME) * 100));
-  el.innerHTML = `<div class="ramme"><strong>Pott i øvelsen:</strong> ${kr(RAMME)}. Tre skjønnssaker på lista har søkt ${kr(sum)}. KI kutter ikke for å få det til å gå opp. <strong>Du prioriterer.</strong><div class="bar"><i style="width:${pct}%"></i></div></div>`;
+  el.innerHTML = `<div class="ramme"><strong>Pott i øvelsen:</strong> ${kr(RAMME)}. ${SAKER.length} saker har søkt ${kr(sum)} til sammen. KI kutter ikke for å få det til å gå opp. <strong>Du prioriterer.</strong><div class="bar"><i style="width:${pct}%"></i></div></div>`;
+}
+
+function sakerFiltrert() {
+  if (listFilter === "alle") return SAKER;
+  return SAKER.filter((s) => s.flag === listFilter);
+}
+
+function setListFilter(flag) {
+  listFilter = flag;
+  renderList();
 }
 
 function renderList() {
   const box = $("liste");
   if (!box) return;
-  box.innerHTML = SAKER.map((sak) => `
+  const flags = ["alle", "ok", "avkorting", "formalia", "historikk", "ramme", "avvik", "plantet"];
+  const chips = flags.map((f) => {
+    const n = f === "alle" ? SAKER.length : SAKER.filter((s) => s.flag === f).length;
+    const on = listFilter === f;
+    const label = f === "alle" ? "Alle" : tagText(f);
+    return `<button type="button" class="chip ${on ? "on" : ""}" onclick="setListFilter('${f}')">${label} ${n}</button>`;
+  }).join("");
+  const rows = sakerFiltrert().map((sak) => `
     <button type="button" class="${selected === sak.id ? "on" : ""}" onclick="openSak('${sak.id}')">
       <div class="meta"><span>${sak.id}</span><span class="tag ${tagClass(sak.flag)}">${tagText(sak.flag)}</span></div>
       <h3>${esc(sak.org)}</h3>
       <p class="amt">${kr(sak.belop)}</p>
       <p class="job">${esc(sak.jobb)}</p>
     </button>`).join("");
+  box.innerHTML = `<div class="chips">${chips}</div>${rows}`;
 }
 
 function renderJournal() {
@@ -491,7 +641,7 @@ function renderCard() {
   const sak = findSak(selected);
   const w = ensure(selected);
   renderPipe(w);
-  const planted = sak.id === "T-2622";
+  const planted = sak.flag === "plantet";
   const kiNote = w.running
     ? `<div class="note live-run">KI leser søknaden nå…</div>`
     : w.live === true
@@ -614,7 +764,7 @@ async function runKI(id, force) {
     });
   } catch (e) {
     if (seq !== kiSeq) return;
-    const fb = FALLBACK[id] || FALLBACK["T-2629"];
+    const fb = FALLBACK[id] || fallbackFromSak(sak);
     w.semantic = fb;
     w.note = fb.notat;
     w.letter = fb.brev;
@@ -841,6 +991,7 @@ function fillPortalFromRegister() {
     : "Ikke i tabellen. Du kan likevel sende.";
 }
 
+window.setListFilter = setListFilter;
 window.openSak = openSak;
 window.runKI = runKI;
 window.hitl = hitl;

@@ -109,7 +109,10 @@ body.proto {
   border-radius: 14px;
   padding: 1rem;
 }
-.list { display: flex; flex-direction: column; gap: 0.5rem; }
+.chips { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-bottom: 0.65rem; }
+.chip { border: 1px solid #cbd5e1; background: #fff; border-radius: 999px; padding: 0.2rem 0.55rem; font-size: 0.72rem; font-weight: 650; cursor: pointer; }
+.chip.on { background: #0f172a; color: #fff; border-color: #0f172a; }
+.list { display: flex; flex-direction: column; gap: 0.5rem; max-height: calc(100vh - 14rem); overflow: auto; }
 .list button {
   text-align: left;
   width: 100%;
