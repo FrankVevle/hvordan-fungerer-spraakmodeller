@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portefølje — Tilskudd (øvelse)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="proto.css">
+</head>
+<body class="proto">
+  <header class="proto-bar">
+    <div class="proto-brand">Tilskudd (øvelse)<span>Portefølje — kø, pott og spørsmål</span></div>
+    <nav class="proto-nav">
+      <a href="index.html">Start</a>
+      <a href="behandle.html">Arbeidsliste</a>
+      <a class="is-on" href="analyse.html">Portefølje</a>
+      <a href="transparens.html">Hva KI tenkte</a>
+      <a href="om.html">Slik virker det</a>
+      <a href="../index.html">Kurset</a>
+    </nav>
+  </header>
+  <main class="proto-shell proto-wide">
+    <div class="banner"><strong>Øvelse.</strong> Fiktiv ordning. Maskinell opptelling. KI fatter ikke vedtak. Vi kjører ikke vurdering på hver sak — modellen får et uttrekk av bunken.</div>
+    <section class="hero">
+      <h1>Hva gjør du i dag — og hva kan du ikke innstille?</h1>
+      <p>Kø, penger, likebehandling og risiko. Åpne en sak når du skal bruke skjønn. Spør KI om hele bunken nederst.</p>
+    </section>
+    <div id="analyseRot"></div>
+    <section class="panel" style="margin-top:1rem">
+      <h2>Spør KI om hele bunken</h2>
+      <p class="hint">Modellen får én linje per sak (samme fakta som reglene). Siter saksnummer. Ikke vedtak.</p>
+      <form id="pfForm" onsubmit="sendPortefoljeSporsmal(event)">
+        <label class="field">Spørsmål
+          <textarea id="pfQ" rows="3" placeholder="Hvilke saker i Oslo har admin over 15 %?"></textarea>
+        </label>
+        <div class="chips">
+          <button type="button" class="chip" onclick="document.getElementById('pfQ').value='Hvem kan ikke søke?';">Hvem kan ikke søke?</button>
+          <button type="button" class="chip" onclick="document.getElementById('pfQ').value='Hvor mye admin-kutt totalt hvis 15 %-regelen brukes likt?';">Admin-kutt totalt</button>
+          <button type="button" class="chip" onclick="document.getElementById('pfQ').value='Hvilke 4.2-saker er store mot potten?';">4.2 mot potten</button>
+          <button type="button" class="chip" onclick="document.getElementById('pfQ').value='Finn de plantede sakene.';">Finn plantede</button>
+          <button type="button" class="chip" onclick="document.getElementById('pfQ').value='Sammenlign Oslo og Bergen: antall, søkt beløp og admin over 15 %.';">Oslo vs Bergen</button>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-primary" type="submit">Spør</button>
+        </div>
+      </form>
+      <div id="pfSvar"></div>
+    </section>
+  </main>
+  <footer class="proto-foot">Pedagogisk prototype. Ikke Bufdir. Ikke vedtak.</footer>
+  <script src="proto.js"></script>
+</body>
+</html>

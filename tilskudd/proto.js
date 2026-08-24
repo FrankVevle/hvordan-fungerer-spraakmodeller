@@ -202,7 +202,7 @@ const NYE_SAKER_FRO = [
   ["ok", "Vadsø ungdomsradio", "Vadsø", "4.1", 76000, 11, "Radiokurs. Utstyr på plass. Rekruttering via ungdomsråd."]
 ];
 
-function utvidNySak(row, i) {
+function utvidNySak(row, i, opt = {}) {
   const [flag, org, kommune, aktKode, belop, adminPct, soknad] = row;
   const aktivitet = {
     "4.1": "4.1 Kultur, fritid og ferie",
@@ -213,7 +213,9 @@ function utvidNySak(row, i) {
     "4.11": "4.11 Annen lokal aktivitet"
   }[aktKode] || aktKode;
   const adminBelop = Math.round(belop * (adminPct / 100));
-  const orgnr = `998 ${String(100 + i).padStart(3, "0")} ${String(200 + i).padStart(3, "0")}`;
+  const orgPrefix = opt.orgPrefix || "998";
+  const idNr = opt.idStart || 2701;
+  const orgnr = `${orgPrefix} ${String(100 + i).padStart(3, "0")} ${String(200 + i).padStart(3, "0")}`;
   const jobb = {
     ok: "Formalia ser greie ut. Les teksten og si om du vil innstille.",
     avkorting: "Se adminandelen. Foreslå kutt eller la stå.",
@@ -245,7 +247,7 @@ function utvidNySak(row, i) {
     { navn: "Fjorårets rapport", status: rapportFjor ? "ok" : "mangler" }
   ];
   return {
-    id: `T-27${String(i + 1).padStart(2, "0")}`,
+    id: `T-${idNr + i}`,
     org,
     orgnr,
     kommune,
@@ -264,7 +266,101 @@ function utvidNySak(row, i) {
   };
 }
 
-const SAKER = BASE_SAKER.concat(NYE_SAKER_FRO.map(utvidNySak));
+function byggFlereSakerFro() {
+  const kommuner = ["Oslo", "Bergen", "Trondheim", "Stavanger", "Tromsø", "Kristiansand", "Drammen", "Fredrikstad", "Sandnes", "Bodø", "Ålesund", "Tønsberg", "Hamar", "Lillehammer", "Narvik", "Alta", "Molde", "Haugesund", "Skien", "Porsgrunn", "Arendal", "Horten", "Moss", "Sarpsborg", "Gjøvik", "Steinkjer", "Levanger", "Harstad", "Hammerfest", "Voss"];
+  const akt = ["4.1", "4.2", "4.3", "4.4", "4.8", "4.11"];
+  const ok = [
+    "Nordlys ungdomslag", "Havblikk kulturverksted", "Fjellsti idrettsungdom", "Elvebredd fritidsklubb", "Skogkanten aktivitetslag",
+    "Brygga møteplass", "Tjernet ungdomsforum", "Bakketoppen kulturhus ung", "Sandstranda naturgruppe", "Myrkanten teaterlag",
+    "Kollen speiderungdom", "Varden korps ung", "Lunden danselag", "Åsen sjakklubb", "Bukta seilungdom",
+    "Holmen klatregruppe", "Sletta fotballungdom", "Dalane ridning ung", "Fossen kajakklubb", "Ryggen orientering",
+    "Neset kunstverksted", "Vika filmgruppe", "Moen musikkverksted", "Haugen lesesirkel ung", "Lia friluftslag",
+    "Marka sykkelungdom", "Tangen båtlag ung", "Øya kor ung", "Kroken hobbyverksted", "Stien turgruppe",
+    "Hella badeklubb", "Berget klatrevegg", "Kilen skatehall", "Odde kajakkungdom", "Floen natursti",
+    "Grenda 4H ung", "Tunet gårdsaktivitet", "Loftet scene ung", "Naustet kystlag", "Bryggekanten kajakk"
+  ];
+  const avk = [
+    "Admin tungt Oslo vest", "Prosjektkontoret ungdom Bergen", "Koordinatorlaget Trondheim", "Driftstungt Stavanger ung",
+    "Ledelse først Tromsø", "Kontorlaget Kristiansand", "Stabsklubben Drammen", "Prosjektadmin Fredrikstad",
+    "Byrålaget Sandnes", "Sekretariatet Bodø ung", "Konsulentlaget Ålesund", "Overhead Tønsberg",
+    "Stabskultur Hamar", "Prosjektledelse Lillehammer", "Koordinering Narvik", "Adminforum Alta",
+    "Drift Molde ung", "Kontor Haugesund", "Stab Skien", "Ledelsesteam Porsgrunn"
+  ];
+  const form = [
+    "UngJobb AS Oslo", "Privatperson Kari Nord", "AktivLæring AS Bergen", "Privatperson Per Vest",
+    "UngCoach AS Trondheim", "Privatperson Mina Sør", "FritidPro AS Stavanger", "Privatperson Ole Øst",
+    "JobbStart AS Tromsø", "Privatperson Liv Fjell", "MentorUng AS Drammen", "Privatperson Nils Dal"
+  ];
+  const hist = [
+    "Rapportløse Fjordungen", "Glemt slutt Troms", "Uten rapport Vestfold", "Mangler år Innlandet",
+    "Ingen rapport Rogaland", "Utgår rapport Nordland", "Ubesvart Agder", "Tom historikk Østfold",
+    "Uten fjor Møre", "Rapport savnes Finnmark"
+  ];
+  const ramme = [
+    "Storbyjobb Oslo", "Regionsløft Bergen", "Fylkesungdom Trøndelag", "Vestkystløftet Rogaland",
+    "Nordnorge-satsing Troms", "Sørlandet storpott", "Østfold samløft", "Innlandet storaktivitet"
+  ];
+  const avvik = [
+    "Anlegg uten vilkår Vest", "Gressbane-saken Øst", "Utstyr utenfor formål", "Bygg i stedet for aktivitet",
+    "Reise uten målgruppe", "Lokalene til eier"
+  ];
+  const plant = [
+    "Golf og paragraf-saken", "Feilsitat idrettsparagraf", "Plantet klubb Sør", "Paragrafblanding Nord"
+  ];
+  const tekst = {
+    ok: (org, k) => `${org} i ${k} tilbyr ukentlig aktivitet for ungdom 13–19. Deltakelse er gratis. Ungdomsrådet er med på planleggingen.`,
+    avkorting: (org, k) => `${org} i ${k} søker prosjektledelse og administrasjon. Aktivitetene er gratis, men mye av budsjettet er koordinering.`,
+    formalia: (org, k) => `${org} i ${k} vil tilby kurs mot betaling. Teksten er kort og sier lite om medvirkning.`,
+    historikk: (org, k) => `${org} i ${k} viderefører fjorårets tiltak. Ungdommene selv foreslo tidspunkt. Rapporten er ikke lastet opp.`,
+    ramme: (org, k) => `${org} i ${k} søker et stort regionalt løft. Gratis deltakelse. Medvirkning via ungdomspanel. Beløpet er høyt mot potten.`,
+    avvik: (org, k) => `${org} i ${k} har brukt deler av tilskuddet på anlegg og utstyr utenfor vilkår. Aktivitet for ungdom var bare deler av året.`,
+    plantet: (org, k) => `${org} i ${k} viser til § 14 om golfanlegg og klubbhus. Riktig regel i øvelsen er jobbtilbud 4.2, ikke golf. Sammenlign Havblik T-2608.`
+  };
+  const belopFor = {
+    ok: (i) => 42000 + (i % 18) * 5500,
+    avkorting: (i) => 78000 + (i % 10) * 9000,
+    formalia: (i) => 55000 + (i % 8) * 12000,
+    historikk: (i) => 61000 + (i % 7) * 7000,
+    ramme: (i) => 268000 + (i % 8) * 14000,
+    avvik: (i) => 92000 + (i % 6) * 8000,
+    plantet: (i) => 74000 + i * 11000
+  };
+  const adminFor = {
+    ok: (i) => 8 + (i % 7),
+    avkorting: (i) => 18 + (i % 12),
+    formalia: (i) => 11 + (i % 5),
+    historikk: (i) => 10 + (i % 5),
+    ramme: (i) => 10 + (i % 4),
+    avvik: (i) => 9 + (i % 4),
+    plantet: (i) => 12 + (i % 3)
+  };
+  const grupper = [
+    ["ok", ok],
+    ["avkorting", avk],
+    ["formalia", form],
+    ["historikk", hist],
+    ["ramme", ramme],
+    ["avvik", avvik],
+    ["plantet", plant]
+  ];
+  const rows = [];
+  let n = 0;
+  for (const [flag, navn] of grupper) {
+    navn.forEach((org, i) => {
+      const kommune = kommuner[n % kommuner.length];
+      const kode = akt[n % akt.length];
+      rows.push([flag, org, kommune, kode, belopFor[flag](i), adminFor[flag](i), tekst[flag](org, kommune)]);
+      n += 1;
+    });
+  }
+  return rows;
+}
+
+const FLERE_SAKER_FRO = byggFlereSakerFro();
+
+const SAKER = BASE_SAKER
+  .concat(NYE_SAKER_FRO.map((row, i) => utvidNySak(row, i)))
+  .concat(FLERE_SAKER_FRO.map((row, i) => utvidNySak(row, i, { orgPrefix: "997", idStart: 2801 })));
 
 const REGISTER = SAKER.filter((s) => !/Privatperson/.test(s.org)).map((s) => ({
   orgnr: String(s.orgnr || "").replace(/\s/g, ""),
@@ -453,6 +549,143 @@ function runGrantRules(sak) {
   return { checks, recommended };
 }
 
+function tekstsignal(sak) {
+  const t = String(sak.soknad || "").toLowerCase();
+  return {
+    gratis: /gratis|ingen egenandel|uten kostnad/.test(t),
+    medvirkning: /medvirk|ungdomsråd|ungdommene selv|ungdomspanel|deltakerne planlegger/.test(t)
+  };
+}
+
+function sakLenke(id) {
+  return `behandle.html#${id}`;
+}
+
+function analyserPortefolje() {
+  const rader = SAKER.map((sak) => {
+    const rules = runGrantRules(sak);
+    const signal = tekstsignal(sak);
+    const røde = rules.checks.filter((c) => c.status === "red");
+    const gule = rules.checks.filter((c) => c.status === "yellow");
+    const kuttAdmin = sak.adminPct > 15 ? Math.max(0, sak.adminBelop - Math.round(sak.belop * 0.15)) : 0;
+    const sokerRod = røde.some((c) => c.label === "Søker");
+    return { sak, rules, signal, røde, gule, kuttAdmin, sokerRod };
+  });
+  const sokt = rader.reduce((s, r) => s + r.sak.belop, 0);
+  const etterAdminKutt = rader.reduce((s, r) => s + (r.sak.belop - r.kuttAdmin), 0);
+  const utenRodeFormalia = rader.filter((r) => !r.sokerRod && r.sak.flag !== "avvik" && r.sak.id !== "T-2631");
+  const sumKanKonkurrere = utenRodeFormalia.reduce((s, r) => s + r.sak.belop, 0);
+  const koe = {
+    kanIkke: rader.filter((r) => r.sokerRod),
+    avklare: rader.filter((r) => !r.sokerRod && (r.røde.some((c) => c.label === "Historikk") || r.gule.some((c) => c.label === "Revisor"))),
+    skjonn: rader.filter((r) => !r.sokerRod && r.sak.flag !== "avvik" && r.sak.flag !== "plantet" && (r.gule.some((c) => c.label === "Admin 15 %" || c.label === "Ramme"))),
+    plantet: rader.filter((r) => r.sak.flag === "plantet"),
+    avvik: rader.filter((r) => r.sak.flag === "avvik" || r.sak.id === "T-2631")
+  };
+  const adminOver = rader.filter((r) => r.sak.adminPct > 15).sort((a, b) => b.sak.adminPct - a.sak.adminPct);
+  const perAkt = {};
+  rader.forEach((r) => {
+    const k = r.sak.aktivitet;
+    if (!perAkt[k]) perAkt[k] = [];
+    perAkt[k].push(r);
+  });
+  const perKommune = {};
+  rader.forEach((r) => {
+    perKommune[r.sak.kommune] = (perKommune[r.sak.kommune] || 0) + 1;
+  });
+  const toppKommuner = Object.entries(perKommune).sort((a, b) => b[1] - a[1]).slice(0, 8);
+  const storst = [...rader].sort((a, b) => b.sak.belop - a.sak.belop).slice(0, 10);
+  return {
+    rader,
+    antall: rader.length,
+    sokt,
+    etterAdminKutt,
+    sumKanKonkurrere,
+    utenRodeAntall: utenRodeFormalia.length,
+    koe,
+    adminOver,
+    perAkt,
+    toppKommuner,
+    storst,
+    risiko: {
+      rodSoker: koe.kanIkke.length,
+      gulRevisor: rader.filter((r) => r.gule.some((c) => c.label === "Revisor")).length,
+      rodHistorikk: rader.filter((r) => r.røde.some((c) => c.label === "Historikk")).length,
+      avvik: koe.avvik.length,
+      gratisJa: rader.filter((r) => r.signal.gratis).length,
+      medvirkJa: rader.filter((r) => r.signal.medvirkning).length
+    }
+  };
+}
+
+function portefoljeDigest() {
+  return analyserPortefolje().rader.map((r) => {
+    const rod = r.røde.map((c) => c.label).join("/") || "-";
+    const gul = r.gule.map((c) => c.label).join("/") || "-";
+    const setning = String(r.sak.soknad || "").replace(/\s+/g, " ").slice(0, 90);
+    return `${r.sak.id} | ${r.sak.org} | ${r.sak.kommune} | ${r.sak.aktivitet} | søkt ${r.sak.belop} | admin ${r.sak.adminPct}% | ${r.sak.flag} | anbefalt ${r.rules.recommended} | rød:${rod} | gul:${gul} | ${setning}`;
+  }).join("\n");
+}
+
+function fallbackPortefoljeSvar(sporsmal) {
+  const a = analyserPortefolje();
+  const q = String(sporsmal || "").toLowerCase();
+  const linjer = [
+    "Ikke modell. Maskinell opptelling fra analysen:",
+    `${a.antall} saker. Søkt ${kr(a.sokt)} mot pott ${kr(RAMME)}.`,
+    `Kan ikke innstilles (søker): ${a.koe.kanIkke.length}. Må avklares: ${a.koe.avklare.length}. Skjønn: ${a.koe.skjonn.length}. Plantet: ${a.koe.plantet.length}. Avvik: ${a.koe.avvik.length}.`,
+    `Admin-kutt totalt ${kr(a.sokt - a.etterAdminKutt)}. Uten røde formalia/avvik kan ${a.utenRodeAntall} saker konkurrere om potten (${kr(a.sumKanKonkurrere)}).`
+  ];
+  if (/oslo|kommune/.test(q)) {
+    const oslo = a.rader.filter((r) => /oslo/i.test(r.sak.kommune) && r.sak.adminPct > 15);
+    linjer.push(`Oslo med admin over 15 %: ${oslo.map((r) => r.sak.id).join(", ") || "ingen i uttrekket"}.`);
+  }
+  if (/plante/.test(q)) linjer.push(`Plantet: ${a.koe.plantet.map((r) => r.sak.id).join(", ")}.`);
+  if (/ikke.*søk|kan ikke/.test(q)) linjer.push(`Kan ikke søke: ${a.koe.kanIkke.map((r) => r.sak.id).join(", ")}.`);
+  return linjer.join(" ");
+}
+
+const SYS_PORTEFOLJE = `Du er forvaltningsrådgiver i en øvelse. Bruk KUN uttrekket. Siter saksnummer. Ikke fatt vedtak. Skriv «ikke i uttrekket» hvis noe mangler. Fiktiv ordning. KI forbereder, mennesket bestemmer.`;
+
+async function sporPortefolje(sporsmal) {
+  const digest = portefoljeDigest();
+  const prompt = `Uttrekk av alle saker (én linje per sak):\n${digest}\n\nSpørsmål fra saksbehandler:\n${sporsmal}`;
+  try {
+    const text = await callModelAPI(prompt, SYS_PORTEFOLJE);
+    const id = saveTrace({
+      sak: "portefolje",
+      org: `${SAKER.length} saker`,
+      oppgave: "Porteføljespørsmål",
+      live: true,
+      kilder: ["Porteføljeuttrekk", RAG.admin.tittel, RAG.soker.tittel],
+      prompt,
+      system: SYS_PORTEFOLJE,
+      tenkning: "",
+      utkast: text,
+      brev: "",
+      raw: text
+    });
+    return { text, live: true, traceId: id };
+  } catch (e) {
+    const text = fallbackPortefoljeSvar(sporsmal);
+    const id = saveTrace({
+      sak: "portefolje",
+      org: `${SAKER.length} saker`,
+      oppgave: "Porteføljespørsmål",
+      live: false,
+      kilder: ["analyserPortefolje"],
+      prompt,
+      system: SYS_PORTEFOLJE,
+      tenkning: "",
+      utkast: text,
+      brev: "",
+      raw: "",
+      error: e.message || "api"
+    });
+    return { text, live: false, traceId: id, error: e.message };
+  }
+}
+
 function ragFor(sak) {
   const items = [RAG.soker, RAG.admin, RAG.revisor, RAG.mal];
   if (sak.flag === "plantet" || sak.id === "T-2622") items.push(RAG.jobb, RAG.planted);
@@ -566,6 +799,85 @@ function saveJson(key, val) {
   try { localStorage.setItem(key, JSON.stringify(val)); } catch (_e) { /* ignore */ }
 }
 
+function lesArkiv(id) {
+  const map = loadJson(ARCHIVE_KEY, {});
+  return map[id] || null;
+}
+
+function byggKiVurdering(sak, w) {
+  const sjekker = (w.rules?.checks || []).map((c) => `- ${c.label} [${c.status}]: ${c.text}`).join("\n");
+  const sem = w.semantic || {};
+  const linje = (label, item) => `${label}: ${item?.score != null ? `${item.score}/5` : "—"} · ${item?.sitat || "ikke oppgitt"}`;
+  const innhold = [
+    "KI-VURDERING — UTKAST, IKKE VEDTAK",
+    "Øvelse. Fiktiv ordning. Mennesket bestemmer.",
+    "",
+    `Sak: ${sak.id}`,
+    `Søker: ${sak.org}`,
+    `Kommune: ${sak.kommune}`,
+    `Aktivitet: ${sak.aktivitet}`,
+    `Søkt: ${kr(sak.belop)}`,
+    `Foreslått beløp: ${kr(w.recommended)}`,
+    `Kilde: ${w.live === true ? "live KI" : w.live === false ? "forhåndstekst — ikke modell" : "ikke kjørt"}`,
+    `Tid: ${new Date().toLocaleString("no-NO")}`,
+    "",
+    "## Regelutfall",
+    sjekker || "(ingen)",
+    "",
+    "## Tekstvurdering",
+    linje("Målgruppe", sem.malgruppe),
+    linje("Medvirkning", sem.medvirkning),
+    linje("Gratis", sem.gratis),
+    "",
+    "## Tenkning",
+    sem.tenkning || "(ikke oppgitt)",
+    "",
+    "## Saksnotat",
+    w.note || sem.notat || "(ikke skrevet)",
+    "",
+    "## Brevutkast",
+    w.letter || sem.brev || "(ikke skrevet)",
+    "",
+    "Dette dokumentet er et arbeidsvedlegg. Det er ikke et enkeltvedtak."
+  ].join("\n");
+  return {
+    tittel: `${sak.id}-ki-vurdering.txt`,
+    type: "ki-vurdering",
+    innhold
+  };
+}
+
+function journalforVedlegg(id, dok, handling) {
+  const sak = findSak(id);
+  if (!sak || !dok) return null;
+  const map = loadJson(ARCHIVE_KEY, {});
+  const row = map[id] || { sak: id, org: sak.org, dokumenter: [] };
+  if (!row.dokumenter) row.dokumenter = [];
+  row.dokumenter.unshift({
+    tittel: dok.tittel,
+    type: dok.type || "vedlegg",
+    at: new Date().toLocaleString("no-NO"),
+    innhold: dok.innhold,
+    merknad: "Simulert journalpost i øvelsesarkivet. Ikke ekte arkivsystem."
+  });
+  row.at = new Date().toLocaleString("no-NO");
+  row.handling = handling || row.handling || "vedlegg";
+  if (dok.type === "ki-vurdering") row.kiVurdering = dok.innhold;
+  map[id] = row;
+  saveJson(ARCHIVE_KEY, map);
+  return row;
+}
+
+function lastNedTekst(filnavn, tekst) {
+  const blob = new Blob([tekst], { type: "text/plain;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filnavn;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 500);
+}
+
 function renderPipe(w) {
   const el = $("pipe");
   if (!el) return;
@@ -651,7 +963,24 @@ function renderCard() {
         : `<div class="note">Venter på KI-steget.</div>`;
   const checks = w.rules.checks.map((c) => `<div class="check check-${c.status}"><small>${c.status === "green" ? "OK" : c.status === "yellow" ? "Se her" : "Stopp"} · ${esc(c.label)}</small>${esc(c.text)}</div>`).join("");
   const budsjett = sak.budsjett.map((b) => `<tr><td>${esc(b.post)}</td><td style="text-align:right">${kr(b.belop)}</td><td>${esc(b.type)}</td></tr>`).join("");
+  const arkiv = lesArkiv(sak.id);
+  const kiDok = w.semantic ? byggKiVurdering(sak, w) : null;
+  const kiIArkiv = (arkiv?.dokumenter || []).some((d) => d.type === "ki-vurdering") || Boolean(arkiv?.kiVurdering);
   const vedlegg = sak.vedlegg.map((v) => `<li>${esc(v.navn)} — <strong>${v.status === "ok" ? "med" : "mangler"}</strong></li>`).join("");
+  const kiVedlegg = kiDok
+    ? `<li class="vedlegg-ki"><strong>${esc(kiDok.tittel)}</strong> — KI-vurdering (utkast)
+        <p class="hint" style="margin:0.25rem 0 0.45rem">Arbeidsvedlegg. Kan journalføres i øvelsesarkivet. Ikke vedtak.</p>
+        <div class="btn-row">
+          <button class="btn btn-dark" type="button" onclick="journalforKiVurdering('${sak.id}')">${kiIArkiv ? "Journalfør på nytt" : "Legg ved i arkivet"}</button>
+          <button class="btn btn-ghost" type="button" onclick="lastNedKiVurdering('${sak.id}')">Last ned</button>
+        </div>
+        ${kiIArkiv ? `<p class="hint">Ligger i øvelsesarkivet${arkiv?.at ? ` · ${esc(arkiv.at)}` : ""}.</p>` : ""}
+        <details><summary>Forhåndsvis dokumentet</summary><p class="mono" style="font-size:0.78rem">${esc(kiDok.innhold)}</p></details>
+      </li>`
+    : `<li class="hint">KI-vurdering — ikke klar ennå. Kjør KI først.</li>`;
+  const arkivListe = (arkiv?.dokumenter || []).length
+    ? `<ul class="arkiv-liste">${arkiv.dokumenter.map((d) => `<li><strong>${esc(d.tittel)}</strong> · ${esc(d.at)}<br><span class="hint">${esc(d.merknad || "Simulert journalpost.")}</span></li>`).join("")}</ul>`
+    : `<p class="hint">Ingen journalposter i øvelsesarkivet på denne saken ennå.</p>`;
   const sem = w.semantic
     ? `<table><thead><tr><th>Tema</th><th>Score</th><th>Sitat</th></tr></thead><tbody>${semRow("Målgruppe", w.semantic.malgruppe)}${semRow("Medvirkning", w.semantic.medvirkning)}${semRow("Gratis", w.semantic.gratis)}</tbody></table>`
     : `<p class="hint">${w.running ? "Leser teksten…" : "Ingen tekstvurdering ennå."}</p>`;
@@ -674,7 +1003,10 @@ function renderCard() {
         <h3>Budsjett</h3>
         <table>${budsjett}</table>
         <h3>Vedlegg</h3>
-        <ul>${vedlegg}</ul>
+        <ul>${vedlegg}${kiVedlegg}</ul>
+        <h3>Arkiv (øvelse)</h3>
+        <p class="hint">Simulert journal — ikke Elements eller annen ekte arkivløsning.</p>
+        ${arkivListe}
       </div>
       <div>
         <h3>Det tallene viser</h3>
@@ -787,7 +1119,29 @@ async function runKI(id, force) {
   }
   w.running = false;
   w.pipeline = "utkast";
+  w.kiDok = byggKiVurdering(sak, w);
   renderList();
+  renderCard();
+}
+
+function lastNedKiVurdering(id) {
+  const sak = findSak(id);
+  const w = ensure(id);
+  if (!sak || !w.semantic) return;
+  readEditors(w);
+  const dok = byggKiVurdering(sak, w);
+  lastNedTekst(dok.tittel, dok.innhold);
+}
+
+function journalforKiVurdering(id) {
+  const sak = findSak(id);
+  const w = ensure(id);
+  if (!sak || !w.semantic) return;
+  readEditors(w);
+  const dok = byggKiVurdering(sak, w);
+  journalforVedlegg(id, dok, "ki-vurdering");
+  w.kiDok = dok;
+  addJournal({ type: "arkiv", sak: id, svar: `KI-vurdering journalført som vedlegg (${dok.tittel}). Simulert arkiv — ikke ekte system.` });
   renderCard();
 }
 
@@ -812,20 +1166,39 @@ function hitl(action) {
     w.hitl = "Saken står. Ingen godkjenning.";
   }
   addJournal({ type: "du", sak: selected, svar: w.hitl });
-  if (action === "bekreft") arkiver(selected, w, "bekreft");
+  if (action === "bekreft" || action === "juster") arkiver(selected, w, action);
   renderCard();
 }
 
 function arkiver(id, w, handling) {
   const sak = findSak(id);
   const map = loadJson(ARCHIVE_KEY, {});
-  map[id] = {
-    sak: id,
-    org: sak.org,
-    at: new Date().toLocaleString("no-NO"),
-    handling,
-    pdf: `UTKAST — IKKE VEDTAK\n${id} ${sak.org}\nBeløp: ${w.recommended}\n\n${w.note}\n\n${w.letter}`
-  };
+  const pakke = `UTKAST — IKKE VEDTAK\n${id} ${sak.org}\nBeløp: ${w.recommended}\n\n${w.note}\n\n${w.letter}`;
+  const row = map[id] || { sak: id, org: sak.org, dokumenter: [] };
+  if (!row.dokumenter) row.dokumenter = [];
+  row.at = new Date().toLocaleString("no-NO");
+  row.handling = handling;
+  row.pdf = pakke;
+  row.org = sak.org;
+  const kiDok = w.semantic ? byggKiVurdering(sak, w) : null;
+  if (kiDok && !row.dokumenter.some((d) => d.type === "ki-vurdering")) {
+    row.dokumenter.unshift({
+      tittel: kiDok.tittel,
+      type: "ki-vurdering",
+      at: row.at,
+      innhold: kiDok.innhold,
+      merknad: "KI-vurdering lagt ved saken i øvelsesarkivet. Ikke vedtak."
+    });
+    row.kiVurdering = kiDok.innhold;
+  }
+  row.dokumenter.unshift({
+    tittel: `${id}-innstillingsutkast.txt`,
+    type: "innstillingsutkast",
+    at: row.at,
+    innhold: pakke,
+    merknad: "Utkast etter din handling. Ikke enkeltvedtak."
+  });
+  map[id] = row;
   saveJson(ARCHIVE_KEY, map);
 }
 
@@ -995,6 +1368,8 @@ window.setListFilter = setListFilter;
 window.openSak = openSak;
 window.runKI = runKI;
 window.hitl = hitl;
+window.journalforKiVurdering = journalforKiVurdering;
+window.lastNedKiVurdering = lastNedKiVurdering;
 window.setView = setView;
 window.runKlage = runKlage;
 window.runSlutt = runSlutt;
@@ -1040,11 +1415,127 @@ function renderTransparens() {
       <p class="mono" style="font-size:0.78rem">${esc(sel.prompt || "")}</p>
     </details>
     <p class="hint">Vi viser det modellen ble bedt om å skrive høyt. Vi ser ikke «skjult resonnering» inne i vektenettverket.</p>
-    <p><a class="btn btn-primary" href="behandle.html#${esc(sel.sak)}">Tilbake til saken</a></p>
+    <p><a class="btn btn-primary" href="${sel.sak === "portefolje" ? "analyse.html" : `behandle.html#${esc(sel.sak)}`}">${sel.sak === "portefolje" ? "Tilbake til porteføljen" : "Tilbake til saken"}</a></p>
   `;
 }
 
+function lenkSaksnr(text) {
+  return esc(text).replace(/T-\d+/g, (id) => `<a href="behandle.html#${id}">${id}</a>`);
+}
+
+function koeRaderHtml(rader, hvorfor) {
+  if (!rader.length) return `<p class="hint">Ingen i denne køen.</p>`;
+  return `<table><thead><tr><th>Sak</th><th>Søker</th><th>Kommune</th><th>Søkt</th><th>Hvorfor</th></tr></thead><tbody>${rader.map((r) => {
+    const grunn = hvorfor(r);
+    return `<tr><td><a href="${sakLenke(r.sak.id)}">${esc(r.sak.id)}</a></td><td>${esc(r.sak.org)}</td><td>${esc(r.sak.kommune)}</td><td>${kr(r.sak.belop)}</td><td>${esc(grunn)}</td></tr>`;
+  }).join("")}</tbody></table>`;
+}
+
+function svgStolpe(pct, farge) {
+  const w = Math.max(0, Math.min(100, pct));
+  return `<svg viewBox="0 0 100 10" class="svg-bar" aria-hidden="true"><rect width="100" height="10" fill="#e2e8f0" rx="2"/><rect width="${w}" height="10" fill="${farge || "#4f46e5"}" rx="2"/></svg>`;
+}
+
+function renderAnalyse() {
+  const rot = $("analyseRot");
+  if (!rot) return;
+  const a = analyserPortefolje();
+  const aktMax = Math.max(...Object.values(a.perAkt).map((x) => x.length), 1);
+  const kommMax = Math.max(...a.toppKommuner.map((x) => x[1]), 1);
+  rot.innerHTML = `
+    <p class="hint">Maskinell opptelling med øvelsesreglene. Skjønn skjer på sakskortet. Dette er ikke statistikk for ledelsen — det er køen din.</p>
+    <div class="kpi-grid">
+      <div class="kpi"><b>${a.antall}</b><span>saker i bunken</span></div>
+      <div class="kpi"><b>${kr(a.sokt)}</b><span>søkt mot pott ${kr(RAMME)}</span></div>
+      <div class="kpi"><b>${a.koe.kanIkke.length}</b><span>kan ikke innstilles</span></div>
+      <div class="kpi"><b>${a.koe.avklare.length}</b><span>må avklares først</span></div>
+    </div>
+
+    <section class="panel koe-blokk">
+      <h2>A. Dagens kø</h2>
+      <h3>Kan ikke innstilles</h3>
+      <p class="hint">Feil søker, ikke i register, eller privatperson.</p>
+      ${koeRaderHtml(a.koe.kanIkke, (r) => r.røde.find((c) => c.label === "Søker")?.text || "Søker")}
+      <h3>Må avklares</h3>
+      <p class="hint">Mangler rapport eller revisor over 200 000 kr.</p>
+      ${koeRaderHtml(a.koe.avklare, (r) => r.røde.concat(r.gule).filter((c) => c.label === "Historikk" || c.label === "Revisor").map((c) => c.text).join(" "))}
+      <h3>Tall ferdig, skjønn gjenstår</h3>
+      <p class="hint">Admin-kutt eller store beløp mot potten.</p>
+      ${koeRaderHtml(a.koe.skjonn, (r) => r.gule.map((c) => c.label).join(", ") || "skjønn")}
+      <h3>Plantet feil</h3>
+      <p class="hint">Stopp før du stoler på KI-sitat.</p>
+      ${koeRaderHtml(a.koe.plantet, () => "Plantet § 14 / golf — åpne saken")}
+      <h3>Avvik / slutt</h3>
+      <p class="hint">Tilbakekreving, ikke ny tildeling.</p>
+      ${koeRaderHtml(a.koe.avvik, () => "Brukt utenfor vilkår")}
+    </section>
+
+    <section class="panel">
+      <h2>B. Penger mot pott</h2>
+      <p class="hint">Innstillingssimulering — ikke vedtak.</p>
+      <p>Søkt totalt ${kr(a.sokt)} mot ${kr(RAMME)}. ${svgStolpe((a.sokt / RAMME) * 100, "#f59e0b")}</p>
+      <p>Hvis du kutter all overskytende admin: ${kr(a.etterAdminKutt)} (likebehandling av 15 %-regelen).</p>
+      <p>Hvis du tar ut røde formalia og avvik: ${a.utenRodeAntall} saker kan konkurrere, ${kr(a.sumKanKonkurrere)}.</p>
+      <h3>De 10 største</h3>
+      <table><thead><tr><th>Sak</th><th>Søker</th><th>Søkt</th><th>Andel av pott</th></tr></thead><tbody>
+      ${a.storst.map((r) => `<tr><td><a href="${sakLenke(r.sak.id)}">${esc(r.sak.id)}</a></td><td>${esc(r.sak.org)}</td><td>${kr(r.sak.belop)}</td><td>${Math.round((r.sak.belop / RAMME) * 100)} % ${svgStolpe((r.sak.belop / RAMME) * 100)}</td></tr>`).join("")}
+      </tbody></table>
+    </section>
+
+    <section class="panel">
+      <h2>C. Likebehandling</h2>
+      <h3>Alle med admin over 15 %</h3>
+      <table><thead><tr><th>Sak</th><th>Søker</th><th>Admin</th><th>Kr</th><th>Foreslått kutt</th></tr></thead><tbody>
+      ${a.adminOver.map((r) => `<tr><td><a href="${sakLenke(r.sak.id)}">${esc(r.sak.id)}</a></td><td>${esc(r.sak.org)}</td><td>${r.sak.adminPct} %</td><td>${kr(r.sak.adminBelop)}</td><td>${kr(r.kuttAdmin)}</td></tr>`).join("") || `<tr><td colspan="5">Ingen</td></tr>`}
+      </tbody></table>
+      <h3>Samme aktivitetstype side om side</h3>
+      ${Object.keys(a.perAkt).sort().map((k) => {
+        const liste = a.perAkt[k];
+        return `<details><summary>${esc(k)} · ${liste.length} saker · søkt ${kr(liste.reduce((s, r) => s + r.sak.belop, 0))}</summary>
+          <table><thead><tr><th>Sak</th><th>Søker</th><th>Kommune</th><th>Søkt</th><th>Admin</th><th>Flagg</th></tr></thead><tbody>
+          ${liste.map((r) => `<tr><td><a href="${sakLenke(r.sak.id)}">${esc(r.sak.id)}</a></td><td>${esc(r.sak.org)}</td><td>${esc(r.sak.kommune)}</td><td>${kr(r.sak.belop)}</td><td>${r.sak.adminPct} %</td><td>${esc(tagText(r.sak.flag))}</td></tr>`).join("")}
+          </tbody></table></details>`;
+      }).join("")}
+    </section>
+
+    <section class="panel">
+      <h2>D. Risiko og formalia</h2>
+      <ul>
+        <li>Rød søker: ${a.risiko.rodSoker}</li>
+        <li>Gul revisor: ${a.risiko.gulRevisor}</li>
+        <li>Rød historikk: ${a.risiko.rodHistorikk}</li>
+        <li>Avvik: ${a.risiko.avvik}</li>
+        <li>Tekstsignal «gratis» nevnt: ${a.risiko.gratisJa} / ${a.antall} (uten LLM)</li>
+        <li>Tekstsignal medvirkning nevnt: ${a.risiko.medvirkJa} / ${a.antall} (uten LLM)</li>
+      </ul>
+    </section>
+
+    <section class="panel">
+      <h2>E. Treff og geografi</h2>
+      <p class="hint">Støtter «hvem nådde vi». Ikke hovedsaken i dag.</p>
+      <h3>Per aktivitet</h3>
+      ${Object.entries(a.perAkt).sort((x, y) => y[1].length - x[1].length).map(([k, liste]) => `<div class="chart-row"><span>${esc(k)}</span>${svgStolpe((liste.length / aktMax) * 100)}<em>${liste.length}</em></div>`).join("")}
+      <h3>Topp kommuner</h3>
+      ${a.toppKommuner.map(([k, n]) => `<div class="chart-row"><span>${esc(k)}</span>${svgStolpe((n / kommMax) * 100, "#0f766e")}<em>${n}</em></div>`).join("")}
+    </section>
+  `;
+}
+
+async function sendPortefoljeSporsmal(ev) {
+  if (ev) ev.preventDefault();
+  const q = ($("pfQ")?.value || "").trim();
+  const out = $("pfSvar");
+  if (!q || !out) return;
+  out.innerHTML = `<div class="note live-run">Leser uttrekket av ${SAKER.length} saker…</div>`;
+  const res = await sporPortefolje(q);
+  out.innerHTML = `${res.live ? `<div class="note live-ok">Svar fra modell. Ikke vedtak. <a href="transparens.html#${res.traceId}">Åpne spor</a></div>` : `<div class="note live-off"><strong>Ikke modell.</strong> Fallback fra opptelling. <a href="transparens.html#${res.traceId}">Åpne spor</a></div>`}
+    <div class="think"><p>${lenkSaksnr(res.text)}</p></div>`;
+}
+
 window.renderTransparens = renderTransparens;
+window.renderAnalyse = renderAnalyse;
+window.sendPortefoljeSporsmal = sendPortefoljeSporsmal;
+window.sporPortefolje = sporPortefolje;
 
 document.addEventListener("DOMContentLoaded", () => {
   if ($("sporListe")) {
@@ -1064,4 +1555,7 @@ document.addEventListener("DOMContentLoaded", () => {
     fillPortalFromRegister();
     renderMine();
   }
+  if ($("analyseRot")) renderAnalyse();
+  const ant = document.querySelector("[data-antall-saker]");
+  if (ant) ant.textContent = `${SAKER.length} saker. Filtrer, så åpne. Hver sak har én oppgave.`;
 });

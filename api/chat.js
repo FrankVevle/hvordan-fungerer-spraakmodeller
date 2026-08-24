@@ -22,7 +22,7 @@ export default async function handler(req, res) {
 
   const prompt = typeof body?.prompt === "string" ? body.prompt.trim() : "";
   const system = typeof body?.system === "string" ? body.system.trim() : "";
-  if (!prompt || prompt.length > 20000) {
+  if (!prompt || prompt.length > 80000) {
     res.status(400).json({ error: "invalid_prompt" });
     return;
   }
