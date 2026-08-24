@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Arbeidsliste — Tilskudd (øvelse)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="proto.css">
+</head>
+<body class="proto">
+  <header class="proto-bar">
+    <div class="proto-brand">Tilskudd (øvelse)<span>Saksbehandler — du bestemmer</span></div>
+    <nav class="proto-nav">
+      <a href="index.html">Start</a>
+      <a data-nav="arbeid" class="is-on" href="behandle.html">Arbeidsliste</a>
+      <a data-nav="klage" href="#klage" onclick="setView('klage')">Klage</a>
+      <a data-nav="slutt" href="#slutt" onclick="setView('slutt')">Slutt</a>
+      <a href="om.html">Slik virker det</a>
+      <a href="../index.html">Kurset</a>
+    </nav>
+  </header>
+
+  <main class="proto-shell proto-wide">
+    <div class="banner"><strong>Øvelse · fiktiv ordning · KI fatter ikke vedtak.</strong> Velg en sak. Les «Din jobb». Trykk en knapp nederst til høyre.</div>
+
+    <div id="view-arbeid">
+      <div id="ramme"></div>
+      <div id="pipe" class="pipe"></div>
+      <div class="layout">
+        <aside class="panel">
+          <h2 style="margin:0 0 0.6rem;font-size:1rem">Saker</h2>
+          <p class="hint" style="margin-top:0">Hver sak har én tydelig oppgave.</p>
+          <div id="liste" class="list"></div>
+        </aside>
+        <section>
+          <div id="kort" class="panel"></div>
+          <div class="panel" style="margin-top:1rem">
+            <h2 style="margin:0 0 0.4rem;font-size:1rem">Øvelsesjournal</h2>
+            <p class="hint">Bare i denne nettleseren. Ikke arkivsystem.</p>
+            <div id="journal" class="journal"></div>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <div id="view-klage" hidden>
+      <section class="panel">
+        <p class="hint">Samme type KI som på sakskortet. Ikke et eget klagesystem.</p>
+        <div style="display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap">
+          <h1 style="margin:0">Klage · T-2629 Fjordheim kulturskolevenner</h1>
+          <button id="klageRerun" class="btn btn-primary" type="button" onclick="runKlage(true)">Kjør KI på nytt</button>
+        </div>
+        <p>Dere foreslo kutt fordi prosjektledelse sto som 32 % admin. Klagen sier at <strong>40 000 kr var kursleder</strong> — fag, ikke kontor. KI skriver to utkast. Du velger.</p>
+        <div id="klageBanner"></div>
+        <div id="klageOut"></div>
+        <div class="btn-row" style="margin-top:1rem">
+          <button class="btn btn-dark" type="button" onclick="klageValg('godta')">Ta omgjøringsutkastet</button>
+          <button class="btn btn-ghost" type="button" onclick="klageValg('avslå')">Behold kuttet</button>
+        </div>
+        <p id="klageStatus" class="hint">Ingen handling ennå.</p>
+      </section>
+    </div>
+
+    <div id="view-slutt" hidden>
+      <section class="panel">
+        <p class="hint">Sluttkontroll i øvelsen. Ingen ekte innkreving.</p>
+        <div style="display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap">
+          <h1 style="margin:0">Slutt · T-2631 Myr idrettslag</h1>
+          <button id="sluttRerun" class="btn btn-primary" type="button" onclick="runSlutt(true)">Kjør KI på nytt</button>
+        </div>
+        <p>Innvilget 220 000 kr til trening. Regnskapet viser <strong>140 000 kr til ny gressbane</strong> og 80 000 kr til aktivitet.</p>
+        <div id="sluttBanner"></div>
+        <div id="sluttOut"></div>
+        <div class="btn-row" style="margin-top:1rem">
+          <button class="btn btn-dark" type="button" onclick="sluttValg('tilbake')">Journalfør tilbakekrevingsutkast</button>
+          <button class="btn btn-ghost" type="button" onclick="sluttValg('park')">La saken stå</button>
+        </div>
+        <p id="sluttStatus" class="hint">Ingen handling ennå.</p>
+      </section>
+    </div>
+  </main>
+  <footer class="proto-foot">Pedagogisk prototype. Ikke Bufdir. Ikke vedtak.</footer>
+  <script src="proto.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      if (location.hash === "#klage") { setView("klage"); runKlage(false); }
+      if (location.hash === "#slutt") { setView("slutt"); runSlutt(false); }
+    });
+  </script>
+</body>
+</html>

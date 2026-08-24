@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Send søknad — Tilskudd (øvelse)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="proto.css">
+</head>
+<body class="proto">
+  <header class="proto-bar">
+    <div class="proto-brand">Tilskudd (øvelse)<span>Simulert innsending</span></div>
+    <nav class="proto-nav">
+      <a href="index.html">Start</a>
+      <a href="behandle.html">Arbeidsliste</a>
+      <a href="om.html">Slik virker det</a>
+      <a class="is-on" href="soknad.html">Søk (simulert)</a>
+      <a href="../index.html">Kurset</a>
+    </nav>
+  </header>
+  <main class="proto-shell" style="max-width:40rem;margin:0 auto">
+    <div class="banner">Dette er ikke en ekte søknadsportal. Teksten lagres bare i nettleseren din.</div>
+    <section class="panel">
+      <h1>Send en fiktiv søknad</h1>
+      <p class="hint">Prøv org.nr. 999 555 666 (Åsby bibliotekvenner) eller 999 333 001 (AS som ikke kan søke).</p>
+      <label class="field">Organisasjonsnummer
+        <input id="pOrgnr" type="text" value="999 555 666" />
+      </label>
+      <button class="btn btn-ghost" type="button" onclick="fillPortalFromRegister()">Slå opp i simulert register</button>
+      <p id="pReg" class="hint"></p>
+      <label class="field">Organisasjon
+        <input id="pOrg" type="text" />
+      </label>
+      <label class="field">Søkt beløp
+        <input id="pBelop" type="number" value="45000" />
+      </label>
+      <label class="field">Hva skal pengene brukes til?
+        <textarea id="pTekst" rows="4">Gratis leksehjelp etter skoletid for 10 barn. Ingen egenandel.</textarea>
+      </label>
+      <button class="btn btn-dark" type="button" onclick="submitSoknad()">Send inn (øvelse)</button>
+      <p id="pStatus"></p>
+    </section>
+    <section class="panel" style="margin-top:1rem">
+      <h2>Innsendt her</h2>
+      <div id="pMine"></div>
+      <p><a href="behandle.html">Tilbake til arbeidslisten</a></p>
+    </section>
+  </main>
+  <footer class="proto-foot">Simulert portal. Ikke sending til noe fagsystem.</footer>
+  <script src="proto.js"></script>
+</body>
+</html>

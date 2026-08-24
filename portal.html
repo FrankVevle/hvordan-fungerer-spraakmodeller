@@ -2,82 +2,10 @@
 <html lang="no">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Søkerportal (øvelse) · Hvordan Fungerer Språkmodeller?</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Fira+Code:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="site.css">
+  <meta http-equiv="refresh" content="0; url=tilskudd/soknad.html">
+  <title>Flyttet — Søknad</title>
 </head>
-<body class="bg-slate-50 text-slate-800 antialiased min-h-screen pb-32" data-page="portal.html">
-  <header class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
-    <div class="max-w-3xl mx-auto px-4 sm:px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-      <a href="index.html" class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-purple-600 via-indigo-600 to-blue-500 flex items-center justify-center text-white font-black text-xl shadow-md shadow-purple-200">AI</div>
-        <div>
-          <h1 class="text-lg font-bold text-slate-900 leading-tight">Hvordan Fungerer Språkmodeller?</h1>
-          <p class="text-xs text-slate-500">Søkerportal — øvelse</p>
-        </div>
-      </a>
-      <a href="cockpit.html" class="px-3 py-1.5 rounded-lg bg-violet-800 text-white text-xs font-semibold">Til cockpiten →</a>
-    </div>
-  </header>
-
-  <main class="max-w-3xl mx-auto px-4 sm:px-6 mt-8 space-y-5">
-    <div class="rounded-xl border border-amber-300 bg-amber-50 px-4 py-2.5 text-sm text-amber-950">
-      <strong>Øvelse · fiktiv ordning · KI fatter ikke vedtak.</strong>
-    </div>
-    <p class="text-xs text-slate-600">Simulert innsending. Ikke ekte søknadsportal. Ingen sending til Enhetsregister, Elements eller SvarUt.</p>
-
-    <section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 sm:p-7 space-y-4">
-      <h2 class="text-xl font-bold text-slate-900">Send fiktiv søknad</h2>
-      <p class="text-sm text-slate-700">Org.nr. slås opp mot den hardkodede øvelsestabellen. Saken lagres i nettleseren og vises på arbeidslista.</p>
-      <label class="block text-sm font-semibold text-slate-800">Organisasjonsnummer
-        <input id="portalOrgnr" type="text" value="999 555 666" class="mt-1 w-full px-3 py-2 rounded-lg border border-slate-300 font-normal" />
-      </label>
-      <button type="button" onclick="lookupPortalRegister()" class="px-3 py-1.5 rounded-lg bg-white border border-slate-300 text-xs font-semibold">Slå opp i simulert register</button>
-      <p id="portalRegisterStatus" class="text-xs text-slate-600"></p>
-      <label class="block text-sm font-semibold text-slate-800">Organisasjon
-        <input id="portalOrg" type="text" class="mt-1 w-full px-3 py-2 rounded-lg border border-slate-300 font-normal" />
-      </label>
-      <label class="block text-sm font-semibold text-slate-800">Aktivitetstype
-        <select id="portalAktivitet" class="mt-1 w-full px-3 py-2 rounded-lg border border-slate-300 font-normal">
-          <option>4.1 Kultur-, fritids- og ferieaktivitet</option>
-          <option>4.2 Jobbtilbud og veiledning</option>
-        </select>
-      </label>
-      <label class="block text-sm font-semibold text-slate-800">Søkt beløp (kr)
-        <input id="portalBelop" type="number" value="45000" class="mt-1 w-full px-3 py-2 rounded-lg border border-slate-300 font-normal" />
-      </label>
-      <label class="block text-sm font-semibold text-slate-800">Søknadstekst
-        <textarea id="portalSoknad" rows="4" class="mt-1 w-full px-3 py-2 rounded-lg border border-slate-300 font-normal">Gratis leksehjelp etter skoletid for 10 barn. Rekruttering via biblioteket. Ingen egenandel.</textarea>
-      </label>
-      <button type="button" onclick="submitPortalSoknad()" class="px-4 py-2 rounded-xl bg-slate-900 text-white text-sm font-semibold">Send inn (øvelse)</button>
-      <p id="portalSubmitStatus" class="text-sm text-slate-700"></p>
-    </section>
-
-    <section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-3">
-      <h3 class="text-sm font-bold text-slate-900">Innsendte øvelsessaker</h3>
-      <div id="portalMineSaker" class="text-sm text-slate-700"></div>
-    </section>
-  </main>
-
-  <footer class="max-w-3xl mx-auto px-4 sm:px-6 mt-16 pt-8 pb-4 border-t border-slate-200 text-center text-xs text-slate-500 font-medium space-y-1">
-    <p>Pedagogisk prototype. <strong>Ikke et Bufdir-verktøy.</strong> Sist oppdatert 24. august 2026.</p>
-  </footer>
-
-  <div id="chapterNav" class="fixed bottom-0 inset-x-0 z-50 bg-white/95 backdrop-blur border-t border-slate-200 px-4 py-3 shadow-[0_-8px_24px_rgba(15,23,42,0.08)]">
-    <div class="max-w-3xl mx-auto flex items-center justify-between gap-3">
-      <button type="button" id="btnPrevChapter" onclick="stepChapter(-1)" class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed">← Forrige</button>
-      <div class="text-center min-w-0">
-        <p id="chapterPartLabel" class="text-[11px] font-bold uppercase tracking-widest text-slate-500 truncate">Del 4</p>
-        <p id="chapterStepLabel" class="text-sm font-semibold text-slate-800">Søkerportal (øvelse)</p>
-      </div>
-      <button type="button" id="btnNextChapter" onclick="stepChapter(1)" class="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed">Neste →</button>
-    </div>
-  </div>
-
-  <script src="app.js"></script>
+<body>
+  <p>Søknadssiden ligger nå her: <a href="tilskudd/soknad.html">tilskudd/soknad.html</a>.</p>
 </body>
 </html>

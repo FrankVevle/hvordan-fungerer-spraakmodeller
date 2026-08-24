@@ -20,9 +20,6 @@ const SITE_PAGES = [
   { file: "kapittel-7.html", title: "Kapittel 7 · Kildeforankret KI", part: "Del 3" },
   { file: "kapittel-8.html", title: "Kapittel 8 · Åpne data-øvelse", part: "Del 3" },
   { file: "kapittel-9.html", title: "Kapittel 9 · Tilskuddsløpet", part: "Del 4" },
-  { file: "cockpit.html", title: "Prototype · Tilskuddscockpit", part: "Del 4" },
-  { file: "slik-gjor-vi-det.html", title: "Slik er løsningen bygget", part: "Del 4" },
-  { file: "portal.html", title: "Søkerportal (øvelse)", part: "Del 4" },
   { file: "kapittel-10.html", title: "Kapittel 10 · Personlig agent", part: "Del 4" },
   { file: "kapittel-12.html", title: "Kapittel 12 · RAG og LangGraph", part: "Del 5" }
 ];
