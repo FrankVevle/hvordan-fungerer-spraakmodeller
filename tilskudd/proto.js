@@ -1982,5 +1982,5 @@ document.addEventListener("DOMContentLoaded", () => {
   if ($("aiActRot")) renderAiAct();
   if ($("nis2Rot")) renderNis2();
   const ant = document.querySelector("[data-antall-saker]");
-  if (ant) ant.textContent = `${SAKER.length} saker. Filtrer, så åpne. Hver sak har én oppgave.`;
+  if (ant) ant.textContent = `${SAKER.length} saker fordelt på 16 tilskuddsområder. Filtrer på ordning, så åpne.`;
 });
