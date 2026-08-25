@@ -1,6 +1,7 @@
 /**
- * Snapshot av offentlige ordningsnavn (Bufdir + BFD).
- * Ikke live mot Tilskudd.no. Ikke utlysning. Ikke penger prototypen tildeler.
+ * Snapshot av ordningsboksene på Tilskudd.no for Bufdir + BFD.
+ * Filter: ADMINISTRATOR=972417793 (BFD) og 986128433 (Bufdir).
+ * 16 bokser. Ikke live. Ikke utlysning. Ikke penger prototypen tildeler.
  * Snapshot: 25. august 2026.
  */
 const ORDNING_OVELSE_ID = "inkludering-barn-unge";
@@ -8,7 +9,7 @@ const ORDNINGER_SNAPSHOT = "25. august 2026";
 
 const KILDE_BUFDIR = "https://www.bufdir.no/tilskudd/";
 const KILDE_LOTTSTIFT_FILTER =
-  "https://tilskudd.lottstift.no/ordninger?ADMINISTRATOR=986128433&ADMINISTRATOR=972417793";
+  "https://tilskudd.lottstift.no/ordninger?ADMINISTRATOR=972417793&ADMINISTRATOR=986128433";
 const KILDE_BUFDIR_FORVALTER =
   "https://tilskudd.lottstift.no/forvalter/986128433/barne-ungdoms-og-familiedirektoratet";
 const KILDE_BFD_FORVALTER =
@@ -16,323 +17,314 @@ const KILDE_BFD_FORVALTER =
 
 const ORDNINGER = [
   {
-    id: "barne-ungdomsorganisasjoner",
-    navn: "Barne- og ungdomsorganisasjoner",
-    kortnavn: "Barne- og ungdomsorg.",
-    forvalter: "Bufdir",
-    tema: "Barn og ungdom",
-    offentligBelop: 184866011,
-    offentligType: "sist_tildelt",
-    aar: 2026,
-    kilde: "Tilskudd.no (Bufdir-forvaltersiden). 2026 er ikke ferdig publisert.",
-    kildeUrl: KILDE_BUFDIR_FORVALTER,
-    sideUrl: "https://www.bufdir.no/tilskudd/barne-og-ungdomsorganisasjoner/"
+    "id": "barnevernfaglig-videreutdanning",
+    "dtId": "DT-0715",
+    "navn": "Barnevernfaglig videreutdanning",
+    "kortnavn": "Barnevernfaglig VU",
+    "forvalter": "Bufdir",
+    "orgnr": "986128433",
+    "tema": "Prosjektmidler",
+    "frist": "2026-05-15",
+    "offentligBelop": 41194,
+    "offentligType": "tilgjengelige_midler",
+    "sistTildelt": null,
+    "aar": 2026,
+    "kilde": "Tilskudd.no-boksen DT-0715 (2026). Tilgjengelige midler 41 194 kr. Tildelt beløp er ikke publisert på boksen ennå.",
+    "kildeUrl": "https://tilskudd.lottstift.no/ordning/DT-0715/2026/barnevernfaglig-videreutdanning",
+    "sideUrl": "https://www.bufdir.no/tilskudd/barnevernfaglig-videreutdanning/",
+    "beskrivelse": "Tilskuddsordningen skal bidra til økt bruk av videreutdanningstilbudet i barnevernet.",
+    "frivillighetsregister": false
   },
   {
-    id: "barnevernfaglig-videreutdanning",
-    navn: "Barnevernfaglig videreutdanning",
-    kortnavn: "Barnevernfaglig VU",
-    forvalter: "Bufdir",
-    tema: "Barnevern",
-    offentligBelop: null,
-    offentligType: null,
-    aar: null,
-    kilde: "Ikke oppgitt som samlet ramme på Bufdir-listesiden ved snapshot.",
-    kildeUrl: KILDE_BUFDIR,
-    sideUrl: "https://www.bufdir.no/tilskudd/"
+    "id": "dialog-tros-livssyn",
+    "dtId": "DT-0089",
+    "navn": "Tilskudd til dialog, debatt, samarbeid og kunnskapsutvikling på tros- og livssynsfeltet",
+    "kortnavn": "Dialog tros- og livssyn",
+    "forvalter": "BFD",
+    "orgnr": "972417793",
+    "tema": "Prosjektmidler",
+    "frist": "2026-04-08",
+    "offentligBelop": 3500000,
+    "offentligType": "tilgjengelige_midler",
+    "sistTildelt": 3500000,
+    "aar": 2026,
+    "kilde": "Tilskudd.no-boksen DT-0089 (2026). Tilgjengelige midler 3 500 000 kr. Tildelt 3 500 000 kr (samme år  ikke nødvendigvis komplett).",
+    "kildeUrl": "https://tilskudd.lottstift.no/ordning/DT-0089/2026/tilskudd-til-dialog-debatt-samarbeid-og-kunnskapsutvikling-pa-tros-og-livssynsfeltet",
+    "sideUrl": "https://www.regjeringen.no/no/aktuelt/tilskudd-til-dialog-debatt-samarbeid-og-kunnskapsutvikling-pa-tros-og-livssynsfeltet-2026/id3149470/",
+    "beskrivelse": "Målet med tilskuddsordningen er å øke kunnskapen om og kjennskapen til tros- og livssynssamfunn i samfunnet og å fremme mangfold og\ninkludering og løse sosiale utfordringer.",
+    "frivillighetsregister": false
   },
   {
-    id: "bo-stotte-ufrivillig-opphold",
-    navn: "Bo- og støttetilbud for personer utsatt for ufrivillig opphold i utlandet",
-    kortnavn: "Bo/støtte ufrivillig opphold",
-    forvalter: "Bufdir",
-    tema: "Vold",
-    offentligBelop: null,
-    offentligType: null,
-    aar: null,
-    kilde: "Ikke oppgitt i kilden vi leste.",
-    kildeUrl: KILDE_BUFDIR,
-    sideUrl: "https://www.bufdir.no/tilskudd/"
+    "id": "tros-livssyn",
+    "dtId": "DT-0087",
+    "navn": "Tilskot til trus- og livssynssamfunn",
+    "kortnavn": "Tros- og livssynssamfunn",
+    "forvalter": "BFD",
+    "orgnr": "972417793",
+    "tema": "Driftsmidler",
+    "frist": "2026-03-01",
+    "offentligBelop": 1284542000,
+    "offentligType": "tilgjengelige_midler",
+    "sistTildelt": null,
+    "aar": 2026,
+    "kilde": "Tilskudd.no-boksen DT-0087 (2026). Tilgjengelige midler 1 284 542 000 kr. Tildelt beløp er ikke publisert på boksen ennå.",
+    "kildeUrl": "https://tilskudd.lottstift.no/ordning/DT-0087/2026/tilskot-til-trus-og-livssynssamfunn",
+    "sideUrl": "https://www.statsforvalteren.no/portal/Folk-og-samfunn/Tros--og-livssynssamfunn/",
+    "beskrivelse": "Tilskota til trus- og livssynssamfunn utanom Den norske kyrkja er heimla i lov om tros- og livssynssamfunn (trussamfunnslova). Samfunna får eit statstilskot som svarer om lag til d",
+    "frivillighetsregister": false
   },
   {
-    id: "bo-stotte-negativ-sosial-kontroll",
-    navn: "Bo- og støttetilbud til personer utsatt for negativ sosial kontroll og æresrelatert vold",
-    kortnavn: "Bo/støtte æresrelatert vold",
-    forvalter: "Bufdir",
-    tema: "Vold",
-    offentligBelop: null,
-    offentligType: null,
-    aar: null,
-    kilde: "Ikke oppgitt i kilden vi leste.",
-    kildeUrl: KILDE_BUFDIR,
-    sideUrl: "https://www.bufdir.no/tilskudd/"
+    "id": "tiltak-likestilling-funksjonsnedsettelse",
+    "dtId": "DT-0005",
+    "navn": "Tilskudd til tiltak som fremmer likestilling av personer med funksjonsnedsettelse",
+    "kortnavn": "Likestilling funksjonsnedsettelse",
+    "forvalter": "Bufdir",
+    "orgnr": "986128433",
+    "tema": "Prosjektmidler",
+    "frist": "2026-02-16",
+    "offentligBelop": 16880000,
+    "offentligType": "tilgjengelige_midler",
+    "sistTildelt": 16430000,
+    "aar": 2026,
+    "kilde": "Tilskudd.no-boksen DT-0005 (2026). Tilgjengelige midler 16 880 000 kr. Tildelt 16 430 000 kr (samme år  ikke nødvendigvis komplett).",
+    "kildeUrl": "https://tilskudd.lottstift.no/ordning/DT-0005/2026/tilskudd-til-tiltak-som-fremmer-likestilling-av-personer-med-funksjonsnedsettelse",
+    "sideUrl": "https://www.bufdir.no/tilskudd/bedre-levekarene-og-livskvaliteten-til-personer-med-funksjonsnedsettelse/",
+    "beskrivelse": "Målet med tilskuddsordningen er å fremme likestilling av personer med funksjonsnedsettelse i samfunnet, gjennom å øke bevissthet og respekt for menneskerettighetene og bekjempe ste",
+    "frivillighetsregister": true
   },
   {
-    id: "erasmus-ungdom",
-    navn: "Erasmus+ ungdom",
-    kortnavn: "Erasmus+ ungdom",
-    forvalter: "Bufdir",
-    tema: "Barn og ungdom",
-    offentligBelop: null,
-    offentligType: null,
-    aar: null,
-    kilde: "Ekstern EU-ordning. Norsk samlet ramme ikke oppgitt på Bufdir-listesiden.",
-    kildeUrl: KILDE_BUFDIR,
-    sideUrl: "https://www.bufdir.no/tilskudd/"
+    "id": "utvikling-samhandling-barnevern",
+    "dtId": "DT-0027",
+    "navn": "Tilskudd til utviklings- og samhandlingsprosjekter i barnevernet",
+    "kortnavn": "Utvikling barnevern",
+    "forvalter": "Bufdir",
+    "orgnr": "986128433",
+    "tema": "Prosjektmidler",
+    "frist": "2026-01-16",
+    "offentligBelop": 16469000,
+    "offentligType": "tilgjengelige_midler",
+    "sistTildelt": 16469000,
+    "aar": 2026,
+    "kilde": "Tilskudd.no-boksen DT-0027 (2026). Tilgjengelige midler 16 469 000 kr. Tildelt 16 469 000 kr (samme år  ikke nødvendigvis komplett).",
+    "kildeUrl": "https://tilskudd.lottstift.no/ordning/DT-0027/2026/tilskudd-til-utviklings-og-samhandlingsprosjekter-i-barnevernet",
+    "sideUrl": "https://www.bufdir.no/tilskudd/utviklings-og-samhandlingsprosjekter-i-barnevernet/",
+    "beskrivelse": "Ordningen  skal bidra til å utvikle barnevernsfeltet gjennom forebygging av problemutvikling, og ved at utsatte barn og unge får bedre hjelp til livsmestring og utvikling i trygge ",
+    "frivillighetsregister": true
   },
   {
-    id: "familie-likestillingspolitiske",
-    navn: "Familie- og likestillingspolitiske tiltak",
-    kortnavn: "Familie- og likestilling",
-    forvalter: "Bufdir",
-    tema: "Likestilling og ikke-diskriminering",
-    offentligBelop: 17600000,
-    offentligType: "vedtatt_ramme",
-    aar: 2026,
-    kilde: "Bufdir: «Bevilgningen for 2026 er på 17,6 millioner kroner.»",
-    kildeUrl: "https://www.bufdir.no/tilskudd/familie-og-likestillingspolitiske-tiltak/",
-    sideUrl: "https://www.bufdir.no/tilskudd/familie-og-likestillingspolitiske-tiltak/"
+    "id": "universell-utforming",
+    "dtId": "DT-0018",
+    "navn": "Tilskudd til kunnskapsutvikling, kompetanseheving og informasjon innen universell utforming",
+    "kortnavn": "Universell utforming",
+    "forvalter": "Bufdir",
+    "orgnr": "986128433",
+    "tema": "Prosjektmidler",
+    "frist": "2026-01-16",
+    "offentligBelop": 16100000,
+    "offentligType": "tilgjengelige_midler",
+    "sistTildelt": 18800000,
+    "aar": 2026,
+    "kilde": "Tilskudd.no-boksen DT-0018 (2026). Tilgjengelige midler 16 100 000 kr. Tildelt 18 800 000 kr (samme år  ikke nødvendigvis komplett).",
+    "kildeUrl": "https://tilskudd.lottstift.no/ordning/DT-0018/2026/tilskudd-til-kunnskapsutvikling-kompetanseheving-og-informasjon-innen-universell-utforming",
+    "sideUrl": "https://www.bufdir.no/tilskudd/uu/",
+    "beskrivelse": "Tilskuddsordningen er et virkemiddel for å bidra til kunnskapsutvikling, kompetanseheving og informasjon innen universell utforming på viktige samfunnsområder som planlegging, bygg",
+    "frivillighetsregister": false
   },
   {
-    id: "ferie-fritid-funksjonsnedsettelse",
-    navn: "Ferie- og fritidstiltak for personer med funksjonsnedsettelser",
-    kortnavn: "Ferie og fritid (funksjon)",
-    forvalter: "Bufdir",
-    tema: "Funksjonsnedsettelse",
-    offentligBelop: 31764754,
-    offentligType: "sist_tildelt",
-    aar: 2026,
-    kilde: "Tilskudd.no (Bufdir-forvaltersiden). 2026 er ikke ferdig publisert.",
-    kildeUrl: KILDE_BUFDIR_FORVALTER,
-    sideUrl: "https://www.bufdir.no/tilskudd/"
+    "id": "kjonns-seksualitetsmangfold",
+    "dtId": "DT-0008",
+    "navn": "Tilskudd til å styrke kjønns- og seksualitetsmangfold",
+    "kortnavn": "Kjønns- og seksualitetsmangfold",
+    "forvalter": "Bufdir",
+    "orgnr": "986128433",
+    "tema": "Prosjektmidler, Driftsmidler",
+    "frist": "2025-12-31",
+    "offentligBelop": 37550000,
+    "offentligType": "tilgjengelige_midler",
+    "sistTildelt": 43270000,
+    "aar": 2026,
+    "kilde": "Tilskudd.no-boksen DT-0008 (2026). Tilgjengelige midler 37 550 000 kr. Tildelt 43 270 000 kr (samme år  ikke nødvendigvis komplett).",
+    "kildeUrl": "https://tilskudd.lottstift.no/ordning/DT-0008/2026/tilskudd-til-a-styrke-kjonns-og-seksualitetsmangfold",
+    "sideUrl": "https://www.bufdir.no/tilskudd/kjonns-og-seksualitetsmangfold/",
+    "beskrivelse": "Målet med tilskuddsordningen er å styrke kjønns- og seksualitetsmangfoldet blant befolkningen i Norge og bidra til bedre levekår og livskvalitet for personer som bryter med normer ",
+    "frivillighetsregister": true
   },
   {
-    id: "foreldrestottende",
-    navn: "Foreldrestøttende tiltak",
-    kortnavn: "Foreldrestøtte",
-    forvalter: "Bufdir",
-    tema: "Foreldrestøtte",
-    offentligBelop: null,
-    offentligType: null,
-    aar: 2026,
-    kilde: "Bufdir: ferdig fordelt for 2026, men samlet beløp ikke sitert på siden vi leste. Lyses ikke ut fra 2027.",
-    kildeUrl: "https://www.bufdir.no/tilskudd/foreldrestottende-tiltak/",
-    sideUrl: "https://www.bufdir.no/tilskudd/foreldrestottende-tiltak/"
+    "id": "familie-likestilling",
+    "dtId": "DT-0073",
+    "navn": "Tilskudd til frivillige organisasjoner på familie- og likestillingsområdet",
+    "kortnavn": "Familie og likestilling",
+    "forvalter": "Bufdir",
+    "orgnr": "986128433",
+    "tema": "Driftsmidler, Prosjektmidler",
+    "frist": "2025-12-15",
+    "offentligBelop": 17600000,
+    "offentligType": "tilgjengelige_midler",
+    "sistTildelt": 19870122,
+    "aar": 2026,
+    "kilde": "Tilskudd.no-boksen DT-0073 (2026). Tilgjengelige midler 17 600 000 kr. Tildelt 19 870 122 kr (samme år  ikke nødvendigvis komplett).",
+    "kildeUrl": "https://tilskudd.lottstift.no/ordning/DT-0073/2026/tilskudd-til-frivillige-organisasjoner-pa-familie-og-likestillingsomradet",
+    "sideUrl": "https://www.bufdir.no/tilskudd/familie-og-likestillingspolitiske-tiltak/",
+    "beskrivelse": "Målet med tilskuddsordningen er å sikre drift, bidra til mangfold og skape høyere aktivitet blant frivillige organisasjoner som arbeider med familie- og likestillingspolitikk i Nor",
+    "frivillighetsregister": false
   },
   {
-    id: "funksjonshemmedes-organisasjoner",
-    navn: "Funksjonshemmedes organisasjoner",
-    kortnavn: "Funksjonshemmedes org.",
-    forvalter: "Bufdir",
-    tema: "Funksjonsnedsettelse",
-    offentligBelop: 254095246,
-    offentligType: "vedtatt_ramme",
-    aar: 2026,
-    kilde: "Bufdir: «Bevilginga for 2026 er kr 254 095 246.»",
-    kildeUrl: "https://www.bufdir.no/tilskudd/funksjonshemmedes-organisasjoner/",
-    sideUrl: "https://www.bufdir.no/tilskudd/funksjonshemmedes-organisasjoner/"
+    "id": "organisasjoner-barnevern",
+    "dtId": "DT-0026",
+    "navn": "Tilskudd til generell drift av organisasjoner i barnevernet",
+    "kortnavn": "Org. i barnevernet",
+    "forvalter": "Bufdir",
+    "orgnr": "986128433",
+    "tema": "Driftsmidler",
+    "frist": "2025-12-09",
+    "offentligBelop": 23598000,
+    "offentligType": "tilgjengelige_midler",
+    "sistTildelt": 23598000,
+    "aar": 2026,
+    "kilde": "Tilskudd.no-boksen DT-0026 (2026). Tilgjengelige midler 23 598 000 kr. Tildelt 23 598 000 kr (samme år  ikke nødvendigvis komplett).",
+    "kildeUrl": "https://tilskudd.lottstift.no/ordning/DT-0026/2026/tilskudd-til-generell-drift-av-organisasjoner-i-barnevernet",
+    "sideUrl": "https://www.bufdir.no/tilskudd/organisasjoner-pa-barnevernsomradet/",
+    "beskrivelse": "Driftstilskudd til organisasjoner på barnevernsområdet. Bevilgningen for 2026 blir klar i januar 2026.",
+    "frivillighetsregister": true
   },
   {
-    id: "inkludering-barn-unge",
-    navn: "Inkludering av barn og unge",
-    kortnavn: "Inkludering (øvelse)",
-    forvalter: "Bufdir",
-    tema: "Barn og ungdom",
-    offentligBelop: 758400000,
-    offentligType: "vedtatt_ramme",
-    aar: 2026,
-    kilde: "Bufdir: bevilgning 758,4 mill. kr for 2026. Tilskudd.no viser sist tildelt 605 408 000 kr (2026 ikke ferdig publisert).",
-    kildeUrl: "https://www.bufdir.no/tilskudd/inkludering-av-barn-og-unge/",
-    sideUrl: "https://www.bufdir.no/tilskudd/inkludering-av-barn-og-unge/",
-    ovelse: true
+    "id": "tiltak-mot-vold",
+    "dtId": "DT-0078",
+    "navn": "Drifts- og prosjekttilskudd til tiltak mot vold og overgrep",
+    "kortnavn": "Mot vold og overgrep",
+    "forvalter": "Bufdir",
+    "orgnr": "986128433",
+    "tema": "Prosjektmidler, Driftsmidler",
+    "frist": "2025-11-28",
+    "offentligBelop": 12995000,
+    "offentligType": "tilgjengelige_midler",
+    "sistTildelt": 19120000,
+    "aar": 2026,
+    "kilde": "Tilskudd.no-boksen DT-0078 (2026). Tilgjengelige midler 12 995 000 kr. Tildelt 19 120 000 kr (samme år  ikke nødvendigvis komplett).",
+    "kildeUrl": "https://tilskudd.lottstift.no/ordning/DT-0078/2026/drifts-og-prosjekttilskudd-til-tiltak-mot-vold-og-overgrep",
+    "sideUrl": "https://www.bufdir.no/tilskudd/tiltak-mot-vold-og-overgrep/",
+    "beskrivelse": "Ordningen skal bidra til målene i regjeringens handlingsplaner mot vold og overgrep,  forebygge og bekjempe vold og overgrep i nære relasjoner, og ivareta voldsutsatte voksne og ba",
+    "frivillighetsregister": false
   },
   {
-    id: "kjonns-seksualitetsmangfold",
-    navn: "Kjønns- og seksualitetsmangfold",
-    kortnavn: "Kjønns- og seksualitetsmangfold",
-    forvalter: "Bufdir",
-    tema: "Likestilling og ikke-diskriminering",
-    offentligBelop: 37550000,
-    offentligType: "vedtatt_ramme",
-    aar: 2026,
-    kilde: "Bufdir: «Bevilgningen for 2026 er kr 37 550 000.»",
-    kildeUrl: "https://www.bufdir.no/tilskudd/kjonns-og-seksualitetsmangfold/",
-    sideUrl: "https://www.bufdir.no/tilskudd/kjonns-og-seksualitetsmangfold/"
+    "id": "ferie-fritid-funksjonsnedsettelse",
+    "dtId": "DT-0004",
+    "navn": "Tilskudd til ferie- og fritidstiltak for personer med funksjonsnedsettelse",
+    "kortnavn": "Ferie og fritid",
+    "forvalter": "Bufdir",
+    "orgnr": "986128433",
+    "tema": "Prosjektmidler",
+    "frist": "2025-11-17",
+    "offentligBelop": 32000000,
+    "offentligType": "tilgjengelige_midler",
+    "sistTildelt": 31764754,
+    "aar": 2026,
+    "kilde": "Tilskudd.no-boksen DT-0004 (2026). Tilgjengelige midler 32 000 000 kr. Tildelt 31 764 754 kr (samme år  ikke nødvendigvis komplett).",
+    "kildeUrl": "https://tilskudd.lottstift.no/ordning/DT-0004/2026/tilskudd-til-ferie-og-fritidstiltak-for-personer-med-funksjonsnedsettelse",
+    "sideUrl": "https://www.bufdir.no/tilskudd/fritidstiltak-for-personer-med-funksjonsnedsettelser/",
+    "beskrivelse": "Målet med tilskuddsordningen er at personer med funksjonsnedsettelse skal få delta på ferie- og fritidstiltak arrangert av det sivile samfunnet. ",
+    "frivillighetsregister": true
   },
   {
-    id: "kommunalt-forebyggingsprogram",
-    navn: "Kommunalt forebyggingsprogram for barn og unge",
-    kortnavn: "Kommunalt forebyggingsprogram",
-    forvalter: "Bufdir",
-    tema: "Barn og ungdom",
-    offentligBelop: 518796000,
-    offentligType: "vedtatt_ramme",
-    aar: 2026,
-    kilde: "Bufdir: «Bevilgning til fordeling er 518 796 000 kroner.»",
-    kildeUrl: "https://www.bufdir.no/tilskudd/kommunalt-forebyggingsprogram/",
-    sideUrl: "https://www.bufdir.no/tilskudd/kommunalt-forebyggingsprogram/"
+    "id": "inkludering-barn-unge",
+    "dtId": "DT-0270",
+    "navn": "Tilskudd til inkludering av barn og unge",
+    "kortnavn": "Inkludering (øvelse)",
+    "forvalter": "Bufdir",
+    "orgnr": "986128433",
+    "tema": "Prosjektmidler",
+    "frist": "2025-10-31",
+    "offentligBelop": 614656000,
+    "offentligType": "tilgjengelige_midler",
+    "sistTildelt": 605408000,
+    "aar": 2026,
+    "kilde": "Tilskudd.no-boksen DT-0270 (2026). Tilgjengelige midler 614 656 000 kr. Tildelt 605 408 000 kr (samme år  ikke nødvendigvis komplett). Bufdir-siden oppgir bevilgning 758,4 mill. kr — vi viser boksens felt, ikke det tallet som øvelsespott.",
+    "kildeUrl": "https://tilskudd.lottstift.no/ordning/DT-0270/2026/tilskudd-til-inkludering-av-barn-og-unge",
+    "sideUrl": "https://www.bufdir.no/tilskudd/inkludering-av-barn-og-unge/",
+    "beskrivelse": "Målet med tilskuddsordningen er å legge til rette for at alle barn og unge skal ha mulighet til mestring og samfunnsdeltakelse. Målgruppen er barn og unge til og med 24 år som av u",
+    "frivillighetsregister": false,
+    "ovelse": true
   },
   {
-    id: "oppgradering-krisesenterbygg",
-    navn: "Oppgradering av krisesenterbygg",
-    kortnavn: "Krisesenterbygg",
-    forvalter: "Bufdir",
-    tema: "Vold",
-    offentligBelop: 20760000,
-    offentligType: "vedtatt_ramme",
-    aar: 2026,
-    kilde: "Bufdir: 20 760 000 kr i tilskuddspotten for 2026.",
-    kildeUrl: "https://www.bufdir.no/tilskudd/oppgradering-av-krisesenterbygg/",
-    sideUrl: "https://www.bufdir.no/tilskudd/oppgradering-av-krisesenterbygg/"
+    "id": "tiltak-mot-rasisme",
+    "dtId": "DT-0006",
+    "navn": "Tilskuddsordning om tiltak mot rasisme, diskriminering og hatefulle ytringer",
+    "kortnavn": "Mot rasisme og hat",
+    "forvalter": "Bufdir",
+    "orgnr": "986128433",
+    "tema": "Prosjektmidler",
+    "frist": "2025-10-15",
+    "offentligBelop": 26400000,
+    "offentligType": "tilgjengelige_midler",
+    "sistTildelt": 26400000,
+    "aar": 2026,
+    "kilde": "Tilskudd.no-boksen DT-0006 (2026). Tilgjengelige midler 26 400 000 kr. Tildelt 26 400 000 kr (samme år  ikke nødvendigvis komplett).",
+    "kildeUrl": "https://tilskudd.lottstift.no/ordning/DT-0006/2026/tilskuddsordning-om-tiltak-mot-rasisme-diskriminering-og-hatefulle-ytringer",
+    "sideUrl": "https://www.bufdir.no/tilskudd/tiltak-mot-rasisme-diskriminering-og-hatefulle-ytringer/",
+    "beskrivelse": "Tilskuddsordningen skal støtte initiativer og aktiviteter som har til hensikt å motvirke rasisme, diskriminering og hatefulle ytringer.  ",
+    "frivillighetsregister": true
   },
   {
-    id: "organisasjoner-barnevern",
-    navn: "Organisasjoner på barnevernsområdet",
-    kortnavn: "Org. på barnevern",
-    forvalter: "Bufdir",
-    tema: "Barnevern",
-    offentligBelop: 23598000,
-    offentligType: "vedtatt_ramme",
-    aar: 2026,
-    kilde: "Bufdir: «Det er bevilget 23,598 millioner kroner til ordningen for 2026.»",
-    kildeUrl: "https://www.bufdir.no/tilskudd/organisasjoner-pa-barnevernsomradet/",
-    sideUrl: "https://www.bufdir.no/tilskudd/organisasjoner-pa-barnevernsomradet/"
+    "id": "grunnstotte-internasjonalt",
+    "dtId": "DT-0083",
+    "navn": "Tilskudd til frivillige barne- og ungdomsorganisasjoner - grunnstøtte internasjonalt arbeid",
+    "kortnavn": "Grunnstøtte internasjonalt",
+    "forvalter": "Bufdir",
+    "orgnr": "986128433",
+    "tema": "Driftsmidler",
+    "frist": "2025-09-15",
+    "offentligBelop": 5450000,
+    "offentligType": "tilgjengelige_midler",
+    "sistTildelt": 3715567,
+    "aar": 2026,
+    "kilde": "Tilskudd.no-boksen DT-0083 (2026). Tilgjengelige midler 5 450 000 kr. Tildelt 3 715 567 kr (samme år  ikke nødvendigvis komplett).",
+    "kildeUrl": "https://tilskudd.lottstift.no/ordning/DT-0083/2026/tilskudd-til-frivillige-barne-og-ungdomsorganisasjoner-grunnstotte-internasjonalt-arbeid",
+    "sideUrl": "https://www.bufdir.no/tilskudd/barne-og-ungdomsorganisasjoner/",
+    "beskrivelse": "Målet med tilskuddsordningen er å legge til rette for barn og ungdoms deltakelse i barne- og ungdomsorganisasjonene. Tilskuddsordningene skal stimulere org. til engasjement og meda",
+    "frivillighetsregister": false
   },
   {
-    id: "sentre-incest-voldtekt",
-    navn: "Sentre mot incest og seksuelle overgrep og ressurssentre mot voldtekt",
-    kortnavn: "Incest- og voldtektssentre",
-    forvalter: "Bufdir",
-    tema: "Vold",
-    offentligBelop: null,
-    offentligType: null,
-    aar: null,
-    kilde: "Ikke oppgitt som samlet beløp på sidene vi leste.",
-    kildeUrl: KILDE_BUFDIR,
-    sideUrl: "https://www.bufdir.no/tilskudd/"
+    "id": "grunnstotte-nasjonalt",
+    "dtId": "DT-0081",
+    "navn": "Tilskudd til frivillige barne- og ungdomsorganisasjoner - grunnstøtte nasjonalt arbeid",
+    "kortnavn": "Grunnstøtte nasjonalt",
+    "forvalter": "Bufdir",
+    "orgnr": "986128433",
+    "tema": "Driftsmidler",
+    "frist": "2025-09-15",
+    "offentligBelop": 197090000,
+    "offentligType": "tilgjengelige_midler",
+    "sistTildelt": 184866011,
+    "aar": 2026,
+    "kilde": "Tilskudd.no-boksen DT-0081 (2026). Tilgjengelige midler 197 090 000 kr. Tildelt 184 866 011 kr (samme år  ikke nødvendigvis komplett).",
+    "kildeUrl": "https://tilskudd.lottstift.no/ordning/DT-0081/2026/tilskudd-til-frivillige-barne-og-ungdomsorganisasjoner-grunnstotte-nasjonalt-arbeid",
+    "sideUrl": "https://www.bufdir.no/tilskudd/barne-og-ungdomsorganisasjoner/",
+    "beskrivelse": "Målet med tilskuddsordningen er å legge til rette for barn og ungdoms deltakelse i barne- og ungdomsorganisasjonene. Tilskuddsordningene skal stimulere organisasjonene til engasjem",
+    "frivillighetsregister": false
   },
   {
-    id: "tiltak-mot-rasisme",
-    navn: "Tiltak mot rasisme, diskriminering og hatefulle ytringer",
-    kortnavn: "Mot rasisme og hat",
-    forvalter: "Bufdir",
-    tema: "Likestilling og ikke-diskriminering",
-    offentligBelop: 26400000,
-    offentligType: "vedtatt_ramme",
-    aar: 2026,
-    kilde: "Bufdir: «Bevilgningen til ordningen for 2026 er 26,4 millioner.»",
-    kildeUrl: "https://www.bufdir.no/tilskudd/tiltak-mot-rasisme-diskriminering-og-hatefulle-ytringer/",
-    sideUrl: "https://www.bufdir.no/tilskudd/tiltak-mot-rasisme-diskriminering-og-hatefulle-ytringer/"
-  },
-  {
-    id: "tiltak-mot-vold",
-    navn: "Tiltak mot vold og overgrep",
-    kortnavn: "Mot vold og overgrep",
-    forvalter: "Bufdir",
-    tema: "Vold",
-    offentligBelop: 12995000,
-    offentligType: "vedtatt_ramme",
-    aar: 2026,
-    kilde: "Bufdir: «Bevilgningen til ordningen for 2026 var 12,995 millioner kroner.»",
-    kildeUrl: "https://www.bufdir.no/tilskudd/tiltak-mot-vold-og-overgrep/",
-    sideUrl: "https://www.bufdir.no/tilskudd/tiltak-mot-vold-og-overgrep/"
-  },
-  {
-    id: "tiltak-likestilling-funksjonsnedsettelse",
-    navn: "Tiltak som fremmer likestilling av personer med funksjonsnedsettelse",
-    kortnavn: "Likestilling funksjonsnedsettelse",
-    forvalter: "Bufdir",
-    tema: "Funksjonsnedsettelse",
-    offentligBelop: 16880000,
-    offentligType: "vedtatt_ramme",
-    aar: 2026,
-    kilde: "Tildelingsbrev Bufdir 2026: 16,88 mill. kr til tilskuddsordningen.",
-    kildeUrl: "https://www.regjeringen.no/contentassets/e3c03f39789d433a9ade95467740b6ab/tildelingsbrev-2026-bufdir.pdf",
-    sideUrl: "https://www.bufdir.no/tilskudd/"
-  },
-  {
-    id: "tryggest",
-    navn: "TryggEst",
-    kortnavn: "TryggEst",
-    forvalter: "Bufdir",
-    tema: "Vold",
-    offentligBelop: 7000000,
-    offentligType: "vedtatt_ramme",
-    aar: 2026,
-    kilde: "Bufdir: «om lag 7 mill. kroner» for 2026, med forbehold om Stortingets vedtak.",
-    kildeUrl: "https://www.bufdir.no/tilskudd/tryggest/",
-    sideUrl: "https://www.bufdir.no/tilskudd/tryggest/"
-  },
-  {
-    id: "universell-utforming",
-    navn: "Universell utforming - kunnskapsutvikling, kompetanseheving og informasjon",
-    kortnavn: "Universell utforming",
-    forvalter: "Bufdir",
-    tema: "Universell utforming",
-    offentligBelop: null,
-    offentligType: null,
-    aar: null,
-    kilde: "Ikke oppgitt som samlet ramme på sidene vi leste.",
-    kildeUrl: KILDE_BUFDIR,
-    sideUrl: "https://www.bufdir.no/tilskudd/"
-  },
-  {
-    id: "utvikling-samhandling-barnevern",
-    navn: "Utviklings- og samhandlingsprosjekter i barnevernet",
-    kortnavn: "Utvikling barnevern",
-    forvalter: "Bufdir",
-    tema: "Barnevern",
-    offentligBelop: null,
-    offentligType: null,
-    aar: null,
-    kilde: "Ikke oppgitt som samlet ramme på sidene vi leste.",
-    kildeUrl: KILDE_BUFDIR,
-    sideUrl: "https://www.bufdir.no/tilskudd/"
-  },
-  {
-    id: "tros-livssyn",
-    navn: "Tilskot til trus- og livssynssamfunn",
-    kortnavn: "Tros- og livssynssamfunn",
-    forvalter: "BFD",
-    tema: "Tro og livssyn",
-    offentligBelop: 1142606472,
-    offentligType: "sist_tildelt",
-    aar: null,
-    kilde: "Tilskudd.no BFD-oversikt (historisk tildelt). 2026-visningen viser 0 kr — året er ikke ferdig publisert.",
-    kildeUrl: KILDE_BFD_FORVALTER,
-    sideUrl: KILDE_BFD_FORVALTER
-  },
-  {
-    id: "dialog-tros-livssyn",
-    navn: "Tilskudd til dialog, debatt, samarbeid og kunnskapsutvikling på tros- og livssynsfeltet",
-    kortnavn: "Dialog tros- og livssyn",
-    forvalter: "BFD",
-    tema: "Tro og livssyn",
-    offentligBelop: 3500000,
-    offentligType: "sist_tildelt",
-    aar: 2026,
-    kilde: "Tilskudd.no BFD-forvaltersiden, tildelt 3 500 000 kr (2026, ikke ferdig år).",
-    kildeUrl: KILDE_BFD_FORVALTER,
-    sideUrl: KILDE_BFD_FORVALTER
-  },
-  {
-    id: "enkeltstaende-bfd",
-    navn: "Enkeltstående tilskudd (BFD)",
-    kortnavn: "Enkeltstående (BFD)",
-    forvalter: "BFD",
-    tema: "Enkeltstående tildelinger",
-    offentligBelop: null,
-    offentligType: null,
-    aar: 2026,
-    kilde: "Ikke en søknadsordning. Navngitte tildelinger på Tilskudd.no. Vi summerer ikke mottakere inn i prototypen.",
-    kildeUrl: KILDE_BFD_FORVALTER,
-    sideUrl: KILDE_BFD_FORVALTER,
-    ikkeSokbar: true
+    "id": "funksjonshemmedes-organisasjoner",
+    "dtId": "DT-0014",
+    "navn": "Tilskudd til funksjonshemmedes organisasjoner",
+    "kortnavn": "Funksjonshemmedes org.",
+    "forvalter": "Bufdir",
+    "orgnr": "986128433",
+    "tema": "Driftsmidler",
+    "frist": "2025-09-15",
+    "offentligBelop": 254095246,
+    "offentligType": "tilgjengelige_midler",
+    "sistTildelt": 244146232,
+    "aar": 2026,
+    "kilde": "Tilskudd.no-boksen DT-0014 (2026). Tilgjengelige midler 254 095 246 kr. Tildelt 244 146 232 kr (samme år  ikke nødvendigvis komplett).",
+    "kildeUrl": "https://tilskudd.lottstift.no/ordning/DT-0014/2026/tilskudd-til-funksjonshemmedes-organisasjoner",
+    "sideUrl": "https://www.bufdir.no/tilskudd/funksjonshemmedes-organisasjoner/",
+    "beskrivelse": "Målet med tilskuddsordningen er å styrke mulighetene for frivillige og demokratiske landsomfattende organisasjoner for personer med funksjonsnedsettelse til å jobbe mot diskriminer",
+    "frivillighetsregister": false
   }
 ];
 
 function finnOrdning(id) {
-  return ORDNINGER.find((o) => o.id === id) || null;
+  return ORDNINGER.find((o) => o.id === id || o.dtId === id) || null;
 }
 
 function ordningOvelse() {
@@ -341,16 +333,28 @@ function ordningOvelse() {
 
 function offentligTypeTekst(o) {
   if (!o || o.offentligBelop == null) return "ikke oppgitt i kilden";
+  if (o.offentligType === "tilgjengelige_midler") return "Tilgjengelige midler";
   if (o.offentligType === "vedtatt_ramme") return "Vedtatt ramme";
   if (o.offentligType === "sist_tildelt") return "Sist tildelt";
   return "Offentlig tall";
 }
 
+function formatKrNb(n) {
+  return new Intl.NumberFormat("nb-NO").format(n) + " kr";
+}
+
 function formatOffentligBelop(o, krFn) {
   if (!o || o.offentligBelop == null) return "ikke oppgitt i kilden";
-  const tall = typeof krFn === "function" ? krFn(o.offentligBelop) : `${o.offentligBelop} kr`;
+  const tall = typeof krFn === "function" ? krFn(o.offentligBelop) : formatKrNb(o.offentligBelop);
   const aar = o.aar ? ` (${o.aar})` : "";
   return `${offentligTypeTekst(o)} ${tall}${aar}`;
+}
+
+function formatFrist(iso) {
+  if (!iso) return "ikke oppgitt i kilden";
+  const [y, m, d] = String(iso).split("-");
+  if (!y || !m || !d) return iso;
+  return `${d}.${m}.${y}`;
 }
 
 function ordningVisningsnavn(o, medOvelse) {
@@ -359,47 +363,84 @@ function ordningVisningsnavn(o, medOvelse) {
   return o.navn;
 }
 
+function summerOrdningsbudsjett(liste) {
+  const rader = liste || ORDNINGER;
+  return rader.reduce((acc, o) => {
+    if (o.offentligBelop != null) {
+      acc.tilgjengelig += o.offentligBelop;
+      acc.medTilgjengelig += 1;
+    } else acc.utenTilgjengelig += 1;
+    if (o.sistTildelt != null) {
+      acc.tildelt += o.sistTildelt;
+      acc.medTildelt += 1;
+    } else acc.utenTildelt += 1;
+    return acc;
+  }, { tilgjengelig: 0, tildelt: 0, medTilgjengelig: 0, utenTilgjengelig: 0, medTildelt: 0, utenTildelt: 0 });
+}
+
+function andelTekst(del, hel) {
+  if (del == null || !hel) return "—";
+  return `${Math.round((del / hel) * 1000) / 10} %`;
+}
+
 function renderOrdningskatalog() {
   const rot = document.getElementById("katalogRot");
   if (!rot) return;
   const filter = document.getElementById("katForvalter")?.value || "alle";
   const liste = ORDNINGER.filter((o) => filter === "alle" || o.forvalter === filter);
+  const tot = summerOrdningsbudsjett(liste);
+  const buf = summerOrdningsbudsjett(liste.filter((o) => o.forvalter === "Bufdir"));
+  const bfd = summerOrdningsbudsjett(liste.filter((o) => o.forvalter === "BFD"));
   const rader = liste.map((o) => {
-    const belop = o.offentligBelop == null
-      ? "ikke oppgitt i kilden"
-      : new Intl.NumberFormat("nb-NO").format(o.offentligBelop) + " kr";
-    const type = o.offentligBelop == null ? "—" : offentligTypeTekst(o);
-    const aar = o.aar || "—";
+    const tilgj = o.offentligBelop == null ? "ikke oppgitt i kilden" : formatKrNb(o.offentligBelop);
+    const tildelt = o.sistTildelt == null ? "ikke oppgitt i kilden" : formatKrNb(o.sistTildelt);
     const merke = o.ovelse ? `<span class="tag tag-ramme">Øvelsessaker her</span>` : `<span class="tag">Bare katalog</span>`;
-    const sok = o.ikkeSokbar ? "Nei — enkeltstående" : "Ja i katalogen (simulert)";
     return `<tr>
-      <td>${escKat(o.navn)} ${merke}</td>
+      <td>${escKat(o.navn)} ${merke}<br><span class="hint">${escKat(o.beskrivelse || "")}</span></td>
+      <td class="mono">${escKat(o.dtId)}</td>
       <td>${escKat(o.forvalter)}</td>
       <td>${escKat(o.tema)}</td>
-      <td>${escKat(type)}</td>
-      <td class="mono">${escKat(belop)}</td>
-      <td>${escKat(String(aar))}</td>
-      <td>${escKat(sok)}</td>
-      <td><a href="${escKat(o.kildeUrl)}" target="_blank" rel="noopener">Kilde</a>${o.sideUrl && o.sideUrl !== o.kildeUrl ? ` · <a href="${escKat(o.sideUrl)}" target="_blank" rel="noopener">Bufdir</a>` : ""}<br><span class="hint">${escKat(o.kilde)}</span></td>
+      <td>${escKat(formatFrist(o.frist))}</td>
+      <td class="mono">${escKat(tilgj)}<br><span class="hint">${escKat(andelTekst(o.offentligBelop, tot.tilgjengelig))} av totalen</span></td>
+      <td class="mono">${escKat(tildelt)}${o.sistTildelt != null ? `<br><span class="hint">${escKat(andelTekst(o.sistTildelt, tot.tildelt))} av tildelt</span>` : ""}</td>
+      <td>
+        <a href="${escKat(o.kildeUrl)}" target="_blank" rel="noopener">Boksen på Tilskudd.no</a>
+        ${o.sideUrl ? `<br><a href="${escKat(o.sideUrl)}" target="_blank" rel="noopener">Forvalters side</a>` : ""}
+        <br><span class="hint">${escKat(o.kilde)}</span>
+      </td>
     </tr>`;
   }).join("");
   rot.innerHTML = `
-    <p class="hint">${liste.length} av ${ORDNINGER.length} rader. Snapshot ${escKat(ORDNINGER_SNAPSHOT)}. Offentlige historiske/vedtatte tall — ikke potten i øvelsen.</p>
+    <div class="kpi-grid">
+      <div class="kpi"><b>${formatKrNb(tot.tilgjengelig)}</b><span>totalt tilgjengelige midler 2026 (${tot.medTilgjengelig} ordninger)</span></div>
+      <div class="kpi"><b>${formatKrNb(tot.tildelt)}</b><span>totalt tildelt 2026 (${tot.medTildelt} av ${liste.length} har tall)</span></div>
+      <div class="kpi"><b>${formatKrNb(buf.tilgjengelig)}</b><span>Bufdir · tilgjengelig</span></div>
+      <div class="kpi"><b>${formatKrNb(bfd.tilgjengelig)}</b><span>BFD · tilgjengelig</span></div>
+    </div>
+    <p class="hint">${liste.length} av ${ORDNINGER.length} bokser (14 Bufdir + 2 BFD). Snapshot ${escKat(ORDNINGER_SNAPSHOT)}. Summering av boksenes «Tilgjengelige midler» og tildelt-felt — ikke øvelsespotten. ${tot.utenTildelt} ordninger har ikke publisert tildelt 2026 ennå. Bufdir.no har flere utlysninger utenfor dette filteret.</p>
     <div class="tabell-wrap">
       <table class="pv-tabell kat-tabell">
         <thead>
           <tr>
-            <th>Ordning</th>
+            <th>Boks / tilskudd</th>
+            <th>ID</th>
             <th>Forvalter</th>
-            <th>Tema</th>
-            <th>Type tall</th>
-            <th>Offentlig beløp</th>
-            <th>År</th>
-            <th>Søkbar her?</th>
+            <th>Type</th>
+            <th>Frist (siste på boksen)</th>
+            <th>Budsjett per tilskudd (tilgjengelig 2026)</th>
+            <th>Tildelt per tilskudd 2026</th>
             <th>Kilde</th>
           </tr>
         </thead>
         <tbody>${rader}</tbody>
+        <tfoot>
+          <tr>
+            <th colspan="5">Totalt i utvalget</th>
+            <th class="mono">${escKat(formatKrNb(tot.tilgjengelig))}</th>
+            <th class="mono">${escKat(formatKrNb(tot.tildelt))}${tot.utenTildelt ? ` <span class="hint">(+ ${tot.utenTildelt} uten tall)</span>` : ""}</th>
+            <th></th>
+          </tr>
+        </tfoot>
       </table>
     </div>`;
 }
@@ -423,5 +464,6 @@ if (typeof window !== "undefined") {
   window.offentligTypeTekst = offentligTypeTekst;
   window.ordningVisningsnavn = ordningVisningsnavn;
   window.renderOrdningskatalog = renderOrdningskatalog;
+  window.summerOrdningsbudsjett = summerOrdningsbudsjett;
   window.KILDE_LOTTSTIFT_FILTER = KILDE_LOTTSTIFT_FILTER;
 }

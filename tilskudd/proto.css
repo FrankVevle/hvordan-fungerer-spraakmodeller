@@ -236,6 +236,7 @@ details summary { cursor: pointer; font-weight: 650; }
 #analyseRot .panel { margin-bottom: 1rem; }
 #analyseRot .panel h2 { margin: 0 0 0.4rem; font-size: 1.15rem; }
 
+.kat-tabell tfoot th, .kat-tabell tfoot td { background: #eef2ff; font-weight: 700; position: sticky; bottom: 0; }
 .kat-tabell td .hint { display: block; margin-top: 0.25rem; max-width: 22rem; }
 .tag:not([class*="tag-"]) { background: #f1f5f9; color: #475569; }
 
