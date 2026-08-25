@@ -236,6 +236,78 @@ details summary { cursor: pointer; font-weight: 650; }
 #analyseRot .panel { margin-bottom: 1rem; }
 #analyseRot .panel h2 { margin: 0 0 0.4rem; font-size: 1.15rem; }
 
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+.frank-hero { display: grid; grid-template-columns: auto 1fr; gap: 1.1rem; align-items: center; }
+@media (max-width: 40rem) {
+  .frank-hero { grid-template-columns: 1fr; }
+}
+.frank-avatar {
+  width: 4.2rem; height: 4.2rem; border-radius: 50%;
+  background: #4f46e5; color: #fff; font-weight: 800; font-size: 1.6rem;
+  display: flex; align-items: center; justify-content: center;
+}
+.frank-sak-liste { display: grid; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); gap: 0.7rem; }
+.frank-sak {
+  display: block; background: #f8fafc; border: 1px solid var(--line); border-radius: 12px;
+  padding: 0.8rem 0.9rem; text-decoration: none; color: inherit;
+}
+.frank-sak:hover { border-color: #818cf8; }
+.frank-sak h3 { margin: 0.25rem 0 0; font-size: 1rem; }
+.lov-liste { margin: 0.4rem 0 0; padding-left: 1.1rem; }
+.lov-liste li { margin: 0.45rem 0; }
+
+.ki-agent-fab {
+  position: fixed; right: 1.2rem; bottom: 1.2rem; z-index: 50;
+  width: 4.1rem; height: 4.1rem; border: 0; border-radius: 50%;
+  background: linear-gradient(160deg, #6366f1, #4f46e5);
+  box-shadow: 0 10px 28px rgba(79, 70, 229, 0.35);
+  cursor: pointer;
+  animation: ki-float 3.2s ease-in-out infinite;
+}
+.ki-agent-face { position: relative; display: block; width: 1.6rem; height: 1.6rem; margin: 0 auto; }
+.ki-agent-face i {
+  position: absolute; top: 0.35rem; width: 0.38rem; height: 0.38rem;
+  background: #fff; border-radius: 50%;
+}
+.ki-agent-face i:first-child { left: 0.15rem; }
+.ki-agent-face i:last-child { right: 0.15rem; }
+.ki-agent-face::after {
+  content: ""; position: absolute; left: 0.35rem; right: 0.35rem; bottom: 0.15rem;
+  height: 0.18rem; border-radius: 99px; background: #c7d2fe;
+}
+@keyframes ki-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+.ki-agent-panel {
+  position: fixed; right: 1.2rem; bottom: 5.6rem; z-index: 50;
+  width: min(24rem, calc(100vw - 1.6rem));
+  max-height: min(32rem, calc(100vh - 8rem));
+  background: #fff; border: 1px solid #c7d2fe; border-radius: 16px;
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.16);
+  display: flex; flex-direction: column; overflow: hidden;
+}
+.ki-agent-panel[hidden] { display: none !important; }
+.ki-agent-panel header {
+  position: relative;
+  padding: 0.7rem 2.2rem 0.7rem 0.9rem;
+  background: #eef2ff; border-bottom: 1px solid #c7d2fe;
+}
+.ki-agent-panel header strong { display: block; }
+.ki-agent-panel header span { font-size: 0.75rem; color: #64748b; }
+.ki-agent-x {
+  position: absolute; top: 0.45rem; right: 0.45rem;
+  border: 0; background: transparent; font-size: 1.3rem; cursor: pointer; color: #334155;
+}
+.ki-agent-logg { overflow: auto; padding: 0.7rem; flex: 1; display: flex; flex-direction: column; gap: 0.5rem; }
+.ki-agent-msg { border-radius: 10px; padding: 0.55rem 0.7rem; font-size: 0.88rem; }
+.ki-agent-msg p { margin: 0; }
+.ki-agent-bot { background: #eef2ff; }
+.ki-agent-du { background: #f1f5f9; align-self: flex-end; }
+.ki-agent-chips { padding: 0 0.7rem; }
+.ki-agent-panel form { padding: 0 0.7rem 0.8rem; }
+.ki-agent-panel .field { margin-bottom: 0.45rem; }
+
 .ordning-kort-liste { display: flex; flex-direction: column; gap: 0.55rem; }
 .ordning-kort {
   display: grid;

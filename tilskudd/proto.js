@@ -968,6 +968,10 @@ function sakerFiltrert() {
     liste = liste.filter((s) => (s.ordningId || ORDNING_OVELSE_ID) === ordningFilter);
   }
   if (listFilter === "alle") return liste;
+  if (listFilter === "frank") {
+    const mine = typeof FRANK_TILDELTE !== "undefined" ? FRANK_TILDELTE : [];
+    return liste.filter((s) => mine.includes(s.id));
+  }
   if (listFilter === "personvern") {
     return liste.filter((s) => typeof sjekkPersonvern === "function" && sjekkPersonvern(s).niva !== "ok");
   }
@@ -987,15 +991,17 @@ function setOrdningFilter(id) {
 function renderList() {
   const box = $("liste");
   if (!box) return;
-  const flags = ["alle", "ok", "avkorting", "formalia", "historikk", "ramme", "avvik", "plantet", "personvern"];
+  const flags = ["alle", "frank", "ok", "avkorting", "formalia", "historikk", "ramme", "avvik", "plantet", "personvern"];
   const chips = flags.map((f) => {
     const n = f === "alle"
       ? SAKER.length
-      : f === "personvern"
+      : f === "frank"
+        ? (typeof FRANK_TILDELTE !== "undefined" ? FRANK_TILDELTE.length : 0)
+        : f === "personvern"
         ? SAKER.filter((s) => typeof sjekkPersonvern === "function" && sjekkPersonvern(s).niva !== "ok").length
         : SAKER.filter((s) => s.flag === f).length;
     const on = listFilter === f;
-    const label = f === "alle" ? "Alle" : f === "personvern" ? "Personvern" : tagText(f);
+    const label = f === "alle" ? "Alle" : f === "frank" ? "Franks bunke" : f === "personvern" ? "Personvern" : tagText(f);
     return `<button type="button" class="chip ${on ? "on" : ""}" onclick="setListFilter('${f}')">${label} ${n}</button>`;
   }).join("");
   const ordninger = typeof ORDNINGER !== "undefined" ? ORDNINGER : [];
@@ -1538,6 +1544,14 @@ function fillPortalFromRegister() {
     : "Ikke i tabellen. Du kan likevel sende.";
 }
 
+window.kr = kr;
+window.esc = esc;
+window.findSak = findSak;
+window.loadJson = loadJson;
+window.saveJson = saveJson;
+window.callModelAPI = callModelAPI;
+window.sakOrdning = sakOrdning;
+window.sakOrdningTekst = sakOrdningTekst;
 window.setListFilter = setListFilter;
 window.setOrdningFilter = setOrdningFilter;
 window.openSak = openSak;
