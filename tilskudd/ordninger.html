@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ordninger — Tilskudd (øvelse)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/tilskudd/proto.css">
+</head>
+<body class="proto">
+  <header class="proto-bar">
+    <div class="proto-brand">Tilskudd (øvelse)<span>Katalog — ikke utlysning</span></div>
+    <nav class="proto-nav">
+      <a href="/tilskudd/">Start</a>
+      <a class="is-on" href="/tilskudd/ordninger">Ordninger</a>
+      <a href="/tilskudd/behandle">Arbeidsliste</a>
+      <a href="/tilskudd/analyse">Portefølje</a>
+      <a href="/tilskudd/personvern">Personvern</a>
+      <a href="/tilskudd/aiact">KI-forordning</a>
+      <a href="/tilskudd/nis2">NIS 2</a>
+      <a href="/tilskudd/transparens">Hva KI tenkte</a>
+      <a href="/tilskudd/om">Slik virker det</a>
+      <a href="/tilskudd/soknad">Søk (simulert)</a>
+      <a href="/">Kurset</a>
+    </nav>
+  </header>
+  <main class="proto-shell proto-wide">
+    <div class="banner"><strong>Øvelse.</strong> Dette er en snapshot av offentlige ordningsnavn fra Tilskudd.no og Bufdir. Ikke Bufdir. Ikke Tilskudd.no. Vi tildeler ikke ekte penger. De 156 sakene ligger under inkludering.</div>
+    <section class="hero">
+      <h1>Hvilke ordninger forvalter Bufdir og BFD?</h1>
+      <p>Filteret på Tilskudd.no med administrator Bufdir (986 128 433) og BFD (972 417 793) er katalogen over ordninger — ikke søknadsportalen. Her ligger 21 Bufdir-navn fra bufdir.no/tilskudd pluss BFDs publiserte tros- og livssynsordninger. Tallene er vedtatt ramme eller sist tildelt, med kilde. Mangler tallet: «ikke oppgitt i kilden».</p>
+      <p style="margin-top:0.75rem"><a href="https://www.bufdir.no/tilskudd/" target="_blank" rel="noopener">bufdir.no/tilskudd</a> · <a href="https://tilskudd.lottstift.no/ordninger?ADMINISTRATOR=986128433&amp;ADMINISTRATOR=972417793" target="_blank" rel="noopener">Tilskudd.no (Bufdir + BFD)</a></p>
+    </section>
+    <section class="panel">
+      <label class="field">Forvalter
+        <select id="katForvalter" onchange="renderOrdningskatalog()">
+          <option value="alle">Alle</option>
+          <option value="Bufdir">Bufdir</option>
+          <option value="BFD">BFD</option>
+        </select>
+      </label>
+      <div id="katalogRot"></div>
+    </section>
+  </main>
+  <footer class="proto-foot">Pedagogisk prototype. Snapshot, ikke live API. Ikke et fagsystem.</footer>
+  <script src="/tilskudd/ordninger.js"></script>
+  <script>document.addEventListener("DOMContentLoaded", renderOrdningskatalog);</script>
+</body>
+</html>

@@ -252,6 +252,7 @@ function utvidNySak(row, i, opt = {}) {
     orgnr,
     kommune,
     aktivitet,
+    ordningId: typeof ORDNING_OVELSE_ID !== "undefined" ? ORDNING_OVELSE_ID : "inkludering-barn-unge",
     belop,
     jobb,
     soknad,
@@ -361,6 +362,27 @@ const FLERE_SAKER_FRO = byggFlereSakerFro();
 const SAKER = BASE_SAKER
   .concat(NYE_SAKER_FRO.map((row, i) => utvidNySak(row, i)))
   .concat(FLERE_SAKER_FRO.map((row, i) => utvidNySak(row, i, { orgPrefix: "997", idStart: 2801 })));
+
+SAKER.forEach((s) => {
+  s.ordningId = s.ordningId || (typeof ORDNING_OVELSE_ID !== "undefined" ? ORDNING_OVELSE_ID : "inkludering-barn-unge");
+});
+
+let ordningFilter = "alle";
+
+function sakOrdning(sak) {
+  const id = sak?.ordningId || (typeof ORDNING_OVELSE_ID !== "undefined" ? ORDNING_OVELSE_ID : "inkludering-barn-unge");
+  if (typeof finnOrdning === "function") {
+    const o = finnOrdning(id);
+    if (o) return o;
+  }
+  return { id, navn: "Inkludering av barn og unge", kortnavn: "Inkludering (øvelse)", ovelse: true };
+}
+
+function sakOrdningTekst(sak) {
+  const o = sakOrdning(sak);
+  if (typeof ordningVisningsnavn === "function") return ordningVisningsnavn(o, true);
+  return o.kortnavn || o.navn;
+}
 
 if (typeof personvernKobleSaker === "function") personvernKobleSaker(SAKER);
 
@@ -629,7 +651,7 @@ function portefoljeDigest() {
     const rod = r.røde.map((c) => c.label).join("/") || "-";
     const gul = r.gule.map((c) => c.label).join("/") || "-";
     const setning = String(soknadTilModell(r.sak, "sladd") || "").replace(/\s+/g, " ").slice(0, 90);
-    return `${r.sak.id} | ${r.sak.org} | ${r.sak.kommune} | ${r.sak.aktivitet} | søkt ${r.sak.belop} | admin ${r.sak.adminPct}% | ${r.sak.flag} | anbefalt ${r.rules.recommended} | rød:${rod} | gul:${gul} | ${setning}`;
+    return `${r.sak.id} | ${r.sak.org} | ${sakOrdningTekst(r.sak)} | ${r.sak.aktivitet} | søkt ${r.sak.belop} | admin ${r.sak.adminPct}% | ${r.sak.flag} | anbefalt ${r.rules.recommended} | rød:${rod} | gul:${gul} | ${setning}`;
   }).join("\n");
 }
 
@@ -911,19 +933,32 @@ function renderRamme() {
   if (!el) return;
   const sum = SAKER.reduce((n, s) => n + s.belop, 0);
   const pct = Math.min(100, Math.round((sum / RAMME) * 100));
-  el.innerHTML = `<div class="ramme"><strong>Pott i øvelsen:</strong> ${kr(RAMME)}. ${SAKER.length} saker har søkt ${kr(sum)} til sammen. KI kutter ikke for å få det til å gå opp. <strong>Du prioriterer.</strong><div class="bar"><i style="width:${pct}%"></i></div></div>`;
+  const o = typeof ordningOvelse === "function" ? ordningOvelse() : null;
+  const offentlig = o && typeof formatOffentligBelop === "function"
+    ? formatOffentligBelop(o, kr)
+    : "ikke oppgitt i kilden";
+  el.innerHTML = `<div class="ramme"><strong>Øvelsespott:</strong> ${kr(RAMME)} — fiktiv pott for prioritering. Vi fordeler ikke den offentlige rammen. <strong>Offentlig kontekst</strong> for ${esc(o?.navn || "Inkludering av barn og unge")}: ${esc(offentlig)}. ${SAKER.length} saker har søkt ${kr(sum)} mot øvelsespotten. KI kutter ikke for å få det til å gå opp. <strong>Du prioriterer.</strong><div class="bar"><i style="width:${pct}%"></i></div></div>`;
 }
 
 function sakerFiltrert() {
-  if (listFilter === "alle") return SAKER;
-  if (listFilter === "personvern") {
-    return SAKER.filter((s) => typeof sjekkPersonvern === "function" && sjekkPersonvern(s).niva !== "ok");
+  let liste = SAKER;
+  if (ordningFilter !== "alle") {
+    liste = liste.filter((s) => (s.ordningId || ORDNING_OVELSE_ID) === ordningFilter);
   }
-  return SAKER.filter((s) => s.flag === listFilter);
+  if (listFilter === "alle") return liste;
+  if (listFilter === "personvern") {
+    return liste.filter((s) => typeof sjekkPersonvern === "function" && sjekkPersonvern(s).niva !== "ok");
+  }
+  return liste.filter((s) => s.flag === listFilter);
 }
 
 function setListFilter(flag) {
   listFilter = flag;
+  renderList();
+}
+
+function setOrdningFilter(id) {
+  ordningFilter = id;
   renderList();
 }
 
@@ -941,14 +976,25 @@ function renderList() {
     const label = f === "alle" ? "Alle" : f === "personvern" ? "Personvern" : tagText(f);
     return `<button type="button" class="chip ${on ? "on" : ""}" onclick="setListFilter('${f}')">${label} ${n}</button>`;
   }).join("");
+  const ordninger = typeof ORDNINGER !== "undefined" ? ORDNINGER : [];
+  const ordningOpts = [`<option value="alle">Alle ordninger</option>`].concat(
+    ordninger.filter((o) => !o.ikkeSokbar).map((o) => {
+      const n = SAKER.filter((s) => (s.ordningId || ORDNING_OVELSE_ID) === o.id).length;
+      const merke = o.id === ORDNING_OVELSE_ID ? " (øvelse)" : "";
+      return `<option value="${esc(o.id)}" ${ordningFilter === o.id ? "selected" : ""}>${esc(o.navn)}${merke} · ${n}</option>`;
+    })
+  ).join("");
   const rows = sakerFiltrert().map((sak) => `
     <button type="button" class="${selected === sak.id ? "on" : ""}" onclick="openSak('${sak.id}')">
       <div class="meta"><span>${sak.id}</span><span class="tag ${tagClass(sak.flag)}">${tagText(sak.flag)}</span>${typeof sjekkPersonvern === "function" && sjekkPersonvern(sak).niva !== "ok" ? `<span class="tag ${sjekkPersonvern(sak).niva === "rod" ? "tag-formalia" : "tag-avkorting"}">PV</span>` : ""}</div>
       <h3>${esc(sak.org)}</h3>
-      <p class="amt">${kr(sak.belop)}</p>
+      <p class="amt">${kr(sak.belop)} · ${esc(sakOrdning(sak).kortnavn || sakOrdningTekst(sak))}</p>
       <p class="job">${esc(sak.jobb)}</p>
     </button>`).join("");
-  box.innerHTML = `<div class="chips">${chips}</div>${rows}`;
+  box.innerHTML = `<label class="field">Ordning
+      <select onchange="setOrdningFilter(this.value)">${ordningOpts}</select>
+    </label>
+    <div class="chips">${chips}</div>${rows}`;
 }
 
 function renderJournal() {
@@ -1060,7 +1106,7 @@ function renderCard() {
       <div>
         <p class="mono" style="margin:0;color:#4f46e5;font-weight:700">${sak.id}</p>
         <h2 style="margin:0.15rem 0">${esc(sak.org)}</h2>
-        <p class="hint" style="margin:0">${esc(sak.kommune)} · ${esc(sak.aktivitet)}</p>
+        <p class="hint" style="margin:0">${esc(sakOrdningTekst(sak))} · ${esc(sak.kommune)} · ${esc(sak.aktivitet)}</p>
         <p style="margin:0.55rem 0 0;font-weight:650">Din jobb: ${esc(sak.jobb)}</p>
       </div>
       <button class="btn btn-primary" type="button" ${w.running ? "disabled" : ""} onclick="runKI('${sak.id}', true)">Kjør KI på nytt</button>
@@ -1422,15 +1468,16 @@ function submitSoknad() {
   const org = ($("pOrg")?.value || "").trim();
   const belop = Number($("pBelop")?.value || 0);
   const soknad = ($("pTekst")?.value || "").trim();
+  const ordningId = ($("pOrdning")?.value || (typeof ORDNING_OVELSE_ID !== "undefined" ? ORDNING_OVELSE_ID : "inkludering-barn-unge")).trim();
   const status = $("pStatus");
-  if (!orgnr || !org || !belop || !soknad) {
+  if (!orgnr || !org || !belop || !soknad || !ordningId) {
     if (status) status.textContent = "Fyll ut alle feltene.";
     return;
   }
   const pv = typeof sjekkFritekstPersonvern === "function" ? sjekkFritekstPersonvern(`${org}\n${soknad}`) : { niva: "ok", funn: [] };
   const list = loadJson(PORTAL_KEY, []);
   const id = `T-9${String(100 + list.length).slice(-3)}`;
-  list.push({ id, orgnr, org, belop, soknad, at: new Date().toLocaleString("no-NO") });
+  list.push({ id, orgnr, org, belop, soknad, ordningId, at: new Date().toLocaleString("no-NO") });
   saveJson(PORTAL_KEY, list);
   if (status) {
     const lagret = `Lagret ${id} i denne nettleseren. Åpne arbeidslisten for å fortsette som saksbehandler.`;
@@ -1446,8 +1493,18 @@ function renderMine() {
   if (!box) return;
   const list = loadJson(PORTAL_KEY, []);
   box.innerHTML = list.length
-    ? list.map((p) => `<p>${esc(p.id)} · ${esc(p.org)} · ${kr(p.belop)}</p>`).join("")
+    ? list.map((p) => `<p>${esc(p.id)} · ${esc(p.org)} · ${esc(sakOrdningTekst(p))} · ${kr(p.belop)}</p>`).join("")
     : `<p class="hint">Ingen innsendinger her ennå.</p>`;
+}
+
+function fyllOrdningVelger() {
+  const sel = $("pOrdning");
+  if (!sel || typeof ORDNINGER === "undefined") return;
+  const cur = sel.value || ORDNING_OVELSE_ID;
+  sel.innerHTML = ORDNINGER.filter((o) => !o.ikkeSokbar).map((o) => {
+    const merke = o.id === ORDNING_OVELSE_ID ? " (øvelsessaker i prototypen)" : "";
+    return `<option value="${esc(o.id)}" ${o.id === cur ? "selected" : ""}>${esc(o.navn)}${merke} · ${esc(o.forvalter)}</option>`;
+  }).join("");
 }
 
 function fillPortalFromRegister() {
@@ -1459,6 +1516,7 @@ function fillPortalFromRegister() {
 }
 
 window.setListFilter = setListFilter;
+window.setOrdningFilter = setOrdningFilter;
 window.openSak = openSak;
 window.runKI = runKI;
 window.hitl = hitl;
@@ -1519,9 +1577,9 @@ function lenkSaksnr(text) {
 
 function koeRaderHtml(rader, hvorfor) {
   if (!rader.length) return `<p class="hint">Ingen i denne køen.</p>`;
-  return `<table><thead><tr><th>Sak</th><th>Søker</th><th>Kommune</th><th>Søkt</th><th>Hvorfor</th></tr></thead><tbody>${rader.map((r) => {
+  return `<table><thead><tr><th>Sak</th><th>Søker</th><th>Ordning</th><th>Kommune</th><th>Søkt</th><th>Hvorfor</th></tr></thead><tbody>${rader.map((r) => {
     const grunn = hvorfor(r);
-    return `<tr><td><a href="${sakLenke(r.sak.id)}">${esc(r.sak.id)}</a></td><td>${esc(r.sak.org)}</td><td>${esc(r.sak.kommune)}</td><td>${kr(r.sak.belop)}</td><td>${esc(grunn)}</td></tr>`;
+    return `<tr><td><a href="${sakLenke(r.sak.id)}">${esc(r.sak.id)}</a></td><td>${esc(r.sak.org)}</td><td>${esc(sakOrdning(r.sak).kortnavn || sakOrdningTekst(r.sak))}</td><td>${esc(r.sak.kommune)}</td><td>${kr(r.sak.belop)}</td><td>${esc(grunn)}</td></tr>`;
   }).join("")}</tbody></table>`;
 }
 
@@ -1540,7 +1598,7 @@ function renderAnalyse() {
     <p class="hint">Maskinell opptelling med øvelsesreglene. Skjønn skjer på sakskortet. Dette er ikke statistikk for ledelsen — det er køen din.</p>
     <div class="kpi-grid">
       <div class="kpi"><b>${a.antall}</b><span>saker i bunken</span></div>
-      <div class="kpi"><b>${kr(a.sokt)}</b><span>søkt mot pott ${kr(RAMME)}</span></div>
+      <div class="kpi"><b>${kr(a.sokt)}</b><span>søkt mot øvelsespott ${kr(RAMME)}</span></div>
       <div class="kpi"><b>${a.koe.kanIkke.length}</b><span>kan ikke innstilles</span></div>
       <div class="kpi"><b>${a.koe.avklare.length}</b><span>må avklares først</span></div>
     </div>
@@ -1566,8 +1624,8 @@ function renderAnalyse() {
 
     <section class="panel">
       <h2>B. Penger mot pott</h2>
-      <p class="hint">Innstillingssimulering — ikke vedtak.</p>
-      <p>Søkt totalt ${kr(a.sokt)} mot ${kr(RAMME)}. ${svgStolpe((a.sokt / RAMME) * 100, "#f59e0b")}</p>
+      <p class="hint">Innstillingssimulering mot øvelsespotten — ikke vedtak. Offentlig tall for ${esc((typeof ordningOvelse === "function" && ordningOvelse()?.navn) || "Inkludering av barn og unge")}: ${esc(typeof formatOffentligBelop === "function" && typeof ordningOvelse === "function" ? formatOffentligBelop(ordningOvelse(), kr) : "ikke oppgitt i kilden")}. Vi later ikke som vi fordeler det beløpet her.</p>
+      <p>Søkt totalt ${kr(a.sokt)} mot øvelsespott ${kr(RAMME)}. ${svgStolpe((a.sokt / RAMME) * 100, "#f59e0b")}</p>
       <p>Hvis du kutter all overskytende admin: ${kr(a.etterAdminKutt)} (likebehandling av 15 %-regelen).</p>
       <p>Hvis du tar ut røde formalia og avvik: ${a.utenRodeAntall} saker kan konkurrere, ${kr(a.sumKanKonkurrere)}.</p>
       <h3>De 10 største</h3>
@@ -1586,8 +1644,8 @@ function renderAnalyse() {
       ${Object.keys(a.perAkt).sort().map((k) => {
         const liste = a.perAkt[k];
         return `<details><summary>${esc(k)} · ${liste.length} saker · søkt ${kr(liste.reduce((s, r) => s + r.sak.belop, 0))}</summary>
-          <table><thead><tr><th>Sak</th><th>Søker</th><th>Kommune</th><th>Søkt</th><th>Admin</th><th>Flagg</th></tr></thead><tbody>
-          ${liste.map((r) => `<tr><td><a href="${sakLenke(r.sak.id)}">${esc(r.sak.id)}</a></td><td>${esc(r.sak.org)}</td><td>${esc(r.sak.kommune)}</td><td>${kr(r.sak.belop)}</td><td>${r.sak.adminPct} %</td><td>${esc(tagText(r.sak.flag))}</td></tr>`).join("")}
+          <table><thead><tr><th>Sak</th><th>Søker</th><th>Ordning</th><th>Kommune</th><th>Søkt</th><th>Admin</th><th>Flagg</th></tr></thead><tbody>
+          ${liste.map((r) => `<tr><td><a href="${sakLenke(r.sak.id)}">${esc(r.sak.id)}</a></td><td>${esc(r.sak.org)}</td><td>${esc(sakOrdning(r.sak).kortnavn || sakOrdningTekst(r.sak))}</td><td>${esc(r.sak.kommune)}</td><td>${kr(r.sak.belop)}</td><td>${r.sak.adminPct} %</td><td>${esc(tagText(r.sak.flag))}</td></tr>`).join("")}
           </tbody></table></details>`;
       }).join("")}
     </section>
@@ -1663,6 +1721,7 @@ function renderPersonvern() {
     return `<tr class="pv-rad-${r.sjekk.niva}">
       <td><a href="/tilskudd/behandle#${r.sak.id}">${esc(r.sak.id)}</a></td>
       <td>${esc(r.sak.org)}</td>
+      <td>${esc(sakOrdning(r.sak).kortnavn || sakOrdningTekst(r.sak))}</td>
       <td>${esc(r.sak.kommune)}</td>
       <td><span class="tag ${tagClass(r.sak.flag)}">${esc(tagText(r.sak.flag))}</span></td>
       <td><span class="tag ${k.tag}">${k.tekst}</span></td>
@@ -1687,6 +1746,7 @@ function renderPersonvern() {
             <tr>
               <th>Sak</th>
               <th>Søker</th>
+              <th>Ordning</th>
               <th>Kommune</th>
               <th>Sakstype</th>
               <th>Personvern</th>
@@ -1694,7 +1754,7 @@ function renderPersonvern() {
               <th>Før KI</th>
             </tr>
           </thead>
-          <tbody>${rader || `<tr><td colspan="7">Ingen i dette filteret.</td></tr>`}</tbody>
+          <tbody>${rader || `<tr><td colspan="8">Ingen i dette filteret.</td></tr>`}</tbody>
         </table>
       </div>
       <p class="hint">${vist.length} av ${p.antall} vist.</p>
@@ -1737,6 +1797,7 @@ function renderAiAct() {
   const rader = vist.map((r) => `<tr class="${r.act.klasse === "hoy-tilsyn" ? "pv-rad-gul" : "pv-rad-ok"}">
     <td><a href="/tilskudd/behandle#${r.sak.id}">${esc(r.sak.id)}</a></td>
     <td>${esc(r.sak.org)}</td>
+    <td>${esc(sakOrdning(r.sak).kortnavn || sakOrdningTekst(r.sak))}</td>
     <td><span class="tag ${tagClass(r.sak.flag)}">${esc(tagText(r.sak.flag))}</span></td>
     <td>${esc(r.act.bruk)}</td>
     <td><span class="tag ${r.act.klasse === "hoy-tilsyn" ? "tag-avkorting" : "tag-ok"}">${esc(r.act.klasseTekst)}</span></td>
@@ -1764,7 +1825,7 @@ function renderAiAct() {
         <table class="pv-tabell">
           <thead>
             <tr>
-              <th>Sak</th><th>Søker</th><th>Sakstype</th><th>Bruk</th><th>Klasse</th><th>Tilsyn</th><th>Logg</th><th>Hensyn</th>
+              <th>Sak</th><th>Søker</th><th>Ordning</th><th>Sakstype</th><th>Bruk</th><th>Klasse</th><th>Tilsyn</th><th>Logg</th><th>Hensyn</th>
             </tr>
           </thead>
           <tbody>${rader}</tbody>
@@ -1809,6 +1870,7 @@ function renderNis2() {
   const rader = vist.map((r) => `<tr class="${r.nis.klasse === "hoy-konsekvens" ? "pv-rad-gul" : "pv-rad-ok"}">
     <td><a href="/tilskudd/behandle#${r.sak.id}">${esc(r.sak.id)}</a></td>
     <td>${esc(r.sak.org)}</td>
+    <td>${esc(sakOrdning(r.sak).kortnavn || sakOrdningTekst(r.sak))}</td>
     <td><span class="tag ${tagClass(r.sak.flag)}">${esc(tagText(r.sak.flag))}</span></td>
     <td><span class="tag ${r.nis.klasse === "hoy-konsekvens" ? "tag-avkorting" : "tag-ok"}">${esc(r.nis.klasseTekst)}</span></td>
     <td>${r.nis.sendtUt ? "Kan ha gått til OpenAI" : "Ikke sendt ut"}</td>
@@ -1835,7 +1897,7 @@ function renderNis2() {
         <table class="pv-tabell">
           <thead>
             <tr>
-              <th>Sak</th><th>Søker</th><th>Sakstype</th><th>Konsekvens</th><th>Leverandør</th><th>Varslet NSM</th><th>Hensyn</th>
+              <th>Sak</th><th>Søker</th><th>Ordning</th><th>Sakstype</th><th>Konsekvens</th><th>Leverandør</th><th>Varslet NSM</th><th>Hensyn</th>
             </tr>
           </thead>
           <tbody>${rader}</tbody>
@@ -1867,6 +1929,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   if ($("view-klage") && !$("view-klage").hidden) runKlage(false);
   if ($("pOrgnr")) {
+    fyllOrdningVelger();
     fillPortalFromRegister();
     renderMine();
   }
