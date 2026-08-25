@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Personvern — Tilskudd (øvelse)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/tilskudd/proto.css">
+</head>
+<body class="proto">
+  <header class="proto-bar">
+    <div class="proto-brand">Tilskudd (øvelse)<span>Personvernmodul — sjekk før KI</span></div>
+    <nav class="proto-nav">
+      <a href="/tilskudd/">Start</a>
+      <a href="/tilskudd/behandle">Arbeidsliste</a>
+      <a href="/tilskudd/analyse">Portefølje</a>
+      <a class="is-on" href="/tilskudd/personvern">Personvern</a>
+      <a href="/tilskudd/transparens">Hva KI tenkte</a>
+      <a href="/tilskudd/om">Slik virker det</a>
+      <a href="/">Kurset</a>
+    </nav>
+  </header>
+  <main class="proto-shell proto-wide">
+    <div class="banner"><strong>Sjekk nå.</strong> Mønstersøk i alle saker i bunken. Ikke en DPO. Ikke Datatilsynet. Ikke hjemmelsvurdering. Tre røde saker er plantet som øvelse (fiktive opplysninger).</div>
+    <section class="hero">
+      <h1>Hva kan ikke gå urørt til KI?</h1>
+      <p>Modulen leser søknadstekst og søkernavn. Rødt (fødselsnummer, helse, navngitt barn) stopper automatisk KI-kall til du sender sladdet tekst. Gult sladdes som hovedregel. Grønt betyr bare «ingen treff i mønstrene».</p>
+    </section>
+    <div id="pvRot"></div>
+    <section class="panel">
+      <h2>Hva som faktisk skjer i prototypen</h2>
+      <ul>
+        <li>Live KI går til OpenAI via <span class="mono">/api/chat</span>. Uten denne modulen gikk hele søknadsteksten.</li>
+        <li>Nå: sladdet tekst er standard. Usladdet krever et bevisst valg merket som øvelse.</li>
+        <li>Spor og journal ligger i nettleseren din. Ingen ekte arkivtjeneste.</li>
+        <li>Organisasjonsnummer telles ikke som fødselsnummer.</li>
+      </ul>
+      <p class="hint">Dette erstatter ikke DPIA, behandlingsprotokoll eller vurdering etter personvernforordningen.</p>
+    </section>
+  </main>
+  <footer class="proto-foot">Pedagogisk prototype. Fiktive personopplysninger i øvelsen. Ikke ekte personer.</footer>
+  <script src="/tilskudd/personvern.js"></script>
+  <script src="/tilskudd/proto.js"></script>
+</body>
+</html>

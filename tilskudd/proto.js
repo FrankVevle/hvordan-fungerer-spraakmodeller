@@ -362,6 +362,8 @@ const SAKER = BASE_SAKER
   .concat(NYE_SAKER_FRO.map((row, i) => utvidNySak(row, i)))
   .concat(FLERE_SAKER_FRO.map((row, i) => utvidNySak(row, i, { orgPrefix: "997", idStart: 2801 })));
 
+if (typeof personvernKobleSaker === "function") personvernKobleSaker(SAKER);
+
 const REGISTER = SAKER.filter((s) => !/Privatperson/.test(s.org)).map((s) => ({
   orgnr: String(s.orgnr || "").replace(/\s/g, ""),
   navn: s.org,
@@ -377,7 +379,8 @@ const RAG = {
   jobb: { tittel: "Øvelsesregel · jobbtilbud 4.2", tekst: "Jobbtilbud gjelder lønnet praksis og veiledning. Det er ikke investering i anlegg. Lik sak i øvelsen: Havblik Røde Kors (T-2608)." },
   planted: { tittel: "Feil hentet utdrag (øvelse)", tekst: "Likebehandling: Golfklubben Fjord (T-2621) fikk avslag. Sim. forskrift § 14 om investering. Anbefalt avslag." },
   klage: { tittel: "Øvelsesregel · nytt faktum", tekst: "Honorar til kursleder er faglig aktivitet, ikke generell administrasjon, når det følger av dokumentasjon. Omgjøring er saksbehandlers. KI fatter ikke vedtak." },
-  slutt: { tittel: "Øvelsesregel · slutt", tekst: "Tilskudd brukt i strid med vilkår kan kreves tilbake forholdsmessig. Godkjent aktivitet holdes utenfor. Forslag — ikke innkreving." }
+  slutt: { tittel: "Øvelsesregel · slutt", tekst: "Tilskudd brukt i strid med vilkår kan kreves tilbake forholdsmessig. Godkjent aktivitet holdes utenfor. Forslag — ikke innkreving." },
+  personvern: { tittel: "Øvelsesregel 2026 · personvern", tekst: "Fødselsnummer, helse og navngitte barn skal sladdes før teksten går til KI. E-post, telefon og adresse sladdes som hovedregel. Modulen er mønstersøk — ikke et vedtak om lovlighet." }
 };
 
 const FALLBACK = {
@@ -558,7 +561,7 @@ function tekstsignal(sak) {
 }
 
 function sakLenke(id) {
-  return `behandle.html#${id}`;
+  return `/tilskudd/behandle#${id}`;
 }
 
 function analyserPortefolje() {
@@ -622,7 +625,7 @@ function portefoljeDigest() {
   return analyserPortefolje().rader.map((r) => {
     const rod = r.røde.map((c) => c.label).join("/") || "-";
     const gul = r.gule.map((c) => c.label).join("/") || "-";
-    const setning = String(r.sak.soknad || "").replace(/\s+/g, " ").slice(0, 90);
+    const setning = String(soknadTilModell(r.sak, "sladd") || "").replace(/\s+/g, " ").slice(0, 90);
     return `${r.sak.id} | ${r.sak.org} | ${r.sak.kommune} | ${r.sak.aktivitet} | søkt ${r.sak.belop} | admin ${r.sak.adminPct}% | ${r.sak.flag} | anbefalt ${r.rules.recommended} | rød:${rod} | gul:${gul} | ${setning}`;
   }).join("\n");
 }
@@ -692,7 +695,13 @@ function ragFor(sak) {
   else if (String(sak.aktivitet).includes("4.2")) items.push(RAG.jobb);
   if (sak.id === "T-2629") items.push(RAG.klage);
   if (sak.flag === "avvik" || sak.id === "T-2631") items.push(RAG.slutt);
+  if (typeof sjekkPersonvern === "function" && sjekkPersonvern(sak).niva !== "ok") items.push(RAG.personvern);
   return items;
+}
+
+function soknadTilModell(sak, valg) {
+  if (typeof personvernForKi !== "function") return sak.soknad;
+  return personvernForKi(sak, valg || "sladd").tekst;
 }
 
 async function callModelAPI(prompt, system) {
@@ -772,7 +781,10 @@ function ensure(id) {
       live: null,
       error: "",
       hitl: "",
-      running: false
+      running: false,
+      pv: typeof sjekkPersonvern === "function" ? sjekkPersonvern(sak) : null,
+      pvValg: "",
+      pvSendt: ""
     };
   }
   return work[id];
@@ -900,6 +912,9 @@ function renderRamme() {
 
 function sakerFiltrert() {
   if (listFilter === "alle") return SAKER;
+  if (listFilter === "personvern") {
+    return SAKER.filter((s) => typeof sjekkPersonvern === "function" && sjekkPersonvern(s).niva !== "ok");
+  }
   return SAKER.filter((s) => s.flag === listFilter);
 }
 
@@ -911,16 +926,20 @@ function setListFilter(flag) {
 function renderList() {
   const box = $("liste");
   if (!box) return;
-  const flags = ["alle", "ok", "avkorting", "formalia", "historikk", "ramme", "avvik", "plantet"];
+  const flags = ["alle", "ok", "avkorting", "formalia", "historikk", "ramme", "avvik", "plantet", "personvern"];
   const chips = flags.map((f) => {
-    const n = f === "alle" ? SAKER.length : SAKER.filter((s) => s.flag === f).length;
+    const n = f === "alle"
+      ? SAKER.length
+      : f === "personvern"
+        ? SAKER.filter((s) => typeof sjekkPersonvern === "function" && sjekkPersonvern(s).niva !== "ok").length
+        : SAKER.filter((s) => s.flag === f).length;
     const on = listFilter === f;
-    const label = f === "alle" ? "Alle" : tagText(f);
+    const label = f === "alle" ? "Alle" : f === "personvern" ? "Personvern" : tagText(f);
     return `<button type="button" class="chip ${on ? "on" : ""}" onclick="setListFilter('${f}')">${label} ${n}</button>`;
   }).join("");
   const rows = sakerFiltrert().map((sak) => `
     <button type="button" class="${selected === sak.id ? "on" : ""}" onclick="openSak('${sak.id}')">
-      <div class="meta"><span>${sak.id}</span><span class="tag ${tagClass(sak.flag)}">${tagText(sak.flag)}</span></div>
+      <div class="meta"><span>${sak.id}</span><span class="tag ${tagClass(sak.flag)}">${tagText(sak.flag)}</span>${typeof sjekkPersonvern === "function" && sjekkPersonvern(sak).niva !== "ok" ? `<span class="tag ${sjekkPersonvern(sak).niva === "rod" ? "tag-formalia" : "tag-avkorting"}">PV</span>` : ""}</div>
       <h3>${esc(sak.org)}</h3>
       <p class="amt">${kr(sak.belop)}</p>
       <p class="job">${esc(sak.jobb)}</p>
@@ -934,6 +953,27 @@ function renderJournal() {
   box.innerHTML = journal.length
     ? journal.map((j) => `<article><p class="mono">${esc(j.at)} · ${esc(j.type)} · ${esc(j.sak)}</p><p>${esc(j.svar)}</p></article>`).join("")
     : `<p class="hint">Tomt til du åpner en sak eller trykker en knapp. Ingenting sendes ut av nettleseren.</p>`;
+}
+
+function pvKortHtml(sak, w) {
+  const sjekk = (typeof sjekkPersonvern === "function" ? sjekkPersonvern(sak) : null) || w.pv;
+  if (!sjekk) return `<p class="hint">Personvernmodulen er ikke lastet.</p>`;
+  const cls = sjekk.niva === "rod" ? "check-red" : sjekk.niva === "gul" ? "check-yellow" : "check-green";
+  const tittel = sjekk.niva === "rod" ? "Stopp" : sjekk.niva === "gul" ? "Se her" : "OK";
+  const funn = sjekk.funn.length
+    ? `<ul>${sjekk.funn.map((f) => `<li><strong>${esc(f.label)}</strong> — ${esc(f.tekst)}${f.treff ? ` <span class="mono">(${esc(f.treff)})</span>` : ""}</li>`).join("")}</ul>`
+    : `<p class="hint">Ingen treff i mønstersøket. Det betyr ikke at teksten er «godkjent».</p>`;
+  const knapper = sjekk.niva === "rod" && !w.semantic
+    ? `<div class="btn-row">
+        <button class="btn btn-dark" type="button" onclick="runKI('${sak.id}', true, 'sladd')">Send sladdet til KI</button>
+        <button class="btn btn-ghost" type="button" onclick="runKI('${sak.id}', true, 'likevel')">Send usladdet (kun øvelse)</button>
+      </div>
+      <p class="hint">Rødt funn: KI startet ikke automatisk.</p>`
+    : `<p class="hint">${w.pvSendt === "usladdet" ? "Du sendte usladdet tekst — bare i øvelsen." : w.pvSendt === "sladdet" || sjekk.niva !== "ok" ? "Standard: sladdet tekst til KI." : "Ingen sladding nødvendig etter mønstersøket."} <a href="/tilskudd/personvern">Hele bunken</a></p>`;
+  return `<div class="check ${cls}"><small>${tittel} · Personvernmodul</small>${sjekk.niva === "ok" ? "Ingen mønsterfunn i søknad og søkernavn." : "Mønstersøk, ikke hjemmelsvurdering."}</div>
+    ${funn}
+    ${sjekk.niva !== "ok" ? `<details><summary>Sladdet tekst som kan sendes til KI</summary><p class="mono" style="font-size:0.82rem">${esc(sjekk.sladdet)}</p></details>` : ""}
+    ${knapper}`;
 }
 
 function semRow(label, item) {
@@ -1009,11 +1049,13 @@ function renderCard() {
         ${arkivListe}
       </div>
       <div>
+        <h3>Personvern</h3>
+        ${pvKortHtml(sak, w)}
         <h3>Det tallene viser</h3>
         ${checks}
         <h3>Det KI sier om teksten</h3>
         ${sem}
-        ${w.semantic?.tenkning ? `<div class="think"><strong>Hva KI skrev mens den jobbet</strong><p class="mono">${esc(w.semantic.tenkning)}</p><p><a href="transparens.html${w.traceId ? `#${w.traceId}` : ""}">Åpne hele tankeloggen →</a></p></div>` : `<p class="hint"><a href="transparens.html">Se hva KI tenkte (egen side)</a></p>`}
+        ${w.semantic?.tenkning ? `<div class="think"><strong>Hva KI skrev mens den jobbet</strong><p class="mono">${esc(w.semantic.tenkning)}</p><p><a href="/tilskudd/transparens${w.traceId ? `#${w.traceId}` : ""}">Åpne hele tankeloggen →</a></p></div>` : `<p class="hint"><a href="/tilskudd/transparens">Se hva KI tenkte (egen side)</a></p>`}
         <label class="field">Foreslått beløp (du kan rette)
           <input id="belop" type="number" value="${w.recommended}" />
         </label>
@@ -1054,15 +1096,26 @@ function openSak(id) {
   }
   renderList();
   renderCard();
-  if (!w.semantic && !w.running) runKI(id, false);
+  const pv = typeof sjekkPersonvern === "function" ? sjekkPersonvern(sak) : { niva: "ok" };
+  w.pv = pv;
+  if (!w.semantic && !w.running && pv.niva !== "rod") runKI(id, false, "sladd");
   try { history.replaceState(null, "", `#${id}`); } catch (_e) { /* ignore */ }
 }
 
-async function runKI(id, force) {
+async function runKI(id, force, pvValg) {
   const sak = findSak(id);
   const w = ensure(id);
   if (!sak || w.running) return;
   if (w.semantic && !force) return;
+  const gate = typeof personvernForKi === "function" ? personvernForKi(sak, pvValg || w.pvValg || "sladd") : { stopp: false, sjekk: null, tekst: sak.soknad, sladdet: false };
+  w.pv = gate.sjekk;
+  if (gate.stopp) {
+    w.status = "Personvern: sladd før KI.";
+    renderCard();
+    return;
+  }
+  w.pvValg = pvValg || w.pvValg || "sladd";
+  w.pvSendt = gate.sladdet ? "sladdet" : (gate.sjekk && gate.sjekk.niva !== "ok" ? "usladdet" : "ok");
   w.running = true;
   w.pipeline = "ki";
   w.status = "KI leser…";
@@ -1070,7 +1123,7 @@ async function runKI(id, force) {
   renderCard();
   const seq = ++kiSeq;
   const rag = ragFor(sak).map((r) => `### ${r.tittel}\n${r.tekst}`).join("\n\n");
-  const prompt = `Saksnummer: ${sak.id}\nOrganisasjon: ${sak.org}\nSøkt: ${sak.belop} kr\n\nSØKNADSTEKST:\n${sak.soknad}\n\nUTDRAG (fiktiv øvelse 2026):\n${rag}\n\nSkriv først ## Tenkning, deretter semantikk, notat og brev. Ikke fatt vedtak.`;
+  const prompt = `Saksnummer: ${sak.id}\nOrganisasjon: ${sak.org}\nSøkt: ${sak.belop} kr\nPersonvern: ${w.pvSendt === "sladdet" ? "søknadstekst er sladdet av øvelsesmodulen" : "søknadstekst som i saken"}.\n\nSØKNADSTEKST:\n${gate.tekst}\n\nUTDRAG (fiktiv øvelse 2026):\n${rag}\n\nSkriv først ## Tenkning, deretter semantikk, notat og brev. Ikke fatt vedtak.`;
   addJournal({ type: "ki", sak: id, svar: force ? "Kjører KI på nytt" : "Første KI-kall" });
   const kilder = ragFor(sak).map((r) => r.tittel);
   try {
@@ -1229,7 +1282,7 @@ function renderKlage() {
     box.innerHTML = `<p class="hint">${klage.running ? "Skriver to utkast…" : "Trykk «Kjør KI» eller vent — vi starter automatisk."}</p>`;
     return;
   }
-  box.innerHTML = `${klage.tenkning ? `<div class="think"><strong>Hva KI skrev mens den jobbet</strong><p class="mono">${esc(klage.tenkning)}</p><p><a href="transparens.html${klage.traceId ? `#${klage.traceId}` : ""}">Åpne hele tankeloggen →</a></p></div>` : ""}
+  box.innerHTML = `${klage.tenkning ? `<div class="think"><strong>Hva KI skrev mens den jobbet</strong><p class="mono">${esc(klage.tenkning)}</p><p><a href="/tilskudd/transparens${klage.traceId ? `#${klage.traceId}` : ""}">Åpne hele tankeloggen →</a></p></div>` : ""}
     <h3>Hva som er nytt</h3><p class="mono">${esc(klage.vurdering)}</p>
     <h3>Hvis du godtar kursleder-forklaringen</h3><p class="mono">${esc(klage.omgjoring)}</p>
     <h3>Hvis du ikke godtar den</h3><p class="mono">${esc(klage.opprettholdelse)}</p>`;
@@ -1244,7 +1297,7 @@ function renderSlutt() {
     box.innerHTML = `<p class="hint">${slutt.running ? "Skriver utkast…" : "Starter KI."}</p>`;
     return;
   }
-  box.innerHTML = `${slutt.tenkning ? `<div class="think"><strong>Hva KI skrev mens den jobbet</strong><p class="mono">${esc(slutt.tenkning)}</p><p><a href="transparens.html${slutt.traceId ? `#${slutt.traceId}` : ""}">Åpne hele tankeloggen →</a></p></div>` : ""}
+  box.innerHTML = `${slutt.tenkning ? `<div class="think"><strong>Hva KI skrev mens den jobbet</strong><p class="mono">${esc(slutt.tenkning)}</p><p><a href="/tilskudd/transparens${slutt.traceId ? `#${slutt.traceId}` : ""}">Åpne hele tankeloggen →</a></p></div>` : ""}
     <h3>Hva som er avvik</h3><p class="mono">${esc(slutt.vurdering)}</p>
     <h3>Utkast til tilbakekreving</h3><p class="mono">${esc(slutt.tilbake)}</p>
     <h3>Hvis mer dokumentasjon kommer</h3><p>${esc(slutt.alternativ)}</p>`;
@@ -1255,7 +1308,7 @@ async function runKlage(force) {
   const sak = findSak("T-2629");
   klage.running = true;
   renderKlage();
-  const prompt = `Klage på T-2629. Opprinnelig: avkorting fordi admin var 32 %. Nytt faktum: 40 000 kr var kursleder (fag), ikke admin.\nSøknad: ${sak.soknad}\nUtdrag: ${RAG.admin.tekst}\n${RAG.klage.tekst}\nSkriv først ## Tenkning, deretter vurdering, omgjøring og opprettholdelse. Ikke vedtak.`;
+  const prompt = `Klage på T-2629. Opprinnelig: avkorting fordi admin var 32 %. Nytt faktum: 40 000 kr var kursleder (fag), ikke admin.\nSøknad: ${soknadTilModell(sak, "sladd")}\nUtdrag: ${RAG.admin.tekst}\n${RAG.klage.tekst}\nSkriv først ## Tenkning, deretter vurdering, omgjøring og opprettholdelse. Ikke vedtak.`;
   try {
     const text = await callModelAPI(prompt, SYS_KLAGE);
     const tnk = (text.split(/##\s*Tenkning/i)[1] || "").split(/##\s*Vurdering/i)[0].trim();
@@ -1282,7 +1335,7 @@ async function runSlutt(force) {
   const sak = findSak("T-2631");
   slutt.running = true;
   renderSlutt();
-  const prompt = `Slutt T-2631. Innvilget 220 000. Brukt 140 000 på gressbane (ikke godkjent) og 80 000 på trening.\n${sak.soknad}\n${RAG.slutt.tekst}\nSkriv først ## Tenkning, deretter vurdering, tilbakekreving og alternativ. Ikke vedtak.`;
+  const prompt = `Slutt T-2631. Innvilget 220 000. Brukt 140 000 på gressbane (ikke godkjent) og 80 000 på trening.\n${soknadTilModell(sak, "sladd")}\n${RAG.slutt.tekst}\nSkriv først ## Tenkning, deretter vurdering, tilbakekreving og alternativ. Ikke vedtak.`;
   try {
     const text = await callModelAPI(prompt, SYS_SLUTT);
     slutt.tenkning = (text.split(/##\s*Tenkning/i)[1] || "").split(/##\s*Vurdering/i)[0].trim();
@@ -1339,11 +1392,17 @@ function submitSoknad() {
     if (status) status.textContent = "Fyll ut alle feltene.";
     return;
   }
+  const pv = typeof sjekkFritekstPersonvern === "function" ? sjekkFritekstPersonvern(`${org}\n${soknad}`) : { niva: "ok", funn: [] };
   const list = loadJson(PORTAL_KEY, []);
   const id = `T-9${String(100 + list.length).slice(-3)}`;
   list.push({ id, orgnr, org, belop, soknad, at: new Date().toLocaleString("no-NO") });
   saveJson(PORTAL_KEY, list);
-  if (status) status.textContent = `Lagret ${id} i denne nettleseren. Åpne arbeidslisten for å fortsette som saksbehandler.`;
+  if (status) {
+    const lagret = `Lagret ${id} i denne nettleseren. Åpne arbeidslisten for å fortsette som saksbehandler.`;
+    status.innerHTML = pv.niva === "rod"
+      ? `${esc(lagret)} <strong>Personvern:</strong> rødt funn (${esc(pv.funn.map((f) => f.label).join(", "))}).`
+      : esc(lagret);
+  }
   renderMine();
 }
 
@@ -1415,12 +1474,12 @@ function renderTransparens() {
       <p class="mono" style="font-size:0.78rem">${esc(sel.prompt || "")}</p>
     </details>
     <p class="hint">Vi viser det modellen ble bedt om å skrive høyt. Vi ser ikke «skjult resonnering» inne i vektenettverket.</p>
-    <p><a class="btn btn-primary" href="${sel.sak === "portefolje" ? "analyse.html" : `behandle.html#${esc(sel.sak)}`}">${sel.sak === "portefolje" ? "Tilbake til porteføljen" : "Tilbake til saken"}</a></p>
+    <p><a class="btn btn-primary" href="${sel.sak === "portefolje" ? "/tilskudd/analyse" : `/tilskudd/behandle#${esc(sel.sak)}`}">${sel.sak === "portefolje" ? "Tilbake til porteføljen" : "Tilbake til saken"}</a></p>
   `;
 }
 
 function lenkSaksnr(text) {
-  return esc(text).replace(/T-\d+/g, (id) => `<a href="behandle.html#${id}">${id}</a>`);
+  return esc(text).replace(/T-\d+/g, (id) => `<a href="/tilskudd/behandle#${id}">${id}</a>`);
 }
 
 function koeRaderHtml(rader, hvorfor) {
@@ -1528,11 +1587,39 @@ async function sendPortefoljeSporsmal(ev) {
   if (!q || !out) return;
   out.innerHTML = `<div class="note live-run">Leser uttrekket av ${SAKER.length} saker…</div>`;
   const res = await sporPortefolje(q);
-  out.innerHTML = `${res.live ? `<div class="note live-ok">Svar fra modell. Ikke vedtak. <a href="transparens.html#${res.traceId}">Åpne spor</a></div>` : `<div class="note live-off"><strong>Ikke modell.</strong> Fallback fra opptelling. <a href="transparens.html#${res.traceId}">Åpne spor</a></div>`}
+  out.innerHTML = `${res.live ? `<div class="note live-ok">Svar fra modell. Ikke vedtak. <a href="/tilskudd/transparens#${res.traceId}">Åpne spor</a></div>` : `<div class="note live-off"><strong>Ikke modell.</strong> Fallback fra opptelling. <a href="/tilskudd/transparens#${res.traceId}">Åpne spor</a></div>`}
     <div class="think"><p>${lenkSaksnr(res.text)}</p></div>`;
 }
 
+function renderPersonvern() {
+  const rot = $("pvRot");
+  if (!rot || typeof sjekkHelePortefoljenPersonvern !== "function") return;
+  const p = sjekkHelePortefoljenPersonvern(SAKER);
+  const radHtml = (rader) => rader.length
+    ? `<table><thead><tr><th>Sak</th><th>Søker</th><th>Funn</th></tr></thead><tbody>${rader.map((r) => `<tr><td><a href="/tilskudd/behandle#${r.sak.id}">${esc(r.sak.id)}</a></td><td>${esc(r.sak.org)}</td><td>${r.sjekk.funn.map((f) => `${esc(f.label)}${f.treff ? ` (${esc(f.treff)})` : ""}`).join("; ")}</td></tr>`).join("")}</tbody></table>`
+    : `<p class="hint">Ingen i denne gruppen.</p>`;
+  rot.innerHTML = `
+    <div class="kpi-grid">
+      <div class="kpi"><b>${p.antall}</b><span>saker sjekket nå</span></div>
+      <div class="kpi"><b>${p.rod.length}</b><span>røde — sladd før KI</span></div>
+      <div class="kpi"><b>${p.gul.length}</b><span>gule — sladdes som hovedregel</span></div>
+      <div class="kpi"><b>${p.ok.length}</b><span>ingen mønsterfunn</span></div>
+    </div>
+    <section class="panel">
+      <h2>Rødt nå</h2>
+      <p class="hint">Fødselsnummer, helse eller navngitt barn. KI startet ikke automatisk på disse.</p>
+      ${radHtml(p.rod)}
+    </section>
+    <section class="panel">
+      <h2>Gult nå</h2>
+      <p class="hint">E-post, telefon, adresse eller privatperson som søker.</p>
+      ${radHtml(p.gul)}
+    </section>
+  `;
+}
+
 window.renderTransparens = renderTransparens;
+window.renderPersonvern = renderPersonvern;
 window.renderAnalyse = renderAnalyse;
 window.sendPortefoljeSporsmal = sendPortefoljeSporsmal;
 window.sporPortefolje = sporPortefolje;
@@ -1556,6 +1643,7 @@ document.addEventListener("DOMContentLoaded", () => {
     renderMine();
   }
   if ($("analyseRot")) renderAnalyse();
+  if ($("pvRot")) renderPersonvern();
   const ant = document.querySelector("[data-antall-saker]");
   if (ant) ant.textContent = `${SAKER.length} saker. Filtrer, så åpne. Hver sak har én oppgave.`;
 });
