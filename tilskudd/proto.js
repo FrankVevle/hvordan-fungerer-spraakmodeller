@@ -380,7 +380,9 @@ const RAG = {
   planted: { tittel: "Feil hentet utdrag (øvelse)", tekst: "Likebehandling: Golfklubben Fjord (T-2621) fikk avslag. Sim. forskrift § 14 om investering. Anbefalt avslag." },
   klage: { tittel: "Øvelsesregel · nytt faktum", tekst: "Honorar til kursleder er faglig aktivitet, ikke generell administrasjon, når det følger av dokumentasjon. Omgjøring er saksbehandlers. KI fatter ikke vedtak." },
   slutt: { tittel: "Øvelsesregel · slutt", tekst: "Tilskudd brukt i strid med vilkår kan kreves tilbake forholdsmessig. Godkjent aktivitet holdes utenfor. Forslag — ikke innkreving." },
-  personvern: { tittel: "Øvelsesregel 2026 · personvern", tekst: "Fødselsnummer, helse og navngitte barn skal sladdes før teksten går til KI. E-post, telefon og adresse sladdes som hovedregel. Modulen er mønstersøk — ikke et vedtak om lovlighet." }
+  personvern: { tittel: "Øvelsesregel 2026 · personvern", tekst: "Fødselsnummer, helse og navngitte barn skal sladdes før teksten går til KI. E-post, telefon og adresse sladdes som hovedregel. Modulen er mønstersøk — ikke et vedtak om lovlighet." },
+  aiact: { tittel: "Øvelse · KI-forordningen", tekst: "Du er beslutningsstøtte. Mennesket fatter ikke vedtak i denne prototypen. Hvis dette var ekte tilskuddsforvaltning, ville bruken sannsynligvis vært høyrisiko (vedlegg III). Ingen samsvarserklæring." },
+  nis2: { tittel: "Øvelse · NIS 2 og Norge", tekst: "Norge gjennomfører NIS 1 i digitalsikkerhetsloven. NIS 2 er under tilnærming, ikke ferdig i norsk rett. NSM er kontaktpunkt. Denne prototypen er ikke en samfunnsviktig tjeneste og varsler ikke hendelser." }
 };
 
 const FALLBACK = {
@@ -445,6 +447,7 @@ function fallbackFromSak(sak) {
 }
 
 const SYS = `Du er forvaltningsrådgiver i en pedagogisk øvelse (2026). Du fatter ALDRI vedtak. Du er ikke Bufdir.
+Etter KI-forordningen (EU) 2024/1689 er du beslutningsstøtte: søkeren og saksbehandleren skal se at dette er utkast, ikke automatisert vedtak.
 Du får KUN søknadstekst og utdrag under. Hvis noe mangler: skriv «ikke oppgitt».
 Admin 15 % og revisor 200 000 kr er øvelsesregler 2026.
 Svar på norsk. Start ALLTID med tenkning — skriv høyt hva du gjør, før du konkluderer.
@@ -696,6 +699,7 @@ function ragFor(sak) {
   if (sak.id === "T-2629") items.push(RAG.klage);
   if (sak.flag === "avvik" || sak.id === "T-2631") items.push(RAG.slutt);
   if (typeof sjekkPersonvern === "function" && sjekkPersonvern(sak).niva !== "ok") items.push(RAG.personvern);
+  if (RAG.aiact) items.push(RAG.aiact);
   return items;
 }
 
@@ -976,6 +980,33 @@ function pvKortHtml(sak, w) {
     ${knapper}`;
 }
 
+function nis2KortHtml(sak, w) {
+  if (typeof sjekkNis2Sak !== "function") return `<p class="hint">NIS 2-modulen er ikke lastet.</p>`;
+  const nis = sjekkNis2Sak(sak, {
+    work: w,
+    pv: typeof sjekkPersonvern === "function" ? sjekkPersonvern(sak) : { niva: "ok" },
+    harSpor: Boolean(w.traceId)
+  });
+  const cls = nis.klasse === "hoy-konsekvens" ? "check-yellow" : "check-green";
+  return `<div class="check ${cls}"><small>${esc(nis.klasseTekst)}</small>${esc(NIS2_REF)}. Prototypen er ikke innmeldt hos NSM.</div>
+    <ul>${nis.grunner.map((g) => `<li>${esc(g)}</li>`).join("")}
+      <li>${esc(nis.varsling)}</li>
+    </ul>
+    <p class="hint"><a href="/tilskudd/nis2">Norges tilnærming og full liste</a>. Ikke samsvar.</p>`;
+}
+
+function aiActKortHtml(sak, w) {
+  if (typeof sjekkAiActSak !== "function") return `<p class="hint">KI-forordningsmodulen er ikke lastet.</p>`;
+  const act = sjekkAiActSak(sak, { work: w, pv: typeof sjekkPersonvern === "function" ? sjekkPersonvern(sak) : { niva: "ok" }, harSpor: Boolean(w.traceId) });
+  const cls = act.klasse === "hoy-tilsyn" ? "check-yellow" : "check-green";
+  return `<div class="check ${cls}"><small>${esc(act.klasseTekst)} · ${esc(act.bruk)}</small>Ikke automatisert vedtak. ${esc(AIACT_REF || "KI-forordningen")}.</div>
+    <ul>${act.grunner.map((g) => `<li>${esc(g)}</li>`).join("")}
+      <li>Tilsyn: ${esc(act.tilsyn)}</li>
+      <li>Logging i øvelsen: ${act.logging ? "spor finnes" : "ingen spor ennå"}</li>
+    </ul>
+    <p class="hint"><a href="/tilskudd/aiact">Systemkrav og full klassifisert liste</a>. Ikke samsvarserklæring.</p>`;
+}
+
 function semRow(label, item) {
   const score = item?.score != null ? `${item.score}/5` : "—";
   return `<tr><td>${esc(label)}</td><td class="mono">${score}</td><td>${esc(item?.sitat || "ikke oppgitt")}</td></tr>`;
@@ -1051,6 +1082,10 @@ function renderCard() {
       <div>
         <h3>Personvern</h3>
         ${pvKortHtml(sak, w)}
+        <h3>KI-forordningen</h3>
+        ${aiActKortHtml(sak, w)}
+        <h3>NIS 2 / Norge</h3>
+        ${nis2KortHtml(sak, w)}
         <h3>Det tallene viser</h3>
         ${checks}
         <h3>Det KI sier om teksten</h3>
@@ -1591,35 +1626,228 @@ async function sendPortefoljeSporsmal(ev) {
     <div class="think"><p>${lenkSaksnr(res.text)}</p></div>`;
 }
 
+let pvTabellFilter = "alle";
+
+function pvKlasse(niva) {
+  if (niva === "rod") return { tag: "tag-formalia", tekst: "Rød", ki: "Stopp — sladd først" };
+  if (niva === "gul") return { tag: "tag-avkorting", tekst: "Gul", ki: "Sladd som hovedregel" };
+  return { tag: "tag-ok", tekst: "Grønn", ki: "Ingen mønsterfunn" };
+}
+
+function setPvTabellFilter(niva) {
+  pvTabellFilter = niva;
+  renderPersonvern();
+}
+
 function renderPersonvern() {
   const rot = $("pvRot");
   if (!rot || typeof sjekkHelePortefoljenPersonvern !== "function") return;
   const p = sjekkHelePortefoljenPersonvern(SAKER);
-  const radHtml = (rader) => rader.length
-    ? `<table><thead><tr><th>Sak</th><th>Søker</th><th>Funn</th></tr></thead><tbody>${rader.map((r) => `<tr><td><a href="/tilskudd/behandle#${r.sak.id}">${esc(r.sak.id)}</a></td><td>${esc(r.sak.org)}</td><td>${r.sjekk.funn.map((f) => `${esc(f.label)}${f.treff ? ` (${esc(f.treff)})` : ""}`).join("; ")}</td></tr>`).join("")}</tbody></table>`
-    : `<p class="hint">Ingen i denne gruppen.</p>`;
+  const rang = { rod: 0, gul: 1, ok: 2 };
+  const alle = [...p.rader].sort((a, b) => {
+    const d = (rang[a.sjekk.niva] ?? 9) - (rang[b.sjekk.niva] ?? 9);
+    return d !== 0 ? d : a.sak.id.localeCompare(b.sak.id, "nb");
+  });
+  const vist = pvTabellFilter === "alle" ? alle : alle.filter((r) => r.sjekk.niva === pvTabellFilter);
+  const chips = [
+    ["alle", `Alle ${p.antall}`],
+    ["rod", `Rød ${p.rod.length}`],
+    ["gul", `Gul ${p.gul.length}`],
+    ["ok", `Grønn ${p.ok.length}`]
+  ].map(([id, label]) => `<button type="button" class="chip ${pvTabellFilter === id ? "on" : ""}" onclick="setPvTabellFilter('${id}')">${label}</button>`).join("");
+  const rader = vist.map((r) => {
+    const k = pvKlasse(r.sjekk.niva);
+    const funn = r.sjekk.funn.length
+      ? r.sjekk.funn.map((f) => esc(f.label)).join(", ")
+      : "—";
+    return `<tr class="pv-rad-${r.sjekk.niva}">
+      <td><a href="/tilskudd/behandle#${r.sak.id}">${esc(r.sak.id)}</a></td>
+      <td>${esc(r.sak.org)}</td>
+      <td>${esc(r.sak.kommune)}</td>
+      <td><span class="tag ${tagClass(r.sak.flag)}">${esc(tagText(r.sak.flag))}</span></td>
+      <td><span class="tag ${k.tag}">${k.tekst}</span></td>
+      <td>${funn}</td>
+      <td>${esc(k.ki)}</td>
+    </tr>`;
+  }).join("");
   rot.innerHTML = `
     <div class="kpi-grid">
-      <div class="kpi"><b>${p.antall}</b><span>saker sjekket nå</span></div>
+      <div class="kpi"><b>${p.antall}</b><span>saker i full tabell</span></div>
       <div class="kpi"><b>${p.rod.length}</b><span>røde — sladd før KI</span></div>
       <div class="kpi"><b>${p.gul.length}</b><span>gule — sladdes som hovedregel</span></div>
-      <div class="kpi"><b>${p.ok.length}</b><span>ingen mønsterfunn</span></div>
+      <div class="kpi"><b>${p.ok.length}</b><span>grønne — ingen mønsterfunn</span></div>
     </div>
     <section class="panel">
-      <h2>Rødt nå</h2>
-      <p class="hint">Fødselsnummer, helse eller navngitt barn. KI startet ikke automatisk på disse.</p>
-      ${radHtml(p.rod)}
-    </section>
-    <section class="panel">
-      <h2>Gult nå</h2>
-      <p class="hint">E-post, telefon, adresse eller privatperson som søker.</p>
-      ${radHtml(p.gul)}
+      <h2>Full klassifisert liste</h2>
+      <p class="hint">Alle ${p.antall} saker. Sortert rød → gul → grønn. Klassifiseringen er mønstersøk, ikke vedtak. Klikk saksnummer for sakskortet.</p>
+      <div class="chips">${chips}</div>
+      <div class="tabell-wrap">
+        <table class="pv-tabell">
+          <thead>
+            <tr>
+              <th>Sak</th>
+              <th>Søker</th>
+              <th>Kommune</th>
+              <th>Sakstype</th>
+              <th>Personvern</th>
+              <th>Funn</th>
+              <th>Før KI</th>
+            </tr>
+          </thead>
+          <tbody>${rader || `<tr><td colspan="7">Ingen i dette filteret.</td></tr>`}</tbody>
+        </table>
+      </div>
+      <p class="hint">${vist.length} av ${p.antall} vist.</p>
     </section>
   `;
 }
 
 window.renderTransparens = renderTransparens;
 window.renderPersonvern = renderPersonvern;
+window.setPvTabellFilter = setPvTabellFilter;
+
+let aiActTabellFilter = "alle";
+
+function setAiActTabellFilter(id) {
+  aiActTabellFilter = id;
+  renderAiAct();
+}
+
+function renderAiAct() {
+  const rot = $("aiActRot");
+  if (!rot || typeof sjekkAiActSystem !== "function") return;
+  const system = sjekkAiActSystem();
+  const porte = sjekkHelePortefoljenAiAct(SAKER, (sak) => {
+    const w = work[sak.id] || {};
+    const spor = loadJson(TRACE_KEY, []).some((t) => t.sak === sak.id);
+    return { work: w, harSpor: spor };
+  });
+  const nivaCls = { ok: "check-green", gul: "check-yellow", rod: "check-red" };
+  const sjekker = system.map((s) => `<div class="check ${nivaCls[s.niva] || "check-yellow"}"><small>${esc(s.art)} · ${s.niva === "ok" ? "OK i øvelsen" : s.niva === "rod" ? "Ikke oppfylt" : "Begrenset"}</small><strong>${esc(s.tittel)}</strong><br>${esc(s.tekst)}</div>`).join("");
+  const alle = [...porte.rader].sort((a, b) => {
+    if (a.act.klasse !== b.act.klasse) return a.act.klasse === "hoy-tilsyn" ? -1 : 1;
+    return a.sak.id.localeCompare(b.sak.id, "nb");
+  });
+  const vist = aiActTabellFilter === "alle" ? alle : alle.filter((r) => r.act.klasse === aiActTabellFilter);
+  const chips = [
+    ["alle", `Alle ${porte.antall}`],
+    ["hoy-tilsyn", `Høyt tilsyn ${porte.hoy.length}`],
+    ["standard", `Standard ${porte.standard.length}`]
+  ].map(([id, label]) => `<button type="button" class="chip ${aiActTabellFilter === id ? "on" : ""}" onclick="setAiActTabellFilter('${id}')">${label}</button>`).join("");
+  const rader = vist.map((r) => `<tr class="${r.act.klasse === "hoy-tilsyn" ? "pv-rad-gul" : "pv-rad-ok"}">
+    <td><a href="/tilskudd/behandle#${r.sak.id}">${esc(r.sak.id)}</a></td>
+    <td>${esc(r.sak.org)}</td>
+    <td><span class="tag ${tagClass(r.sak.flag)}">${esc(tagText(r.sak.flag))}</span></td>
+    <td>${esc(r.act.bruk)}</td>
+    <td><span class="tag ${r.act.klasse === "hoy-tilsyn" ? "tag-avkorting" : "tag-ok"}">${esc(r.act.klasseTekst)}</span></td>
+    <td>${esc(r.act.tilsyn)}</td>
+    <td>${r.act.logging ? "Spor" : "—"}</td>
+    <td>${r.act.grunner.map((g) => esc(g)).join("; ")}</td>
+  </tr>`).join("");
+  rot.innerHTML = `
+    <div class="kpi-grid">
+      <div class="kpi"><b>${porte.antall}</b><span>saker klassifisert</span></div>
+      <div class="kpi"><b>${porte.hoy.length}</b><span>høyt tilsyn i øvelsen</span></div>
+      <div class="kpi"><b>${porte.standard.length}</b><span>standard beslutningsstøtte</span></div>
+      <div class="kpi"><b>0</b><span>automatiserte vedtak</span></div>
+    </div>
+    <section class="panel">
+      <h2>Systemet mot forordningen</h2>
+      <p class="hint">${esc(AIACT_REF)}. Øvelsesvurdering — ikke samsvar, ikke juridisk råd.</p>
+      ${sjekker}
+    </section>
+    <section class="panel">
+      <h2>Full klassifisert saksliste</h2>
+      <p class="hint">Alle saker er beslutningsstøtte. «Høyt tilsyn» er plantet feil, avvik eller rødt personvern. Ingen rad er et vedtak.</p>
+      <div class="chips">${chips}</div>
+      <div class="tabell-wrap">
+        <table class="pv-tabell">
+          <thead>
+            <tr>
+              <th>Sak</th><th>Søker</th><th>Sakstype</th><th>Bruk</th><th>Klasse</th><th>Tilsyn</th><th>Logg</th><th>Hensyn</th>
+            </tr>
+          </thead>
+          <tbody>${rader}</tbody>
+        </table>
+      </div>
+      <p class="hint">${vist.length} av ${porte.antall} vist.</p>
+    </section>
+  `;
+}
+
+window.renderAiAct = renderAiAct;
+window.setAiActTabellFilter = setAiActTabellFilter;
+
+let nis2TabellFilter = "alle";
+
+function setNis2TabellFilter(id) {
+  nis2TabellFilter = id;
+  renderNis2();
+}
+
+function renderNis2() {
+  const rot = $("nis2Rot");
+  if (!rot || typeof sjekkNis2System !== "function") return;
+  const system = sjekkNis2System();
+  const porte = sjekkHelePortefoljenNis2(SAKER, (sak) => {
+    const w = work[sak.id] || {};
+    const spor = loadJson(TRACE_KEY, []).some((t) => t.sak === sak.id);
+    return { work: w, harSpor: spor };
+  });
+  const nivaCls = { ok: "check-green", gul: "check-yellow", rod: "check-red" };
+  const sjekker = system.map((s) => `<div class="check ${nivaCls[s.niva] || "check-yellow"}"><small>${esc(s.art)} · ${s.niva === "ok" ? "OK / avklart i øvelsen" : s.niva === "rod" ? "Ikke på plass" : "Tilnærming / gap"}</small><strong>${esc(s.tittel)}</strong><br>${esc(s.tekst)}</div>`).join("");
+  const alle = [...porte.rader].sort((a, b) => {
+    if (a.nis.klasse !== b.nis.klasse) return a.nis.klasse === "hoy-konsekvens" ? -1 : 1;
+    return a.sak.id.localeCompare(b.sak.id, "nb");
+  });
+  const vist = nis2TabellFilter === "alle" ? alle : alle.filter((r) => r.nis.klasse === nis2TabellFilter);
+  const chips = [
+    ["alle", `Alle ${porte.antall}`],
+    ["hoy-konsekvens", `Høyere konsekvens ${porte.hoy.length}`],
+    ["standard", `Standard ${porte.standard.length}`]
+  ].map(([id, label]) => `<button type="button" class="chip ${nis2TabellFilter === id ? "on" : ""}" onclick="setNis2TabellFilter('${id}')">${label}</button>`).join("");
+  const rader = vist.map((r) => `<tr class="${r.nis.klasse === "hoy-konsekvens" ? "pv-rad-gul" : "pv-rad-ok"}">
+    <td><a href="/tilskudd/behandle#${r.sak.id}">${esc(r.sak.id)}</a></td>
+    <td>${esc(r.sak.org)}</td>
+    <td><span class="tag ${tagClass(r.sak.flag)}">${esc(tagText(r.sak.flag))}</span></td>
+    <td><span class="tag ${r.nis.klasse === "hoy-konsekvens" ? "tag-avkorting" : "tag-ok"}">${esc(r.nis.klasseTekst)}</span></td>
+    <td>${r.nis.sendtUt ? "Kan ha gått til OpenAI" : "Ikke sendt ut"}</td>
+    <td>Nei — øvelse</td>
+    <td>${r.nis.grunner.map((g) => esc(g)).join("; ")}</td>
+  </tr>`).join("");
+  rot.innerHTML = `
+    <div class="kpi-grid">
+      <div class="kpi"><b>${porte.antall}</b><span>saker i tabellen</span></div>
+      <div class="kpi"><b>${porte.hoy.length}</b><span>høyere konsekvens ved hendelse</span></div>
+      <div class="kpi"><b>${porte.sendt.length}</b><span>med spor mot tredjepart i øvelsen</span></div>
+      <div class="kpi"><b>0</b><span>varsler til NSM</span></div>
+    </div>
+    <section class="panel">
+      <h2>Norges tilnærming</h2>
+      <p class="hint">${esc(NIS2_REF)}. Kilder i øvelsen: NSM-veileder til digitalsikkerhetsloven (NIS 1 i kraft; NIS 2 under tilnærming).</p>
+      ${sjekker}
+    </section>
+    <section class="panel">
+      <h2>Full klassifisert saksliste</h2>
+      <p class="hint">Ingen sak er «NIS 2-godkjent». Klassene viser øvelseskonsekvens hvis noe lekker eller KI-leverandøren svikter.</p>
+      <div class="chips">${chips}</div>
+      <div class="tabell-wrap">
+        <table class="pv-tabell">
+          <thead>
+            <tr>
+              <th>Sak</th><th>Søker</th><th>Sakstype</th><th>Konsekvens</th><th>Leverandør</th><th>Varslet NSM</th><th>Hensyn</th>
+            </tr>
+          </thead>
+          <tbody>${rader}</tbody>
+        </table>
+      </div>
+      <p class="hint">${vist.length} av ${porte.antall} vist.</p>
+    </section>
+  `;
+}
+
+window.renderNis2 = renderNis2;
+window.setNis2TabellFilter = setNis2TabellFilter;
 window.renderAnalyse = renderAnalyse;
 window.sendPortefoljeSporsmal = sendPortefoljeSporsmal;
 window.sporPortefolje = sporPortefolje;
@@ -1644,6 +1872,8 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   if ($("analyseRot")) renderAnalyse();
   if ($("pvRot")) renderPersonvern();
+  if ($("aiActRot")) renderAiAct();
+  if ($("nis2Rot")) renderNis2();
   const ant = document.querySelector("[data-antall-saker]");
   if (ant) ant.textContent = `${SAKER.length} saker. Filtrer, så åpne. Hver sak har én oppgave.`;
 });

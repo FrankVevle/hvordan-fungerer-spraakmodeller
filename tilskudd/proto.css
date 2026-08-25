@@ -183,6 +183,12 @@ td, th { padding: 0.35rem 0.4rem; border-bottom: 1px solid #f1f5f9; text-align: 
 .pipe .done { background: #ecfdf5; color: #065f46; border-color: #a7f3d0; }
 
 #pvRot .panel { margin-bottom: 1rem; }
+.tabell-wrap { overflow: auto; max-height: 70vh; border: 1px solid var(--line); border-radius: 10px; }
+.pv-tabell { font-size: 0.82rem; }
+.pv-tabell th { position: sticky; top: 0; background: #f8fafc; z-index: 1; }
+.pv-rad-rod { background: #fff1f2; }
+.pv-rad-gul { background: #fffbeb; }
+.pv-rad-ok { background: #fff; }
 .vedlegg-ki { list-style: none; margin: 0.7rem 0 0; padding: 0.7rem 0.8rem; background: #eef2ff; border: 1px solid #c7d2fe; border-radius: 10px; }
 .arkiv-liste { margin: 0.4rem 0 0; padding-left: 1.1rem; font-size: 0.88rem; }
 .journal { max-height: 16rem; overflow: auto; display: flex; flex-direction: column; gap: 0.45rem; }
