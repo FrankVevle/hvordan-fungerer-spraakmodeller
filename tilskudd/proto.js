@@ -1503,7 +1503,8 @@ function fyllOrdningVelger() {
   const cur = sel.value || ORDNING_OVELSE_ID;
   sel.innerHTML = ORDNINGER.filter((o) => !o.ikkeSokbar).map((o) => {
     const merke = o.id === ORDNING_OVELSE_ID ? " (øvelsessaker i prototypen)" : "";
-    return `<option value="${esc(o.id)}" ${o.id === cur ? "selected" : ""}>${esc(o.navn)}${merke} · ${esc(o.forvalter)}</option>`;
+    const budsjett = o.offentligBelop != null ? ` · tilgjengelig ${kr(o.offentligBelop)}` : "";
+    return `<option value="${esc(o.id)}" ${o.id === cur ? "selected" : ""}>${esc(o.navn)}${merke} · ${esc(o.forvalter)}${budsjett}</option>`;
   }).join("");
 }
 
