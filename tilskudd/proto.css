@@ -236,6 +236,36 @@ details summary { cursor: pointer; font-weight: 650; }
 #analyseRot .panel { margin-bottom: 1rem; }
 #analyseRot .panel h2 { margin: 0 0 0.4rem; font-size: 1.15rem; }
 
+.ordning-kort-liste { display: flex; flex-direction: column; gap: 0.55rem; }
+.ordning-kort {
+  display: grid;
+  grid-template-columns: 5.6rem minmax(0, 1fr);
+  gap: 0.85rem;
+  align-items: center;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 0.7rem 0.85rem;
+  text-decoration: none;
+  color: inherit;
+}
+.ordning-kort:hover { border-color: #818cf8; }
+.ordning-kort-frist {
+  background: #f3e8ff;
+  color: #5b21b6;
+  border-radius: 10px;
+  min-height: 3.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-weight: 700;
+  font-size: 0.78rem;
+  padding: 0.35rem;
+}
+.ordning-kort h3 { margin: 0 0 0.2rem; font-size: 0.98rem; }
+.ordning-kort p { margin: 0; color: var(--muted); font-size: 0.85rem; }
+
 .kat-tabell tfoot th, .kat-tabell tfoot td { background: #eef2ff; font-weight: 700; position: sticky; bottom: 0; }
 .kat-tabell td .hint { display: block; margin-top: 0.25rem; max-width: 22rem; }
 .tag:not([class*="tag-"]) { background: #f1f5f9; color: #475569; }

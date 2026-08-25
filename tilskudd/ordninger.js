@@ -394,7 +394,7 @@ function renderOrdningskatalog() {
   const rader = liste.map((o) => {
     const tilgj = o.offentligBelop == null ? "ikke oppgitt i kilden" : formatKrNb(o.offentligBelop);
     const tildelt = o.sistTildelt == null ? "ikke oppgitt i kilden" : formatKrNb(o.sistTildelt);
-    const merke = o.ovelse ? `<span class="tag tag-ramme">Øvelsessaker her</span>` : `<span class="tag">Bare katalog</span>`;
+    const merke = o.ovelse ? `<span class="tag tag-ramme">Øvelse + plantede saker</span>` : `<span class="tag">Fiktive saker her</span>`;
     return `<tr>
       <td>${escKat(o.navn)} ${merke}<br><span class="hint">${escKat(o.beskrivelse || "")}</span></td>
       <td class="mono">${escKat(o.dtId)}</td>
@@ -461,6 +461,7 @@ if (typeof window !== "undefined") {
   window.finnOrdning = finnOrdning;
   window.ordningOvelse = ordningOvelse;
   window.formatOffentligBelop = formatOffentligBelop;
+  window.formatFrist = formatFrist;
   window.offentligTypeTekst = offentligTypeTekst;
   window.ordningVisningsnavn = ordningVisningsnavn;
   window.renderOrdningskatalog = renderOrdningskatalog;

@@ -363,9 +363,24 @@ const SAKER = BASE_SAKER
   .concat(NYE_SAKER_FRO.map((row, i) => utvidNySak(row, i)))
   .concat(FLERE_SAKER_FRO.map((row, i) => utvidNySak(row, i, { orgPrefix: "997", idStart: 2801 })));
 
-SAKER.forEach((s) => {
-  s.ordningId = s.ordningId || (typeof ORDNING_OVELSE_ID !== "undefined" ? ORDNING_OVELSE_ID : "inkludering-barn-unge");
-});
+const ORDNING_FAST_INKLUDERING = new Set(["T-2629", "T-2631", "T-2622", "T-2612", "T-2632", "T-2801"]);
+
+function knyttSakerTilOrdninger(saker) {
+  const inkl = typeof ORDNING_OVELSE_ID !== "undefined" ? ORDNING_OVELSE_ID : "inkludering-barn-unge";
+  const pool = (typeof ORDNINGER !== "undefined" ? ORDNINGER : []).map((o) => o.id);
+  const ids = pool.length ? pool : [inkl];
+  let n = 0;
+  saker.forEach((s) => {
+    if (ORDNING_FAST_INKLUDERING.has(s.id) || s.flag === "plantet") {
+      s.ordningId = inkl;
+      return;
+    }
+    s.ordningId = ids[n % ids.length];
+    n += 1;
+  });
+}
+
+knyttSakerTilOrdninger(SAKER);
 
 let ordningFilter = "alle";
 
@@ -617,6 +632,12 @@ function analyserPortefolje() {
     if (!perAkt[k]) perAkt[k] = [];
     perAkt[k].push(r);
   });
+  const perOrdning = {};
+  rader.forEach((r) => {
+    const k = r.sak.ordningId || (typeof ORDNING_OVELSE_ID !== "undefined" ? ORDNING_OVELSE_ID : "inkludering-barn-unge");
+    if (!perOrdning[k]) perOrdning[k] = [];
+    perOrdning[k].push(r);
+  });
   const perKommune = {};
   rader.forEach((r) => {
     perKommune[r.sak.kommune] = (perKommune[r.sak.kommune] || 0) + 1;
@@ -633,6 +654,7 @@ function analyserPortefolje() {
     koe,
     adminOver,
     perAkt,
+    perOrdning,
     toppKommuner,
     storst,
     risiko: {
@@ -958,7 +980,7 @@ function setListFilter(flag) {
 }
 
 function setOrdningFilter(id) {
-  ordningFilter = id;
+  ordningFilter = id || "alle";
   renderList();
 }
 
@@ -1596,7 +1618,25 @@ function renderAnalyse() {
   const aktMax = Math.max(...Object.values(a.perAkt).map((x) => x.length), 1);
   const kommMax = Math.max(...a.toppKommuner.map((x) => x[1]), 1);
   rot.innerHTML = `
-    <p class="hint">Maskinell opptelling med øvelsesreglene. Skjønn skjer på sakskortet. Dette er ikke statistikk for ledelsen — det er køen din.</p>
+    <p class="hint">Maskinell opptelling med øvelsesreglene. Sakene er fordelt på de 16 Tilskudd.no-boksene (fiktivt — ikke ekte søknader). Skjønn skjer på sakskortet.</p>
+    <section class="panel">
+      <h2>Tilskuddsområder</h2>
+      <p class="hint">Samme inndeling som filteret på Tilskudd.no (BFD + Bufdir). Klikk en boks for å åpne sakene.</p>
+      <div class="ordning-kort-liste">
+        ${(typeof ORDNINGER !== "undefined" ? ORDNINGER : []).map((o) => {
+          const liste = a.perOrdning[o.id] || [];
+          const sokt = liste.reduce((s, r) => s + r.sak.belop, 0);
+          const frist = typeof formatFrist === "function" ? formatFrist(o.frist) : o.frist;
+          return `<a class="ordning-kort" href="/tilskudd/behandle#ordning=${esc(o.id)}">
+            <div class="ordning-kort-frist">${esc(frist)}</div>
+            <div>
+              <h3>${esc(o.navn)}</h3>
+              <p>${esc(o.forvalter)} · ${esc(o.tema)} · ${liste.length} saker · søkt ${kr(sokt)}</p>
+            </div>
+          </a>`;
+        }).join("")}
+      </div>
+    </section>
     <div class="kpi-grid">
       <div class="kpi"><b>${a.antall}</b><span>saker i bunken</span></div>
       <div class="kpi"><b>${kr(a.sokt)}</b><span>søkt mot øvelsespott ${kr(RAMME)}</span></div>
@@ -1926,7 +1966,10 @@ document.addEventListener("DOMContentLoaded", () => {
     renderJournal();
     renderCard();
     const hash = (location.hash || "").replace("#", "");
-    if (hash && findSak(hash)) openSak(hash);
+    if (hash.startsWith("ordning=")) {
+      ordningFilter = hash.slice(8) || "alle";
+      renderList();
+    } else if (hash && findSak(hash)) openSak(hash);
   }
   if ($("view-klage") && !$("view-klage").hidden) runKlage(false);
   if ($("pOrgnr")) {
