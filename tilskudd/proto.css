@@ -255,6 +255,14 @@ details summary { cursor: pointer; font-weight: 650; }
 .frank-sak h3 { margin: 0.25rem 0 0; font-size: 1rem; }
 .lov-liste { margin: 0.4rem 0 0; padding-left: 1.1rem; }
 .lov-liste li { margin: 0.45rem 0; }
+.lov-merker { display: flex; flex-wrap: wrap; gap: 0.3rem; margin: 0.35rem 0 0; }
+.lov-merke {
+  display: inline-block; font-size: 0.72rem; font-weight: 650;
+  background: #eef2ff; color: #3730a3; border-radius: 999px; padding: 0.12rem 0.45rem;
+}
+.lov-blokk { margin: 1rem 0; }
+.lov-eval { margin-top: 1rem; }
+.lov-eval-svar { margin-top: 0.7rem; }
 
 .ki-agent-fab {
   position: fixed; right: 1.2rem; bottom: 1.2rem; z-index: 50;

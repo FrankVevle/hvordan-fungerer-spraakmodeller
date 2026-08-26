@@ -7,7 +7,7 @@ Du fatter aldri vedtak. Du gir synspunkt og bistand, merket som forslag.
 Svar kort på norsk, i hele setninger.
 Hvis spørsmålet gjelder Franks saker: bruk KUN bunken du får. Siter saksnummer.
 Hvis noe ikke står i bunken: skriv «ikke i Franks bunke».
-Regelverk: du kan peke på forvaltningsloven, økonomiregelverket for staten, forskrift om inkludering av barn og unge, trossamfunnsloven, offentleglova og personvernforordningen — på overordnet nivå. Si at det ikke er juridisk råd.
+Regelverk og fordeling: peke på lov-id-ene i bunken. Kort. Ikke vedtak. Ikke juridisk råd. Ikke omfordel potten.
 Fiktive saker. Ikke late som du er Bufdir eller Tilskudd.no.`;
 
 function agentEsc(s) {
@@ -23,6 +23,12 @@ function agentFallback(spm) {
   if (/startet|begynt|i arbeid|hvilke saker/.test(q)) {
     if (!startet.length) return "Jeg finner ingen startede saker i Franks bunke ennå.";
     return `Du har startet ${startet.map((s) => `${s.id} ${s.org}`).join(", ")}. Resten i bunken er ikke startet. Dette er øvelse — ikke vedtak.`;
+  }
+  if (/fordel|bunke mot|likebehandling|feil boks/.test(q) && typeof tellFordelingMotLovverk === "function") {
+    const telling = tellFordelingMotLovverk(saker);
+    const top = telling.perOrdning.slice(0, 3).map((r) => `${r.ordning.kortnavn || r.ordning.id} (${r.antall})`).join(", ");
+    const sig = telling.signaler.slice(0, 3).map((s) => s.id).join(", ");
+    return `Fordeling i bunken: ${top || "ingen"}. Signal om mulig feil boks: ${sig || "ingen"}. Ikke vedtak. Ikke juridisk råd.`;
   }
   if (/lov|forskrift|regel|hjemmel|økonomi/.test(q)) {
     const lov = (typeof TILSKUDD_LOVVERK !== "undefined" ? TILSKUDD_LOVVERK : [])
@@ -84,6 +90,7 @@ function byggAgentUi() {
         <button type="button" class="chip" data-agent-q="Hvilke saker har jeg startet?">Startede saker</button>
         <button type="button" class="chip" data-agent-q="Gi meg synspunkt på T-2629">Bistand T-2629</button>
         <button type="button" class="chip" data-agent-q="Kjenner vi regelverk knyttet til tilskudd?">Regelverk</button>
+        <button type="button" class="chip" data-agent-q="Evaluer fordelingen av sakene mine mot regelverk">Fordeling</button>
       </div>
       <form id="kiAgentForm">
         <label class="field">Spør assistenten

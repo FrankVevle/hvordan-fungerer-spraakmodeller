@@ -395,8 +395,11 @@ function renderOrdningskatalog() {
     const tilgj = o.offentligBelop == null ? "ikke oppgitt i kilden" : formatKrNb(o.offentligBelop);
     const tildelt = o.sistTildelt == null ? "ikke oppgitt i kilden" : formatKrNb(o.sistTildelt);
     const merke = o.ovelse ? `<span class="tag tag-ramme">Øvelse + plantede saker</span>` : `<span class="tag">Fiktive saker her</span>`;
+    const lovLinje = typeof lovKortnavn === "function"
+      ? [...(o.lovIds || []), ...(o.lovMuligIds || [])].filter((id, i, a) => a.indexOf(id) === i).map(lovKortnavn).join(" · ")
+      : "";
     return `<tr>
-      <td>${escKat(o.navn)} ${merke}<br><span class="hint">${escKat(o.beskrivelse || "")}</span></td>
+      <td>${escKat(o.navn)} ${merke}<br><span class="hint">${escKat(o.beskrivelse || "")}</span>${lovLinje ? `<br><span class="hint">Regelverk (øvelse): ${escKat(lovLinje)}</span>` : ""}</td>
       <td class="mono">${escKat(o.dtId)}</td>
       <td>${escKat(o.forvalter)}</td>
       <td>${escKat(o.tema)}</td>

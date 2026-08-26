@@ -107,33 +107,9 @@ const FRANK_EKSTRA = [
   }
 ];
 
-const TILSKUDD_LOVVERK = [
-  {
-    navn: "Forvaltningsloven",
-    kort: "Saksbehandling, begrunnelse, partsinnsyn og klage. Gjelder når forvaltningen treffer enkeltvedtak — også tilskuddsvedtak.",
-    merknad: "Ikke en tilskuddsforskrift. Forteller hvordan saken skal behandles."
-  },
-  {
-    navn: "Bestemmelser om økonomistyring i staten",
-    kort: "Kapitlet om tilskudd stiller krav til mål, tildelingskriterier, oppfølging og kontroll. Dette er styringskrav til statlige virksomheter.",
-    merknad: "Øvelsen er ikke et statlig tilskuddssystem i drift."
-  },
-  {
-    navn: "Forskrift om tilskudd til inkludering av barn og unge",
-    kort: "Særskilt regelverk for den ordningen 4.1–4.11 peker på. Aktivitetstyper, egenandel og vilkår står der — ikke i øvelsespotten på 1 mill.",
-    merknad: "Lovdata: forskrift 23. november 2021 nr. 3261. Prototype bruker øvelsesregler."
-  },
-  {
-    navn: "Trossamfunnsloven",
-    kort: "Hjemmel for statstilskudd til tros- og livssynssamfunn utenom Den norske kirke. BFD-boksen DT-0087.",
-    merknad: "Ikke det samme som Bufdirs prosjektordninger."
-  },
-  {
-    navn: "Offentleglova og personvernforordningen",
-    kort: "Innsyn i tilskuddssaker, og begrensninger når dokumentet har personopplysninger. Personvernmodulen er mønstersøk, ikke hjemmelsvurdering.",
-    merknad: "Ikke juridisk råd."
-  }
-];
+const TILSKUDD_LOVVERK = (typeof window !== "undefined" && window.TILSKUDD_LOVVERK)
+  ? window.TILSKUDD_LOVVERK
+  : [];
 
 function lesFrankStatus() {
   if (typeof loadJson === "function") return loadJson(FRANK_STATUS_KEY, { ...FRANK_STANDARD_STATUS });
@@ -177,7 +153,10 @@ function frankSaker() {
 function frankDigest() {
   return frankSaker().map((s) => {
     const o = typeof sakOrdningTekst === "function" ? sakOrdningTekst(s) : s.ordningId;
-    return `${s.id} | ${s.org} | ${o} | ${s.flag} | ${frankSakStatus(s.id)} | søkt ${s.belop} | ${s.jobb}`;
+    const lov = typeof sakLovverk === "function"
+      ? sakLovverk(s).gjelder.map((l) => l.id).join(",")
+      : "";
+    return `${s.id} | ${s.org} | ${o} | ${s.flag} | ${frankSakStatus(s.id)} | søkt ${s.belop} | lov:${lov} | ${s.jobb}`;
   }).join("\n");
 }
 
@@ -196,6 +175,7 @@ function renderFrankVelkommen() {
       <div class="meta"><span>${escFn(s.id)}</span><span class="tag ${st === "startet" ? "tag-ramme" : "tag-ok"}">${st === "startet" ? "Startet" : "Ikke startet"}</span></div>
       <h3>${escFn(s.org)}</h3>
       <p>${escFn(o.kortnavn || s.ordningId || "")} · ${krFn(s.belop)}</p>
+      <p class="lov-merker">${typeof sakLovMerker === "function" ? sakLovMerker(s, 3).map((t) => `<span class="lov-merke">${escFn(t)}</span>`).join("") : ""}</p>
       <p class="job">${escFn(s.jobb)}</p>
     </a>`;
   };
@@ -221,7 +201,8 @@ function renderFrankVelkommen() {
       <p class="hint">Ja — det finnes lov og regelverk. Dette er en pekepinn i øvelsen, ikke juridisk råd og ikke komplett liste.</p>
       <ul class="lov-liste">${TILSKUDD_LOVVERK.map((l) => `<li><strong>${escFn(l.navn)}</strong> — ${escFn(l.kort)} <span class="hint">${escFn(l.merknad)}</span></li>`).join("")}</ul>
       <p class="hint">Spør den svevende assistenten om en sak eller om regelverk. Den fatter ikke vedtak.</p>
-    </section>`;
+    </section>
+    <div id="frankLovRot"></div>`;
 }
 
 knyttFrankEkstraSaker();
@@ -245,5 +226,6 @@ if (typeof window !== "undefined") {
   document.addEventListener("DOMContentLoaded", () => {
     knyttFrankEkstraSaker();
     renderFrankVelkommen();
+    if (typeof renderLovFordeling === "function") renderLovFordeling("frankLovRot", "frank");
   });
 }

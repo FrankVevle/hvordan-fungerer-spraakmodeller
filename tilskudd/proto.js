@@ -1149,6 +1149,7 @@ function renderCard() {
         <table>${budsjett}</table>
         <h3>Vedlegg</h3>
         <ul>${vedlegg}${kiVedlegg}</ul>
+        ${typeof sakLovHtml === "function" ? sakLovHtml(sak) : ""}
         <h3>Arkiv (øvelse)</h3>
         <p class="hint">Simulert journal — ikke Elements eller annen ekte arkivløsning.</p>
         ${arkivListe}
