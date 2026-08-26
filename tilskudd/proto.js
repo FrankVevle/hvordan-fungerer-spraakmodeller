@@ -858,6 +858,7 @@ function ensure(id) {
       live: null,
       error: "",
       hitl: "",
+      grunn: "",
       running: false,
       pv: typeof sjekkPersonvern === "function" ? sjekkPersonvern(sak) : null,
       pvValg: "",
@@ -1124,9 +1125,18 @@ function semRow(label, item) {
   return `<tr><td>${esc(label)}</td><td class="mono">${score}</td><td>${esc(item?.sitat || "ikke oppgitt")}</td></tr>`;
 }
 
+function aktivEditorId() {
+  const el = document.activeElement;
+  if (el && ["belop", "notat", "brev", "grunn"].includes(el.id)) return el.id;
+  return "";
+}
+
 function renderCard() {
   const box = $("kort");
   if (!box) return;
+  if (selected && work[selected]) readEditors(work[selected]);
+  const fokus = aktivEditorId();
+  const caret = fokus && document.activeElement ? document.activeElement.selectionStart : null;
   renderRamme();
   if (!selected) {
     renderPipe(null);
@@ -1215,8 +1225,8 @@ function renderCard() {
         <label class="field">Utkast til brev
           <textarea id="brev" rows="5" class="mono">${esc(w.letter)}</textarea>
         </label>
-        <label class="field">Din grunn (må fylles ved avvis)
-          <input id="grunn" type="text" placeholder="Skriv hvorfor…" />
+        <label class="field">Din merknad til bekreft, juster eller avvis
+          <textarea id="grunn" rows="3" placeholder="Skriv hva du mener — påkrevd ved avvis, valgfri ellers.">${esc(w.grunn || "")}</textarea>
         </label>
         <div class="btn-row">
           <button class="btn btn-dark" type="button" onclick="hitl('bekreft')">Bekreft forslag</button>
@@ -1224,16 +1234,31 @@ function renderCard() {
           <button class="btn btn-ghost" type="button" onclick="hitl('avvis')">Avvis med grunn</button>
           <button class="btn btn-ghost" type="button" onclick="hitl('sta')">La stå</button>
         </div>
-        <p class="hint">Ingenting blir vedtak. Vi lagrer bare et øvelsesnotat i nettleseren.</p>
+        <p class="hint">Skriv i feltet over, så trykk en knapp. Ingenting blir vedtak. Vi lagrer bare et øvelsesnotat i nettleseren.</p>
         ${w.hitl ? `<p><strong>${esc(w.hitl)}</strong></p>` : ""}
       </div>
     </div>`;
+  ["belop", "notat", "brev", "grunn"].forEach((id) => {
+    const el = $(id);
+    if (!el) return;
+    el.addEventListener("input", () => {
+      if (selected && work[selected]) readEditors(work[selected]);
+    });
+  });
+  if (fokus && $(fokus)) {
+    $(fokus).focus();
+    try {
+      if (caret != null && $(fokus).setSelectionRange) $(fokus).setSelectionRange(caret, caret);
+    } catch (_e) { /* ignore */ }
+  }
 }
 
 function readEditors(w) {
+  if (!w) return;
   if ($("belop") && $("belop").value !== "") w.recommended = Number($("belop").value) || 0;
   if ($("notat")) w.note = $("notat").value;
   if ($("brev")) w.letter = $("brev").value;
+  if ($("grunn")) w.grunn = $("grunn").value;
 }
 
 function openSak(id) {
@@ -1353,21 +1378,23 @@ function hitl(action) {
   if (!selected) return;
   const w = ensure(selected);
   readEditors(w);
-  const grunn = ($("grunn")?.value || "").trim();
+  const grunn = String(w.grunn || "").trim();
   w.pipeline = "hitl";
   if (action === "bekreft") {
-    w.hitl = `Du bekreftet forslaget på ${kr(w.recommended)}. Fortsatt ikke et vedtak.`;
+    w.hitl = `Du bekreftet forslaget på ${kr(w.recommended)}.${grunn ? ` Merknad: ${grunn}` : ""} Fortsatt ikke et vedtak.`;
   } else if (action === "juster") {
-    w.hitl = `Du justerte til ${kr(w.recommended)}. ${grunn || "Ingen skriftlig grunn."}`;
+    w.hitl = `Du justerte til ${kr(w.recommended)}. ${grunn || "Ingen skriftlig merknad."}`;
   } else if (action === "avvis") {
     if (!grunn) {
-      w.hitl = "Skriv en grunn før du avviser.";
+      w.hitl = "Skriv en merknad i feltet over før du avviser.";
       renderCard();
+      const felt = $("grunn");
+      if (felt) felt.focus();
       return;
     }
     w.hitl = `Du avviste forslaget: ${grunn}`;
   } else {
-    w.hitl = "Saken står. Ingen godkjenning.";
+    w.hitl = grunn ? `Saken står. Merknad: ${grunn}` : "Saken står. Ingen godkjenning.";
   }
   addJournal({ type: "du", sak: selected, svar: w.hitl });
   if (action === "bekreft" || action === "juster") arkiver(selected, w, action);
