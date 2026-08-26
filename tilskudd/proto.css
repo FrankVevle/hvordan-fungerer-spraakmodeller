@@ -301,6 +301,25 @@ td, th { padding: 0.35rem 0.4rem; border-bottom: 1px solid #f1f5f9; text-align: 
 .think a { color: #4338ca; font-weight: 650; }
 details { margin: 0.8rem 0; }
 details summary { cursor: pointer; font-weight: 650; }
+details.trekkspill { margin: 0.8rem 0 1rem; }
+details.trekkspill > summary {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.35rem 1rem;
+}
+details.trekkspill > summary::-webkit-details-marker { display: none; }
+details.trekkspill > summary h2 { margin: 0; font-size: 1.1rem; }
+details.trekkspill > summary::after {
+  content: "Vis";
+  font-size: 0.8rem;
+  font-weight: 650;
+  color: var(--accent);
+}
+details.trekkspill[open] > summary::after { content: "Skjul"; }
+details.trekkspill[open] > summary .hint { display: none; }
 
 .cards {
   display: grid;
