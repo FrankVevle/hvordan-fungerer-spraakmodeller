@@ -248,6 +248,16 @@ details summary { cursor: pointer; font-weight: 650; }
 .kpi { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 0.9rem 1rem; }
 .kpi b { display: block; font-size: 1.25rem; letter-spacing: -0.03em; }
 .kpi span { color: var(--muted); font-size: 0.85rem; }
+button.kpi-klikk {
+  display: block;
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+  color: inherit;
+}
+button.kpi-klikk:hover { border-color: #818cf8; }
+button.kpi-klikk.on { border-color: var(--accent); background: #eef2ff; }
 .koe-blokk h3 { margin: 1.1rem 0 0.25rem; font-size: 1rem; }
 .svg-bar { display: block; width: 100%; height: 10px; margin: 0.35rem 0; }
 .chart-row { display: grid; grid-template-columns: minmax(8rem, 18rem) 1fr 2.5rem; gap: 0.5rem; align-items: center; font-size: 0.85rem; margin: 0.35rem 0; }

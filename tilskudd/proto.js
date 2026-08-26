@@ -384,6 +384,7 @@ knyttSakerTilOrdninger(SAKER);
 
 let ordningFilter = "alle";
 let forvalterFilter = "alle";
+let frankBoksFilter = null;
 
 function sakOrdning(sak) {
   const id = sak?.ordningId || (typeof ORDNING_OVELSE_ID !== "undefined" ? ORDNING_OVELSE_ID : "inkludering-barn-unge");
@@ -1004,6 +1005,17 @@ function renderRamme() {
 
 function sakerFiltrert() {
   let liste = SAKER;
+  if (frankBoksFilter === "tildelt" || frankBoksFilter === "startet" || frankBoksFilter === "ikke_startet") {
+    const mine = typeof FRANK_TILDELTE !== "undefined" ? FRANK_TILDELTE : [];
+    liste = liste.filter((s) => mine.includes(s.id));
+    if (frankBoksFilter === "startet" && typeof frankSakStatus === "function") {
+      liste = liste.filter((s) => frankSakStatus(s.id) === "startet");
+    }
+    if (frankBoksFilter === "ikke_startet" && typeof frankSakStatus === "function") {
+      liste = liste.filter((s) => frankSakStatus(s.id) !== "startet");
+    }
+    return liste;
+  }
   if (ordningFilter !== "alle") {
     liste = liste.filter((s) => (s.ordningId || ORDNING_OVELSE_ID) === ordningFilter);
   }
@@ -1028,9 +1040,24 @@ function setForvalterFilter(v) {
   renderList();
 }
 
+function setFrankArbeidBoks(nøkkel) {
+  frankBoksFilter = frankBoksFilter === nøkkel ? null : nøkkel;
+  if (frankBoksFilter) ordningFilter = "alle";
+  if (selected && frankBoksFilter) {
+    const mine = sakerFiltrert();
+    if (!mine.some((s) => s.id === selected)) selected = null;
+  }
+  renderList();
+  if (!selected) renderCard();
+  try {
+    history.replaceState(null, "", frankBoksFilter ? `#frank=${frankBoksFilter}` : location.pathname);
+  } catch (_e) { /* ignore */ }
+}
+
 function setOrdningFilter(id) {
   const neste = id || "alle";
   ordningFilter = ordningFilter === neste ? "alle" : neste;
+  if (ordningFilter !== "alle") frankBoksFilter = null;
   if (selected && ordningFilter !== "alle") {
     const sak = findSak(selected);
     if (sak && (sak.ordningId || ORDNING_OVELSE_ID) !== ordningFilter) selected = null;
@@ -1062,8 +1089,16 @@ function renderList() {
     </button>`;
   }).join("");
   const saker = sakerFiltrert();
-  const sakKort = ordningFilter === "alle"
-    ? `<p class="hint">Klikk en ordningsboks for å se sakene. Fiktive saker. Ikke Bufdir.</p>`
+  const mine = typeof FRANK_TILDELTE !== "undefined" ? FRANK_TILDELTE : [];
+  const frankSakerAlle = typeof findSak === "function" ? mine.map((id) => findSak(id)).filter(Boolean) : [];
+  const frankStartet = frankSakerAlle.filter((s) => typeof frankSakStatus === "function" && frankSakStatus(s.id) === "startet");
+  const frankVent = frankSakerAlle.filter((s) => typeof frankSakStatus !== "function" || frankSakStatus(s.id) !== "startet");
+  const frankBoks = (nøkkel, tall, tekst) => `<button type="button" class="kpi kpi-klikk ${frankBoksFilter === nøkkel ? "on" : ""}" onclick="setFrankArbeidBoks('${nøkkel}')">
+      <b>${tall}</b><span>${tekst}</span>
+    </button>`;
+  const visSaker = ordningFilter !== "alle" || !!frankBoksFilter;
+  const sakKort = !visSaker
+    ? `<p class="hint">Klikk «fordelt til deg», «startet» eller en ordningsboks for å se sakene. Fiktive saker. Ikke Bufdir.</p>`
     : `<div class="sak-rutenett">${saker.map((sak) => `
       <button type="button" class="${selected === sak.id ? "on" : ""}" onclick="openSak('${sak.id}')">
         <div class="meta"><span>${sak.id}</span><span class="tag ${tagClass(sak.flag)}">${tagText(sak.flag)}</span>${typeof sjekkPersonvern === "function" && sjekkPersonvern(sak).niva !== "ok" ? `<span class="tag ${sjekkPersonvern(sak).niva === "rod" ? "tag-formalia" : "tag-avkorting"}">PV</span>` : ""}</div>
@@ -1071,6 +1106,13 @@ function renderList() {
         <p class="amt">${kr(sak.belop)}</p>
         <p class="job">${esc(sak.jobb)}</p>
       </button>`).join("") || "<p class='hint'>Ingen saker i denne boksen med dagens filter.</p>"}</div>`;
+  const sakTittel = frankBoksFilter === "tildelt"
+    ? `${saker.length} saker fordelt til deg`
+    : frankBoksFilter === "startet"
+      ? `${saker.length} saker du har startet`
+      : frankBoksFilter === "ikke_startet"
+        ? `${saker.length} saker du ikke har startet`
+        : `${saker.length} saker i valgt boks`;
   box.innerHTML = `<label class="field">Forvalter
       <select onchange="setForvalterFilter(this.value)">
         <option value="alle" ${forvalterFilter === "alle" ? "selected" : ""}>Alle</option>
@@ -1078,14 +1120,19 @@ function renderList() {
         <option value="BFD" ${forvalterFilter === "BFD" ? "selected" : ""}>BFD</option>
       </select>
     </label>
+    <div class="kpi-grid frank-boks-rutenett">
+      ${frankBoks("tildelt", frankSakerAlle.length, "saker fordelt til deg")}
+      ${frankBoks("startet", frankStartet.length, "du har startet")}
+      ${frankBoks("ikke_startet", frankVent.length, "ikke startet ennå")}
+    </div>
     <div class="ordning-rutenett">${bokser}</div>
-    ${ordningFilter !== "alle" ? `<h3 class="sak-rutenett-tittel">${saker.length} saker i valgt boks</h3>` : ""}
+    ${visSaker ? `<h3 class="sak-rutenett-tittel">${sakTittel}</h3>` : ""}
     ${sakKort}`;
   renderKiAnalyseMaskin();
 }
 
 function sakerIKiAnalyse() {
-  if (ordningFilter !== "alle") return sakerFiltrert();
+  if (ordningFilter !== "alle" || frankBoksFilter) return sakerFiltrert();
   const ids = new Set(visOrdninger().map((o) => o.id));
   return SAKER.filter((s) => ids.has(s.ordningId || ORDNING_OVELSE_ID));
 }
@@ -2143,6 +2190,9 @@ document.addEventListener("DOMContentLoaded", () => {
     if (hash.startsWith("ordning=")) {
       ordningFilter = hash.slice(8) || "alle";
       renderList();
+    } else if (hash.startsWith("frank=")) {
+      frankBoksFilter = hash.slice(6) || null;
+      renderList();
     } else if (hash === "ki-analyse") {
       $("ki-analyse")?.scrollIntoView({ behavior: "smooth", block: "start" });
     } else if (hash && findSak(hash)) openSak(hash);
@@ -2158,6 +2208,6 @@ document.addEventListener("DOMContentLoaded", () => {
   if ($("aiActRot")) renderAiAct();
   if ($("nis2Rot")) renderNis2();
   const ant = document.querySelector("[data-antall-saker]");
-  if (ant) ant.textContent = `${SAKER.length} saker på 16 bokser. Filtrer forvalter, så klikk en ordning.`;
+  if (ant) ant.textContent = `${SAKER.length} saker på 16 bokser. Klikk «fordelt til deg» eller en ordning for å se saker.`;
   if ($("kiAnalyseMaskin") && !$("liste")) renderKiAnalyseMaskin();
 });
