@@ -383,6 +383,7 @@ function knyttSakerTilOrdninger(saker) {
 knyttSakerTilOrdninger(SAKER);
 
 let ordningFilter = "alle";
+let forvalterFilter = "alle";
 
 function sakOrdning(sak) {
   const id = sak?.ordningId || (typeof ORDNING_OVELSE_ID !== "undefined" ? ORDNING_OVELSE_ID : "inkludering-barn-unge");
@@ -1022,46 +1023,64 @@ function setListFilter(flag) {
   renderList();
 }
 
-function setOrdningFilter(id) {
-  ordningFilter = id || "alle";
+function setForvalterFilter(v) {
+  forvalterFilter = v || "alle";
   renderList();
+}
+
+function setOrdningFilter(id) {
+  const neste = id || "alle";
+  ordningFilter = ordningFilter === neste ? "alle" : neste;
+  if (selected && ordningFilter !== "alle") {
+    const sak = findSak(selected);
+    if (sak && (sak.ordningId || ORDNING_OVELSE_ID) !== ordningFilter) selected = null;
+  }
+  renderList();
+  if (!selected) renderCard();
+  try { history.replaceState(null, "", ordningFilter === "alle" ? location.pathname : `#ordning=${ordningFilter}`); } catch (_e) { /* ignore */ }
+}
+
+function visOrdninger() {
+  const alle = typeof ORDNINGER !== "undefined" ? ORDNINGER : [];
+  return alle.filter((o) => !o.ikkeSokbar && (forvalterFilter === "alle" || o.forvalter === forvalterFilter));
 }
 
 function renderList() {
   const box = $("liste");
   if (!box) return;
-  const flags = ["alle", "frank", "ok", "avkorting", "formalia", "historikk", "ramme", "avvik", "plantet", "personvern"];
-  const chips = flags.map((f) => {
-    const n = f === "alle"
-      ? SAKER.length
-      : f === "frank"
-        ? (typeof FRANK_TILDELTE !== "undefined" ? FRANK_TILDELTE.length : 0)
-        : f === "personvern"
-        ? SAKER.filter((s) => typeof sjekkPersonvern === "function" && sjekkPersonvern(s).niva !== "ok").length
-        : SAKER.filter((s) => s.flag === f).length;
-    const on = listFilter === f;
-    const label = f === "alle" ? "Alle" : f === "frank" ? "Franks bunke" : f === "personvern" ? "Personvern" : tagText(f);
-    return `<button type="button" class="chip ${on ? "on" : ""}" onclick="setListFilter('${f}')">${label} ${n}</button>`;
+  const ordninger = visOrdninger();
+  const bokser = ordninger.map((o) => {
+    const n = SAKER.filter((s) => (s.ordningId || ORDNING_OVELSE_ID) === o.id).length;
+    const sokt = SAKER.filter((s) => (s.ordningId || ORDNING_OVELSE_ID) === o.id).reduce((sum, s) => sum + s.belop, 0);
+    const merke = o.id === ORDNING_OVELSE_ID ? "Øvelse" : o.forvalter;
+    const on = ordningFilter === o.id;
+    return `<button type="button" class="ordning-boks ${on ? "on" : ""}" onclick="setOrdningFilter('${esc(o.id)}')">
+      <div class="meta"><span>${esc(o.dtId || "")}</span><span class="tag ${on ? "tag-ramme" : "tag-ok"}">${esc(merke)}</span></div>
+      <h3>${esc(o.kortnavn || o.navn)}</h3>
+      <p class="amt">${n} saker · søkt ${kr(sokt)}</p>
+      <p class="job">${esc(o.forvalter)} · ${esc(o.tema || "")}</p>
+    </button>`;
   }).join("");
-  const ordninger = typeof ORDNINGER !== "undefined" ? ORDNINGER : [];
-  const ordningOpts = [`<option value="alle">Alle ordninger</option>`].concat(
-    ordninger.filter((o) => !o.ikkeSokbar).map((o) => {
-      const n = SAKER.filter((s) => (s.ordningId || ORDNING_OVELSE_ID) === o.id).length;
-      const merke = o.id === ORDNING_OVELSE_ID ? " (øvelse)" : "";
-      return `<option value="${esc(o.id)}" ${ordningFilter === o.id ? "selected" : ""}>${esc(o.navn)}${merke} · ${n}</option>`;
-    })
-  ).join("");
-  const rows = sakerFiltrert().map((sak) => `
-    <button type="button" class="${selected === sak.id ? "on" : ""}" onclick="openSak('${sak.id}')">
-      <div class="meta"><span>${sak.id}</span><span class="tag ${tagClass(sak.flag)}">${tagText(sak.flag)}</span>${typeof sjekkPersonvern === "function" && sjekkPersonvern(sak).niva !== "ok" ? `<span class="tag ${sjekkPersonvern(sak).niva === "rod" ? "tag-formalia" : "tag-avkorting"}">PV</span>` : ""}</div>
-      <h3>${esc(sak.org)}</h3>
-      <p class="amt">${kr(sak.belop)} · ${esc(sakOrdning(sak).kortnavn || sakOrdningTekst(sak))}</p>
-      <p class="job">${esc(sak.jobb)}</p>
-    </button>`).join("");
-  box.innerHTML = `<label class="field">Ordning
-      <select onchange="setOrdningFilter(this.value)">${ordningOpts}</select>
+  const saker = sakerFiltrert();
+  const sakKort = ordningFilter === "alle"
+    ? `<p class="hint">Klikk en ordningsboks for å se sakene. Fiktive saker. Ikke Bufdir.</p>`
+    : `<div class="sak-rutenett">${saker.map((sak) => `
+      <button type="button" class="${selected === sak.id ? "on" : ""}" onclick="openSak('${sak.id}')">
+        <div class="meta"><span>${sak.id}</span><span class="tag ${tagClass(sak.flag)}">${tagText(sak.flag)}</span>${typeof sjekkPersonvern === "function" && sjekkPersonvern(sak).niva !== "ok" ? `<span class="tag ${sjekkPersonvern(sak).niva === "rod" ? "tag-formalia" : "tag-avkorting"}">PV</span>` : ""}</div>
+        <h3>${esc(sak.org)}</h3>
+        <p class="amt">${kr(sak.belop)}</p>
+        <p class="job">${esc(sak.jobb)}</p>
+      </button>`).join("") || "<p class='hint'>Ingen saker i denne boksen med dagens filter.</p>"}</div>`;
+  box.innerHTML = `<label class="field">Forvalter
+      <select onchange="setForvalterFilter(this.value)">
+        <option value="alle" ${forvalterFilter === "alle" ? "selected" : ""}>Alle</option>
+        <option value="Bufdir" ${forvalterFilter === "Bufdir" ? "selected" : ""}>Bufdir</option>
+        <option value="BFD" ${forvalterFilter === "BFD" ? "selected" : ""}>BFD</option>
+      </select>
     </label>
-    <div class="chips">${chips}</div>${rows}`;
+    <div class="ordning-rutenett">${bokser}</div>
+    ${ordningFilter !== "alle" ? `<h3 class="sak-rutenett-tittel">${saker.length} saker i valgt boks</h3>` : ""}
+    ${sakKort}`;
 }
 
 function renderJournal() {
@@ -1265,6 +1284,11 @@ function openSak(id) {
   const sak = findSak(id);
   if (!sak) return;
   selected = id;
+  if (sak.ordningId) {
+    ordningFilter = sak.ordningId;
+    const o = typeof sakOrdning === "function" ? sakOrdning(sak) : null;
+    if (o?.forvalter) forvalterFilter = o.forvalter;
+  }
   const w = ensure(id);
   if (!journal.some((j) => j.sak === id && j.type === "regler")) {
     addJournal({ type: "regler", sak: id, svar: w.rules.checks.map((c) => `${c.label}: ${c.status}`).join("; ") });
@@ -1623,6 +1647,7 @@ window.sakOrdning = sakOrdning;
 window.sakOrdningTekst = sakOrdningTekst;
 window.setListFilter = setListFilter;
 window.setOrdningFilter = setOrdningFilter;
+window.setForvalterFilter = setForvalterFilter;
 window.openSak = openSak;
 window.runKI = runKI;
 window.hitl = hitl;
@@ -2065,5 +2090,5 @@ document.addEventListener("DOMContentLoaded", () => {
   if ($("aiActRot")) renderAiAct();
   if ($("nis2Rot")) renderNis2();
   const ant = document.querySelector("[data-antall-saker]");
-  if (ant) ant.textContent = `${SAKER.length} saker fordelt på 16 tilskuddsområder. Filtrer på ordning, så åpne.`;
+  if (ant) ant.textContent = `${SAKER.length} saker på 16 bokser. Filtrer forvalter, så klikk en ordning.`;
 });
