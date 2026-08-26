@@ -3,15 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tilskudd — øvelsesprototype</title>
+  <title>Velkommen — Tilskudd (øvelse)</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/tilskudd/proto.css">
 </head>
-<body class="proto">
+<body class="proto proto-welcome">
   <header class="proto-bar">
-    <div class="proto-brand">Tilskudd (øvelse)<span>Egen prototype — ikke kurset, ikke Bufdir</span></div>
-    <nav class="proto-nav">
+    <div class="proto-bar-row">
+      <div class="proto-brand">Tilskudd (øvelse)<span>Egen prototype — ikke kurset, ikke Bufdir</span></div>
+      <button type="button" class="nav-toggle" aria-controls="protoNav" aria-expanded="false">Meny</button>
+    </div>
+    <nav id="protoNav" class="proto-nav">
       <a class="is-on" href="/tilskudd/">Start</a>
       <a href="/tilskudd/velkommen">Min side</a>
       <a href="/tilskudd/ordninger">Ordninger</a>
@@ -23,6 +26,8 @@
       <a href="/tilskudd/nis2">NIS 2</a>
       <a href="/tilskudd/transparens">Hva KI tenkte</a>
       <a href="/tilskudd/om">Slik virker det</a>
+      <a href="/tilskudd/innforing.html">Innføring</a>
+      <a href="/tilskudd/jus.html">Jus</a>
       <a href="/tilskudd/soknad">Søk (simulert)</a>
       <a href="/">Tilbake til kurset</a>
     </nav>

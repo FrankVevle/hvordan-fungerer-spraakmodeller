@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jus — Tilskudd (øvelse)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/tilskudd/proto.css">
+</head>
+<body class="proto">
+  <header class="proto-bar">
+    <div class="proto-bar-row">
+      <div class="proto-brand">Tilskudd (øvelse)<span>Jusmodul — kilder først, så spørsmål</span></div>
+      <button type="button" class="nav-toggle" aria-controls="protoNav" aria-expanded="false">Meny</button>
+    </div>
+    <nav id="protoNav" class="proto-nav">
+      <a href="/tilskudd/">Start</a>
+      <a href="/tilskudd/velkommen">Min side</a>
+      <a href="/tilskudd/ordninger">Ordninger</a>
+      <a href="/tilskudd/behandle">Arbeidsliste</a>
+      <a href="/tilskudd/ki-analyse">KI-analyse</a>
+      <a href="/tilskudd/analyse">Portefølje</a>
+      <a href="/tilskudd/personvern">Personvern</a>
+      <a href="/tilskudd/aiact">KI-forordning</a>
+      <a href="/tilskudd/nis2">NIS 2</a>
+      <a href="/tilskudd/transparens">Hva KI tenkte</a>
+      <a href="/tilskudd/om">Slik virker det</a>
+      <a href="/tilskudd/innforing.html">Innføring</a>
+      <a class="is-on" href="/tilskudd/jus.html">Jus</a>
+      <a href="/tilskudd/soknad">Søk (simulert)</a>
+      <a href="/">Kurset</a>
+    </nav>
+  </header>
+  <main class="proto-shell proto-wide">
+    <div class="banner"><strong>Ikke juridisk rådgivning.</strong> Øvelse. Ikke vedtak. KI svarer bare fra mappa til venstre. Offisielle interne dokumenter er ikke lastet.</div>
+    <section class="hero">
+      <h1>Spør ut mappa — ikke nettet</h1>
+      <p>Velg modus. Kildene er merket lov, veileder, kurs eller fiktiv øvelse. Svaret skal sitere kilde-id. Finnes det ikke i mappa, skal KI si det.</p>
+    </section>
+    <div class="jus-modebar" role="group" aria-label="Brukermodus">
+      <button type="button" id="jusModeSb" class="chip on" onclick="setJusModus('saksbehandler')">Saksbehandler</button>
+      <button type="button" id="jusModeSok" class="chip" onclick="setJusModus('soker')">Simulert søker</button>
+      <p id="jusModeHint" class="hint" style="margin:0">Innsyn, arkiv, utredningsplikt og KI-forordningen. Interne score vises ikke til søker.</p>
+    </div>
+    <div class="jus-layout">
+      <aside class="panel jus-kilder">
+        <h2 style="margin:0 0 0.4rem;font-size:1rem">Kilder i mappa</h2>
+        <p class="hint" style="margin-top:0">Synlig grunnlag. Filtrer på type.</p>
+        <div class="chips" id="jusFilter"></div>
+        <div id="jusKildeListe" class="jus-kildeliste"></div>
+      </aside>
+      <section class="panel jus-chat">
+        <h2 style="margin:0 0 0.4rem;font-size:1rem">Still et spørsmål</h2>
+        <p class="hint" id="jusChatHint">Forhåndsspørsmål for saksbehandler. Svar må vise siterte kilder.</p>
+        <div class="chips" id="jusPresets"></div>
+        <form id="jusForm" onsubmit="sendJusSporsmal(event)">
+          <label class="field">Spørsmål
+            <textarea id="jusQ" rows="3" placeholder="Hva kan KI ikke avgjøre i denne bruken?"></textarea>
+          </label>
+          <div class="btn-row">
+            <button class="btn btn-primary" type="submit">Spør mappa</button>
+          </div>
+        </form>
+        <div id="jusSvar"></div>
+      </section>
+    </div>
+  </main>
+  <footer class="proto-foot">Pedagogisk prototype. Ikke juridisk rådgivning. Ikke Bufdir. Ikke vedtak.</footer>
+  <script src="/tilskudd/jus-kilder.js"></script>
+  <script src="/tilskudd/jus.js"></script>
+  <script src="/tilskudd/proto.js"></script>
+</body>
+</html>

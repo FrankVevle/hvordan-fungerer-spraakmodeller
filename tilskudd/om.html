@@ -10,8 +10,11 @@
 </head>
 <body class="proto">
   <header class="proto-bar">
-    <div class="proto-brand">Tilskudd (øvelse)<span>Slik virker prototypen</span></div>
-    <nav class="proto-nav">
+    <div class="proto-bar-row">
+      <div class="proto-brand">Tilskudd (øvelse)<span>Slik virker prototypen</span></div>
+      <button type="button" class="nav-toggle" aria-controls="protoNav" aria-expanded="false">Meny</button>
+    </div>
+    <nav id="protoNav" class="proto-nav">
       <a href="/tilskudd/">Start</a>
       <a href="/tilskudd/velkommen">Min side</a>
       <a href="/tilskudd/ordninger">Ordninger</a>
@@ -23,15 +26,26 @@
       <a href="/tilskudd/nis2">NIS 2</a>
       <a href="/tilskudd/transparens">Hva KI tenkte</a>
       <a class="is-on" href="/tilskudd/om">Slik virker det</a>
+      <a href="/tilskudd/innforing.html">Innføring</a>
+      <a href="/tilskudd/jus.html">Jus</a>
       <a href="/tilskudd/soknad">Søk (simulert)</a>
       <a href="/">Kurset</a>
     </nav>
   </header>
   <main class="proto-shell" style="max-width:48rem;margin:0 auto">
-    <div class="banner">Øvelse. Fiktive regler for 2026. Ikke Bufdir. KI fatter ikke vedtak.</div>
+    <div class="banner">Forslag, ikke innført. Nivå 3-assistent. Mennesket godkjenner. <a href="/tilskudd/innforing.html">Se innføringsplanen</a>.</div>
     <section class="hero">
       <h1>Tre maskiner, ett menneske</h1>
       <p>Prototypen gjør det samme hver gang: sjekker tall, leser tekst, skriver utkast. Du er den som sier at det er godt nok — eller at det er feil.</p>
+    </section>
+    <section class="panel" style="margin-bottom:1rem">
+      <h2>Forslag inne i en innføringsplan</h2>
+      <p>Prototypen viser bare <strong>fase 3</strong> (pilot med menneske i loopen). Behov, forankring, juss og drift/stopp er ikke besluttet. <a href="/tilskudd/innforing.html">Innføringsplanen</a> og <a href="/tilskudd/jus.html">jusmodulen</a> hører til fase 2–3. KI sender ikke brev.</p>
+    </section>
+    <section class="panel" style="margin-bottom:1rem">
+      <h2>Hvor dette ligger i veilederen</h2>
+      <p>Intern bruker: du er saksbehandler. KI har lesetilgang og gjør forarbeid — den vedtar ikke og sender ikke brev. Mennesket godkjenner hver gang. Dette er en <strong>assistent</strong>, ikke en agent som utfører handlinger.</p>
+      <p>Prototypen er <strong>nivå 3</strong> (tilpasset, kontrollert datatilgang / RAG). Utkastet går gjennom <strong>LangGraph</strong>: RAG → utkast → sjekk (og nytt utkast hvis sjekken feiler). Dataene her er syntetiske. I skarp drift med personopplysninger (klasse D) kreves mer: DPIA/FRIA, eier i linja, logg som holder.</p>
     </section>
     <section class="panel" style="margin-bottom:1rem">
       <h2>1. Regler (alltid de samme)</h2>
@@ -50,8 +64,8 @@
       <p>Digitalsikkerhetsloven gjennomfører NIS 1. NIS 2 er under tilnærming; NSM har allerede speilet noen krav i forskriften. Prototypen er ikke samfunnsviktig tjeneste og varsler ikke hendelser. <a href="/tilskudd/nis2">Se hensynene</a>.</p>
     </section>
     <section class="panel" style="margin-bottom:1rem">
-      <h2>2. KI (leser og skriver)</h2>
-      <p>Modellen får bare søknadsteksten og noen fiktive utdrag. Den scorer målgruppe, medvirkning og gratis — eller skriver «ikke oppgitt». Deretter et notat og et brev merket som utkast.</p>
+      <h2>2. LangGraph (RAG, utkast, sjekk)</h2>
+      <p>Koordinatoren kjører faste steg. RAG henter godkjente utdrag — lov, fiktiv øvelsesregel og veileder. Fellen (§ 14 / Golfklubben) ligger i mappa, men går ikke til utkastet. Modellen scorer målgruppe, medvirkning og gratis, eller skriver «ikke oppgitt». Validatoren avviser feil hjemmel, manglende merking og påfunnede paragrafer. Først da ser du notat og brev.</p>
     </section>
     <section class="panel" style="margin-bottom:1rem">
       <h2>3. Du (det som teller)</h2>

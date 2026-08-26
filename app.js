@@ -21,7 +21,7 @@ const SITE_PAGES = [
   { file: "kapittel-8.html", title: "Kapittel 8 · Åpne data-øvelse", part: "Del 3" },
   { file: "kapittel-9.html", title: "Kapittel 9 · Tilskuddsløpet", part: "Del 4" },
   { file: "kapittel-10.html", title: "Kapittel 10 · Personlig agent", part: "Del 4" },
-  { file: "kapittel-12.html", title: "Kapittel 12 · RAG og LangGraph", part: "Del 5" }
+  { file: "kapittel-12.html", title: "Kapittel 12 · Forslag til gjennomføring", part: "Del 5" }
 ];
 
 function currentPageFile() {
@@ -3223,7 +3223,7 @@ const LANGGRAPH_STEPS = [
     node: "rag",
     tittel: "2. RAG slår opp i mappa",
     tilstand: "Treff: jobbtilbud 4.2 og Havblik. Golfklubben ligger i mappa som anlegg — ikke som lik sak.",
-    tekst: "RAG kan bare sitere det den faktisk hentet. En paragraf som ikke er i uttrekket, skal ikke brukes."
+    tekst: "RAG kan bare sitere det den faktisk hentet — øvelsesregel 4.2, Havblik og lovutdrag som fvl § 2 og § 17. En paragraf som ikke er i uttrekket, skal ikke brukes. § 14 / Golfklubben ligger i mappa som felle."
   },
   {
     id: "val1",
@@ -3285,6 +3285,48 @@ function renderLangGraphForslag() {
 function stepLangGraph(delta) {
   langGraphStep = Math.max(0, Math.min(LANGGRAPH_STEPS.length - 1, langGraphStep + delta));
   renderLangGraphForslag();
+}
+
+async function runLiveLangGraph() {
+  const box = document.getElementById("langGraphLive");
+  if (!box) return;
+  box.classList.remove("hidden");
+  box.innerHTML = `<p class="text-xs text-slate-600">Kjører LangGraph (RAG → utkast → sjekk)…</p>`;
+  try {
+    const response = await fetch("/api/graph", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        task: "sak",
+        sak: {
+          id: "T-2622",
+          org: "Brobyggerne Oslo",
+          belop: 198000,
+          aktivitet: "4.2 Jobbtilbud og veiledning",
+          flag: "plantet",
+          jobb: "LangGraph skal hente 4.2 og Havblik."
+        },
+        soknad: "Deltidsjobb og CV-kurs for 12 ungdommer. Samarbeid med bydel. Budsjett for lønn og veileder."
+      })
+    });
+    const graph = await response.json();
+    if (!response.ok) throw new Error(graph.error || "graph_error");
+    const steps = (graph.trace || []).map((t) => `<li><strong>${t.tittel}</strong> — ${t.detalj || ""}</li>`).join("");
+    const kilder = (graph.retrieved || []).map((k) => `<li><span class="font-mono text-[11px]">${k.id || "—"}</span> ${k.tittel || ""}${k.typeLabel ? ` <em>(${k.typeLabel})</em>` : ""}</li>`).join("");
+    const sjekk = graph.ok
+      ? "Sjekken godtok utkastet. Du ville likevel bekreftet i arbeidslisten."
+      : `Sjekken stoppet: ${(graph.validation?.errors || []).join(" ")}`;
+    box.innerHTML = `
+      <p class="text-[11px] font-bold uppercase tracking-wider text-violet-700">${graph.live ? "Live graf" : "Graf uten nøkkel (samme sjekk)"}</p>
+      <p class="text-xs font-semibold text-slate-800">Hentede kilder</p>
+      <ul class="list-disc pl-5 text-slate-700 space-y-0.5 text-xs">${kilder || "<li>ingen</li>"}</ul>
+      <ol class="list-decimal pl-5 text-slate-700 space-y-1">${steps}</ol>
+      <p class="text-slate-800">${sjekk}</p>
+      <p class="text-xs text-slate-500">Ikke juridisk rådgivning. Grafen sender ingenting.</p>
+      <p class="text-xs text-slate-500 whitespace-pre-wrap">${(graph.parsed?.notat || "").slice(0, 400)}</p>`;
+  } catch (e) {
+    box.innerHTML = `<p class="text-sm text-rose-800">Grafen nådde ikke frem (${e.message || "feil"}). Kjør <code>npm install</code> og <code>vercel dev</code>.</p>`;
+  }
 }
 
 function initLangGraphForslag() {

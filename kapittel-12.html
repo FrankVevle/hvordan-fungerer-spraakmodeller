@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Kapittel 12: KI-forslaget · Hvordan Fungerer Språkmodeller?</title>
+  <title>Kapittel 12: Forslag til gjennomføring · Hvordan Fungerer Språkmodeller?</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -32,22 +32,173 @@
     <section class="space-y-6">
       <div class="flex items-center gap-2">
         <span class="w-8 h-8 rounded-lg bg-violet-800 text-white flex items-center justify-center font-bold text-sm">12</span>
-        <h2 class="text-xl font-bold text-slate-900">12. KI-forslaget: RAG og LangGraph</h2>
+        <h2 class="text-xl font-bold text-slate-900">12. Forslag til gjennomføring</h2>
+      </div>
+
+      <div class="bg-white p-5 sm:p-7 rounded-2xl border border-amber-200 bg-amber-50/40 shadow-sm space-y-5">
+        <p class="text-[11px] font-bold uppercase tracking-wider text-amber-800">Hvis vi gjennomfører — ikke besluttet</p>
+        <p class="text-slate-800 leading-relaxed text-sm sm:text-base">Dette er et <strong>forslag</strong>, ikke en beslutning om å innføre. Avgrensning: intern saksbehandler, KI leser/foreslår/gjør forarbeid, <strong>ingen autonome handlinger</strong>, syntetisk øvelse. Vedtaket er menneskets. Teknikken (RAG + fast saksflyt) kommer i fase 3 — etter behov, forankring og juss.</p>
+
+        <div>
+          <p class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Fem faser</p>
+          <div class="grid sm:grid-cols-2 xl:grid-cols-5 gap-2">
+            <article class="rounded-xl border border-slate-200 bg-white p-3 space-y-1">
+              <p class="text-[11px] font-bold uppercase tracking-wider text-violet-700">0 · Behov</p>
+              <p class="text-sm text-slate-700 leading-snug">3–6 uker. Problem, hva KI <strong>ikke</strong> skal, suksessmål, eier i linja.</p>
+            </article>
+            <article class="rounded-xl border border-slate-200 bg-white p-3 space-y-1">
+              <p class="text-[11px] font-bold uppercase tracking-wider text-violet-700">1 · Forankring</p>
+              <p class="text-sm text-slate-700 leading-snug">Ledelse, mellomledere, tillitsvalgte (AML / Hovedavtalen). Rollebasert opplæring.</p>
+            </article>
+            <article class="rounded-xl border border-slate-200 bg-white p-3 space-y-1">
+              <p class="text-[11px] font-bold uppercase tracking-wider text-violet-700">2 · Juss og data</p>
+              <p class="text-sm text-slate-700 leading-snug">Dataklasse, DPIA, ev. FRIA ved skarp høyrisiko, databehandleravtale. <a href="tilskudd/jus.html" class="font-bold text-violet-800 underline underline-offset-2">Jusmodulen</a>.</p>
+            </article>
+            <article class="rounded-xl border border-violet-300 bg-violet-50 p-3 space-y-1">
+              <p class="text-[11px] font-bold uppercase tracking-wider text-violet-700">3 · Pilot nivå 3</p>
+              <p class="text-sm text-slate-700 leading-snug">Kontrollert mappe, LangGraph (RAG + sjekk), menneske i loopen, logg — det prototypen kjører.</p>
+            </article>
+            <article class="rounded-xl border border-slate-200 bg-white p-3 space-y-1">
+              <p class="text-[11px] font-bold uppercase tracking-wider text-violet-700">4 · Drift eller stopp</p>
+              <p class="text-sm text-slate-700 leading-snug">KPI, kompetanse, oppdatert kunnskapsgrunnlag. Skaler ned hvis gevinst uteblir.</p>
+            </article>
+          </div>
+        </div>
+
+        <div>
+          <p class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Roller — ikke et IT-prosjekt alene</p>
+          <div class="grid sm:grid-cols-2 lg:grid-cols-5 gap-2">
+            <article class="rounded-xl border border-slate-200 bg-white p-3"><p class="text-sm font-semibold text-slate-900">Linjeier</p><p class="text-xs text-slate-600 leading-snug">Eier formål, risiko og stoppknapp.</p></article>
+            <article class="rounded-xl border border-slate-200 bg-white p-3"><p class="text-sm font-semibold text-slate-900">Tillitsvalgt</p><p class="text-xs text-slate-600 leading-snug">Medbestemmelse om IKT og KI.</p></article>
+            <article class="rounded-xl border border-slate-200 bg-white p-3"><p class="text-sm font-semibold text-slate-900">Personvern / jurist</p><p class="text-xs text-slate-600 leading-snug">DPIA, FRIA, hjemmel, avtale.</p></article>
+            <article class="rounded-xl border border-slate-200 bg-white p-3"><p class="text-sm font-semibold text-slate-900">Superbruker</p><p class="text-xs text-slate-600 leading-snug">Opplæring og kvalitet i flaten.</p></article>
+            <article class="rounded-xl border border-slate-200 bg-white p-3"><p class="text-sm font-semibold text-slate-900">Saksbehandler</p><p class="text-xs text-slate-600 leading-snug">Mennesket i loopen. Vedtar.</p></article>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+          <p class="text-xs font-bold uppercase tracking-wider text-slate-500 px-3 pt-3">Mini-sjekkliste: øvelse nå vs. skarp drift</p>
+          <table class="w-full text-sm border-collapse">
+            <thead>
+              <tr class="text-left border-b border-slate-200">
+                <th class="py-2 px-3 font-semibold text-slate-900">Punkt</th>
+                <th class="py-2 px-3 font-semibold text-slate-900">Øvelse nå</th>
+                <th class="py-2 px-3 font-semibold text-slate-900">Før skarp drift</th>
+              </tr>
+            </thead>
+            <tbody class="text-slate-700">
+              <tr class="border-b border-slate-100"><td class="py-2 px-3 font-medium">Data</td><td class="py-2 px-3">Syntetiske søknader</td><td class="py-2 px-3">Dataklasse, sladd, avtale</td></tr>
+              <tr class="border-b border-slate-100"><td class="py-2 px-3 font-medium">Juss</td><td class="py-2 px-3"><a href="tilskudd/jus.html" class="underline underline-offset-2">Øvelseskilder</a> i jusmodulen</td><td class="py-2 px-3">DPIA, ev. FRIA, intern mappe</td></tr>
+              <tr class="border-b border-slate-100"><td class="py-2 px-3 font-medium">Menneske i loopen</td><td class="py-2 px-3">Bygd inn i prototypen</td><td class="py-2 px-3">Rutine, kompetanse, logg som holder</td></tr>
+              <tr class="border-b border-slate-100"><td class="py-2 px-3 font-medium">Tillitsvalgte</td><td class="py-2 px-3">Nevnt i planen</td><td class="py-2 px-3">Medbestemmelse gjennomført</td></tr>
+              <tr><td class="py-2 px-3 font-medium">Eier i linja</td><td class="py-2 px-3">Ikke satt i øvelsen</td><td class="py-2 px-3">Navngitt eier og stoppknapp</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="text-xs text-slate-600">Samme plan i prototypen: <a href="tilskudd/innforing.html" class="font-bold text-violet-800 underline underline-offset-2">innføringssiden</a>.</p>
+      </div>
+
+      <div class="bg-white p-5 sm:p-7 rounded-2xl border border-slate-200 shadow-sm space-y-5">
+        <div class="flex flex-wrap items-center gap-2">
+          <p class="text-[11px] font-bold uppercase tracking-wider text-violet-700">Veileder-ramme · beholdt</p>
+          <span class="text-[11px] font-semibold text-slate-500">DFD / ekspertgruppen, juni 2025 · «KI-assistenter i arbeidslivet»</span>
+        </div>
+        <p class="text-slate-800 leading-relaxed text-sm sm:text-base">Kurset startet bakfra (tokens → prototype). Veilederen sier det motsatte: <strong>hensikt, organisasjon og juss først</strong> — så teknikk. Under er tilskuddscaset fylt inn. Ikke Bufdir. Ikke vedtak.</p>
+
+        <div>
+          <p class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Fem spørsmål — dette forslaget</p>
+          <div class="grid sm:grid-cols-2 xl:grid-cols-5 gap-2">
+            <article class="rounded-xl border border-slate-200 bg-slate-50 p-3 space-y-1">
+              <p class="text-[11px] font-bold uppercase tracking-wider text-violet-700">1. Hensikt</p>
+              <p class="text-sm text-slate-700 leading-snug">Intern saksbehandler. KI <strong>leser, foreslår og gjør forarbeid</strong>. Mennesket vedtar.</p>
+            </article>
+            <article class="rounded-xl border border-slate-200 bg-slate-50 p-3 space-y-1">
+              <p class="text-[11px] font-bold uppercase tracking-wider text-violet-700">2. Organisasjon</p>
+              <p class="text-sm text-slate-700 leading-snug">Bruker: saksbehandler. <strong>Ingen autonome handlinger.</strong> Eier i linja er ikke satt i øvelsen.</p>
+            </article>
+            <article class="rounded-xl border border-slate-200 bg-slate-50 p-3 space-y-1">
+              <p class="text-[11px] font-bold uppercase tracking-wider text-violet-700">3. Juss</p>
+              <p class="text-sm text-slate-700 leading-snug">Her: <strong>syntetiske data</strong>. Skarp drift med personopplysninger (klasse D) → nivå 3, DPIA/FRIA.</p>
+            </article>
+            <article class="rounded-xl border border-slate-200 bg-slate-50 p-3 space-y-1">
+              <p class="text-[11px] font-bold uppercase tracking-wider text-violet-700">4. Teknisk rigg</p>
+              <p class="text-sm text-slate-700 leading-snug">Kontrollert datatilgang / RAG. Prototypen er <strong>nivå 3b</strong>. Veilederen: start lavere.</p>
+            </article>
+            <article class="rounded-xl border border-slate-200 bg-slate-50 p-3 space-y-1">
+              <p class="text-[11px] font-bold uppercase tracking-wider text-violet-700">5. Kvalitet / drift</p>
+              <p class="text-sm text-slate-700 leading-snug">Menneske i loopen, logg, evaluering. Vist som øvelse — <strong>ikke driftssatt</strong>.</p>
+            </article>
+          </div>
+        </div>
+
+        <div>
+          <p class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Tre assistentnivåer</p>
+          <div class="grid md:grid-cols-3 gap-2">
+            <article class="rounded-xl border border-slate-200 p-3 space-y-1">
+              <p class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Nivå 1 · Åpen</p>
+              <p class="text-sm font-semibold text-slate-900">Offentlig chat</p>
+              <p class="text-sm text-slate-600 leading-snug">Ingen interne kilder. Veilederen anbefaler ofte å starte her.</p>
+            </article>
+            <article class="rounded-xl border border-slate-200 p-3 space-y-1">
+              <p class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Nivå 2 · Integrert</p>
+              <p class="text-sm font-semibold text-slate-900">Inne i verktøyene</p>
+              <p class="text-sm text-slate-600 leading-snug">Begrenset kontekst i saksflaten. Lavere risiko enn egne datakilder.</p>
+            </article>
+            <article class="rounded-xl border border-violet-300 bg-violet-50 p-3 space-y-1">
+              <p class="text-[11px] font-bold uppercase tracking-wider text-violet-700">Nivå 3 · Tilpasset · dette forslaget</p>
+              <p class="text-sm font-semibold text-slate-900">3b — kontrollert datatilgang / RAG</p>
+              <p class="text-sm text-slate-600 leading-snug">Egne kilder, faste steg. Høyere krav. Start lavere i skarp linje.</p>
+            </article>
+          </div>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-2">
+          <article class="rounded-xl border border-emerald-200 bg-emerald-50/70 p-3 space-y-1">
+            <p class="text-[11px] font-bold uppercase tracking-wider text-emerald-800">Assistent (dette forslaget)</p>
+            <p class="text-sm text-slate-700 leading-snug">Svarer, leser og skriver utkast. <strong>Utfører ikke.</strong> Sender ikke brev. Vedtar ikke.</p>
+          </article>
+          <article class="rounded-xl border border-slate-200 p-3 space-y-1">
+            <p class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Agent (ikke dette)</p>
+            <p class="text-sm text-slate-700 leading-snug">Utfører handlinger: sender, attesterer, kaller noe et vedtak. <strong>Ikke i forslaget.</strong></p>
+          </article>
+        </div>
+
+        <div class="overflow-x-auto rounded-xl border border-slate-200">
+          <p class="text-xs font-bold uppercase tracking-wider text-slate-500 px-3 pt-3">Mini-sjekkliste for dette forslaget</p>
+          <table class="w-full text-sm border-collapse">
+            <thead>
+              <tr class="text-left border-b border-slate-200">
+                <th class="py-2 px-3 font-semibold text-slate-900">Punkt</th>
+                <th class="py-2 px-3 font-semibold text-slate-900">I tilskuddscaset</th>
+                <th class="py-2 px-3 font-semibold text-slate-900">Ærlig status</th>
+              </tr>
+            </thead>
+            <tbody class="text-slate-700">
+              <tr class="border-b border-slate-100"><td class="py-2 px-3 font-medium">Hva KI skal</td><td class="py-2 px-3">Lese, foreslå, forarbeid</td><td class="py-2 px-3"><span class="inline-block rounded-md bg-slate-100 px-1.5 py-0.5 text-[11px] font-bold text-slate-700">Øvelse</span> vist i prototypen</td></tr>
+              <tr class="border-b border-slate-100"><td class="py-2 px-3 font-medium">Hva KI ikke skal</td><td class="py-2 px-3">Vedta, sende brev, handle alene</td><td class="py-2 px-3"><span class="inline-block rounded-md bg-slate-100 px-1.5 py-0.5 text-[11px] font-bold text-slate-700">Øvelse</span> bygd inn som grense</td></tr>
+              <tr class="border-b border-slate-100"><td class="py-2 px-3 font-medium">Menneske i loopen</td><td class="py-2 px-3">Saksbehandler bekrefter, avviser eller lar stå</td><td class="py-2 px-3"><span class="inline-block rounded-md bg-slate-100 px-1.5 py-0.5 text-[11px] font-bold text-slate-700">Øvelse</span> bygd inn</td></tr>
+              <tr class="border-b border-slate-100"><td class="py-2 px-3 font-medium">Logg</td><td class="py-2 px-3">Sporbarhet / «hva KI tenkte»</td><td class="py-2 px-3"><span class="inline-block rounded-md bg-slate-100 px-1.5 py-0.5 text-[11px] font-bold text-slate-700">Øvelse</span> delvis i prototypen</td></tr>
+              <tr class="border-b border-slate-100"><td class="py-2 px-3 font-medium">DPIA / FRIA</td><td class="py-2 px-3">Påkrevd ved skarpe personopplysninger</td><td class="py-2 px-3"><span class="inline-block rounded-md bg-amber-100 px-1.5 py-0.5 text-[11px] font-bold text-amber-900">Før drift</span></td></tr>
+              <tr><td class="py-2 px-3 font-medium">Eier i linja</td><td class="py-2 px-3">Leder som eier formål, risiko og stoppknapp</td><td class="py-2 px-3"><span class="inline-block rounded-md bg-amber-100 px-1.5 py-0.5 text-[11px] font-bold text-amber-900">Før drift</span></td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <div class="bg-white p-5 sm:p-7 rounded-2xl border border-slate-200 shadow-sm space-y-6">
-        <p class="text-slate-800 leading-relaxed">Vi kan bruke <strong>data vi har kontroll på</strong> — søknader, utlysning, tidligere saker, intern praksis — slik at KI kan <strong>lese</strong>, <strong>foreslå</strong> og <strong>gjøre forarbeid</strong>. Vedtaket er ditt. Forslaget bygger på to ting: RAG og LangGraph.</p>
+        <p class="text-[11px] font-bold uppercase tracking-wider text-violet-700">Teknisk innretning for fase 3</p>
+        <p class="text-slate-800 leading-relaxed">Så teknikken: vi bruker <strong>data vi har kontroll på</strong> — søknader, utlysning, tidligere saker, intern praksis — slik at KI kan <strong>lese</strong>, <strong>foreslå</strong> og <strong>gjøre forarbeid</strong>. Vedtaket er ditt. I prototypen kjører dette som <strong>LangGraph</strong> med RAG og sjekk — ikke én løs chat.</p>
 
         <div class="grid md:grid-cols-2 gap-3">
           <article class="rounded-xl border border-slate-200 p-4 space-y-2">
             <p class="text-[11px] font-bold uppercase tracking-wider text-violet-700">RAG</p>
             <p class="text-sm font-semibold text-slate-900">Retrieval-Augmented Generation</p>
-            <p class="text-sm text-slate-600 leading-relaxed">Før KI skriver noe, slår den opp i <em>vår</em> mappe. Svaret skal peke på det den fant. Finnes det ikke der, skal den si at det mangler — ikke hente en paragraf fra nettet eller fra hukommelsen.</p>
+            <p class="text-sm text-slate-600 leading-relaxed">Før KI skriver noe, slår den opp i <em>vår</em> mappe: øvelsesregler og relevante lovutdrag (forvaltningsloven, innsyn, GDPR/AIA). Svaret skal peke på det den fant. Fiktive regler merkes som fiktive. Finnes det ikke der, skal den si at det mangler — ikke hente en paragraf fra nettet eller fra hukommelsen.</p>
           </article>
           <article class="rounded-xl border border-slate-200 p-4 space-y-2">
             <p class="text-[11px] font-bold uppercase tracking-wider text-violet-700">LangGraph</p>
             <p class="text-sm font-semibold text-slate-900">Faster rekkefølge, ikke én chat</p>
-            <p class="text-sm text-slate-600 leading-relaxed">I stedet for én modell som gjør alt i samme samtale, går saken gjennom faste steg: fordele → slå opp (RAG) → sjekke → deg → eventuelt utkast. Hvis sjekken feiler, går den tilbake. Uten deg blir det ikke sendt noe.</p>
+            <p class="text-sm text-slate-600 leading-relaxed">Saken går gjennom faste noder i <code>@langchain/langgraph</code>: RAG → utkast → sjekk. Feiler sjekken, skrives utkastet på nytt (maks to forsøk) med feilen som tilbakemelding. Uten deg blir det ikke sendt noe.</p>
           </article>
         </div>
 
@@ -94,14 +245,16 @@
             <p class="text-sm font-bold text-slate-900">Eksempel: Brobyggerne (T-2622)</p>
             <span id="langGraphIndex" class="text-[11px] font-mono text-slate-500">1 / 6</span>
           </div>
-          <p class="text-xs text-slate-600">Et KI-forslag ville avslått med feil paragraf og feil «lik sak». RAG + sjekk skal stoppe det før det ser ferdig ut.</p>
+          <p class="text-xs text-slate-600">Uten grafen kunne et forslag avslått med § 14 og Golfklubben. Kjør grafen: fellen ligger i mappa, men sjekken skal stoppe den før du ser et ferdig avslag.</p>
           <div id="langGraphRail" class="flex flex-wrap gap-1.5"></div>
           <p id="langGraphState" class="text-xs text-slate-600"></p>
           <div id="langGraphStep" class="text-sm"></div>
-          <div class="flex gap-2">
+          <div class="flex flex-wrap gap-2">
             <button type="button" onclick="stepLangGraph(-1)" class="px-3 py-1.5 rounded-lg bg-white border border-slate-300 text-xs font-semibold">Forrige</button>
             <button type="button" onclick="stepLangGraph(1)" class="px-3 py-1.5 rounded-lg bg-slate-900 text-white text-xs font-semibold">Neste</button>
+            <button type="button" onclick="runLiveLangGraph()" class="px-3 py-1.5 rounded-lg bg-violet-700 hover:bg-violet-800 text-white text-xs font-semibold">Kjør grafen på Brobyggerne</button>
           </div>
+          <div id="langGraphLive" class="hidden rounded-lg border border-violet-200 bg-white p-3 text-sm space-y-2"></div>
         </div>
 
         <p class="text-xs text-slate-500">Forslag til arbeidsmåte, ikke et system i drift. Ikke Bufdir. Ikke automatisert vedtak. <a href="tilskudd/" class="font-bold text-violet-800 underline underline-offset-2">Åpne tilskuddsprototypen</a> (egen webløsning).</p>
@@ -125,7 +278,7 @@
       <button type="button" id="btnPrevChapter" onclick="stepChapter(-1)" class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed">← Forrige</button>
       <div class="text-center min-w-0">
         <p id="chapterPartLabel" class="text-[11px] font-bold uppercase tracking-widest text-slate-500 truncate">Del 5 · Forslag</p>
-        <p id="chapterStepLabel" class="text-sm font-semibold text-slate-800">Kapittel 12: RAG og LangGraph</p>
+        <p id="chapterStepLabel" class="text-sm font-semibold text-slate-800">Kapittel 12: Forslag til gjennomføring</p>
       </div>
       <button type="button" id="btnNextChapter" onclick="stepChapter(1)" class="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed">Neste →</button>
     </div>

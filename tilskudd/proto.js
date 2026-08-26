@@ -85,7 +85,7 @@ const BASE_SAKER = [
     kommune: "Oslo",
     aktivitet: "4.2 Jobbtilbud og veiledning",
     belop: 198000,
-    jobb: "KI har hentet feil paragraf. Finn feilen og avvis med grunn.",
+    jobb: "LangGraph skal hente 4.2 og Havblik — ikke § 14. Du bekrefter likevel.",
     soknad: "Deltidsjobb og CV-kurs for 12 ungdommer. Samarbeid med bydel. Budsjett for lønn og veileder.",
     flag: "plantet",
     adminPct: 12,
@@ -450,8 +450,9 @@ const FALLBACK = {
     malgruppe: { score: 4, sitat: "Deltidsjobb og CV-kurs for 12 ungdommer." },
     medvirkning: { score: null, sitat: "ikke oppgitt" },
     gratis: { score: 4, sitat: "Deltidsjobb og CV-kurs" },
-    tenkning: "1. Jeg hentet utdraget om § 14 og Golfklubben Fjord og bruker det som lik sak.\n2. Jeg ser at søknaden handler om jobb og CV-kurs, men jeg holder likevel på avslag etter § 14.\n3. Dette er den plantede feilen i øvelsen: feil paragraf og feil presedens.",
-    brev: "Utkast til avslag — ikke vedtak\n\nSøknaden avslås med henvisning til § 14 (investering) og Golfklubben Fjord (T-2621)."
+    tenkning: "1. Jeg leste at saken er deltidsjobb og CV-kurs.\n2. Godkjent utdrag er jobbtilbud 4.2 og Havblik (T-2608).\n3. Sjekken blokkerte § 14 og Golfklubben Fjord — det er anlegg, ikke lik sak.\n4. Medvirkning: ikke oppgitt.\n5. Jeg fatter ikke vedtak.",
+    notat: "Formålet treffer 4.2. Lik sak er Havblik (T-2608). Ikke vedtak.",
+    brev: "Utkast — ikke vedtak\n\nDere søkte om jobbtilbud. Etter 4.2 og Havblik (T-2608) foreslås innstilling — ikke avslag etter anleggsregelen."
   },
   "T-2612": {
     malgruppe: { score: 4, sitat: "Leksehjelp og teaterlek etter skoletid" },
@@ -476,10 +477,10 @@ function fallbackFromSak(sak) {
     medvirkning: { score: null, sitat: "ikke oppgitt" },
     gratis: { score: /gratis/i.test(sak.soknad) ? 5 : null, sitat: /gratis/i.test(sak.soknad) ? "Gratis" : "ikke oppgitt" },
     tenkning: planted
-      ? `1. Jeg henter § 14 og Golfklubben Fjord som lik sak.\n2. Søknaden gjelder ${sak.aktivitet}, men jeg holder likevel på avslag.\n3. Dette er plantet feil i øvelsen.`
+      ? `1. Jeg leste at saken gjelder ${sak.aktivitet}.\n2. Godkjent utdrag er jobbtilbud 4.2 og Havblik.\n3. Grafen blokkerte § 14 og Golfklubben som lik sak.`
       : `1. Jeg leste søknaden til ${sak.org}.\n2. Flagget i øvelsen er ${sak.flag}.\n3. Jeg skriver utkast, ikke vedtak.`,
     notat: planted
-      ? "Anbefalt avslag med henvisning til § 14 og Golfklubben Fjord (T-2621)."
+      ? "Formålet treffer 4.2. Lik sak er Havblik (T-2608). Ikke vedtak."
       : `Øvelsesutkast for ${sak.id}. ${sak.jobb} Dokumentasjonen er lest i øvelsen. Ikke vedtak.`,
     brev: `Utkast — ikke vedtak\n\nTil ${sak.org}\n\n${sak.soknad}\n\nDette er et forslag til saksbehandler.`,
     ...(typeof fallbackDokSemantikk === "function" ? fallbackDokSemantikk(sak) : {})
@@ -550,8 +551,8 @@ const journal = [];
 let selected = null;
 let listFilter = "alle";
 let kiSeq = 0;
-const klage = { running: false, live: null, tenkning: "", vurdering: "", omgjoring: "", opprettholdelse: "", error: "", traceId: "" };
-const slutt = { running: false, live: null, tenkning: "", vurdering: "", tilbake: "", alternativ: "", error: "", traceId: "" };
+const klage = { running: false, live: null, tenkning: "", vurdering: "", omgjoring: "", opprettholdelse: "", error: "", traceId: "", graph: null };
+const slutt = { running: false, live: null, tenkning: "", vurdering: "", tilbake: "", alternativ: "", error: "", traceId: "", graph: null };
 
 function $(id) { return document.getElementById(id); }
 function esc(s) {
@@ -776,6 +777,57 @@ function soknadTilModell(sak, valg) {
   return personvernForKi(sak, valg || "sladd").tekst;
 }
 
+async function callGraphAPI(payload) {
+  let delay = 800;
+  for (let i = 0; i < 3; i++) {
+    try {
+      const res = await fetch("/api/graph", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      const result = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        const err = new Error(result.error || "graph_error");
+        err.simulation = Boolean(result.simulation);
+        throw err;
+      }
+      return result;
+    } catch (e) {
+      if (i === 2) throw e;
+      await new Promise((r) => setTimeout(r, delay));
+      delay *= 2;
+    }
+  }
+  throw new Error("Kunne ikke kjøre LangGraph.");
+}
+
+function kilderLabel(k) {
+  if (typeof k === "string") return k;
+  const id = k.id ? `${k.id} · ` : "";
+  const typ = k.typeLabel || "";
+  return typ ? `${id}${k.tittel} (${typ})` : `${id}${k.tittel || ""}`;
+}
+
+function graphKilderHtml(graph) {
+  const items = graph?.retrieved || [];
+  if (!items.length) return "";
+  const rows = items.map((k) => {
+    const cls = k.type === "lov" ? "jus-kilde-lov" : k.type === "veileder" || k.type === "kurs" ? "jus-kilde-veileder" : "jus-kilde-fiktiv";
+    return `<li class="${cls}"><span class="mono">${esc(k.id || "—")}</span> ${esc(k.tittel || "")}${k.typeLabel ? ` <em>(${esc(k.typeLabel)})</em>` : ""}</li>`;
+  }).join("");
+  return `<div class="think"><strong>Hentede kilder</strong><ul class="graph-kilder">${rows}</ul><p class="hint">Ikke juridisk rådgivning. Fiktive regler er øvelse. Du bekrefter — grafen sender ingenting.</p></div>`;
+}
+
+function graphTraceHtml(graph) {
+  if (!graph?.trace?.length && !graph?.retrieved?.length) return "";
+  const rows = (graph.trace || []).map((t) => `<li><strong>${esc(t.tittel)}</strong> — ${esc(t.detalj || "")}</li>`).join("");
+  const sjekk = graph.validation?.ok
+    ? `<p class="hint">Sjekken slapp utkastet gjennom. Du bekrefter fortsatt.</p>`
+    : `<p class="hint">Sjekken slapp ikke utkastet gjennom: ${esc((graph.validation?.errors || []).join(" "))}</p>`;
+  return `${graphKilderHtml(graph)}<div class="think"><strong>LangGraph</strong><ol class="graph-trace">${rows}</ol>${sjekk}</div>`;
+}
+
 async function callModelAPI(prompt, system) {
   let delay = 800;
   for (let i = 0; i < 3; i++) {
@@ -858,6 +910,7 @@ function ensure(id) {
       pipeline: "regler",
       status: "Regler er ferdige. KI starter.",
       live: null,
+      graph: null,
       error: "",
       hitl: "",
       grunn: "",
@@ -982,9 +1035,9 @@ function lastNedTekst(filnavn, tekst) {
 function renderPipe(w) {
   const el = $("pipe");
   if (!el) return;
-  const order = { idle: -1, regler: 0, ki: 1, utkast: 2, hitl: 3 };
+  const order = { idle: -1, regler: 0, rag: 1, ki: 2, sjekk: 3, utkast: 4, hitl: 5 };
   const cur = order[w ? w.pipeline : "idle"] ?? -1;
-  const labels = ["1. Tall sjekket", "2. KI leser teksten", "3. Utkast klart", "4. Du bestemmer"];
+  const labels = ["1. Tall", "2. RAG", "3. Utkast", "4. Sjekk", "5. Til deg", "6. Du"];
   el.innerHTML = labels.map((l, i) => {
     const cls = i < cur ? "done" : i === cur ? "now" : "";
     return `<div class="${cls}">${l}</div>`;
@@ -1279,7 +1332,7 @@ function renderCard() {
   const kiNote = w.running
     ? `<div class="note live-run">KI leser søknaden nå…</div>`
     : w.live === true
-      ? `<div class="note live-ok">Dette utkastet kom fra KI. Det er et forslag. Du fatter ikke vedtak her.</div>`
+      ? `<div class="note live-ok">Utkastet kom gjennom LangGraph (RAG + sjekk). Det er et forslag. Du fatter ikke vedtak her.</div>`
       : w.live === false
         ? `<div class="note live-off"><strong>Ikke KI-svar.</strong> Vi viser en ferdig øvelsestekst fordi live-kall ikke virket${w.error ? ` (${esc(w.error)})` : ""}.</div>`
         : `<div class="note">Venter på KI-steget.</div>`;
@@ -1304,7 +1357,7 @@ function renderCard() {
     ? `<ul class="arkiv-liste">${arkiv.dokumenter.map((d) => `<li><strong>${esc(d.tittel)}</strong> · ${esc(d.at)}<br><span class="hint">${esc(d.merknad || "Simulert journalpost.")}</span></li>`).join("")}</ul>`
     : `<p class="hint">Ingen journalposter i øvelsesarkivet på denne saken ennå.</p>`;
   const sem = w.semantic
-    ? `<table><thead><tr><th>Tema</th><th>Score</th><th>Sitat</th></tr></thead><tbody>${semRow("Målgruppe", w.semantic.malgruppe)}${semRow("Medvirkning", w.semantic.medvirkning)}${semRow("Gratis", w.semantic.gratis)}${semRow("Mål og evaluering", w.semantic.dokMal)}${semRow("Rekruttering", w.semantic.dokMalg)}${semRow("Fremdrift", w.semantic.dokPlan)}${semRow("Samarbeid", w.semantic.dokSam)}${semRow("Budsjett / egenandel", w.semantic.dokOkonomi)}${semRow("Etikk og trygghet", w.semantic.dokEtikk)}${semRow("Samlet dokumentasjon", w.semantic.dokSamlet)}</tbody></table>`
+    ? `<div class="table-wrap"><table><thead><tr><th>Tema</th><th>Score</th><th>Sitat</th></tr></thead><tbody>${semRow("Målgruppe", w.semantic.malgruppe)}${semRow("Medvirkning", w.semantic.medvirkning)}${semRow("Gratis", w.semantic.gratis)}${semRow("Mål og evaluering", w.semantic.dokMal)}${semRow("Rekruttering", w.semantic.dokMalg)}${semRow("Fremdrift", w.semantic.dokPlan)}${semRow("Samarbeid", w.semantic.dokSam)}${semRow("Budsjett / egenandel", w.semantic.dokOkonomi)}${semRow("Etikk og trygghet", w.semantic.dokEtikk)}${semRow("Samlet dokumentasjon", w.semantic.dokSamlet)}</tbody></table></div>`
     : `<p class="hint">${w.running ? "Leser teksten…" : "Ingen tekstvurdering ennå."}</p>`;
   box.innerHTML = `
     <div style="display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;align-items:flex-start">
@@ -1317,7 +1370,8 @@ function renderCard() {
       <button class="btn btn-primary" type="button" ${w.running ? "disabled" : ""} onclick="runKI('${sak.id}', true)">Kjør KI på nytt</button>
     </div>
     ${kiNote}
-    ${planted ? `<div class="planted"><strong>Øvelse:</strong> Første utkast blander inn § 14 og Golfklubben Fjord. Det er feil. Riktig lik sak er Havblik (T-2608). Avvis med en setning om hvorfor.</div>` : ""}
+    ${planted ? `<div class="planted"><strong>Øvelse:</strong> I mappa ligger både jobbregel 4.2 og en felle (§ 14 / Golfklubben). LangGraph skal bare bruke 4.2 og Havblik. Les sporet — du bekrefter likevel.</div>` : ""}
+    ${w.graph ? graphTraceHtml(w.graph) : ""}
     <div class="split" style="margin-top:1rem">
       <div>
         <h3>Søknaden</h3>
@@ -1325,7 +1379,7 @@ function renderCard() {
         <h3>All dokumentasjon</h3>
         ${typeof dokVisHtml === "function" ? dokVisHtml(sak) : `<p class="hint">${esc(sak.soknad)}</p>`}
         <h3>Budsjett</h3>
-        <table>${budsjett}</table>
+        <div class="table-wrap"><table>${budsjett}</table></div>
         <h3>Vedlegg</h3>
         <ul>${vedlegg}${kiVedlegg}</ul>
         ${typeof sakLovHtml === "function" ? sakLovHtml(sak) : ""}
@@ -1426,36 +1480,59 @@ async function runKI(id, force, pvValg) {
   w.pvValg = pvValg || w.pvValg || "sladd";
   w.pvSendt = gate.sladdet ? "sladdet" : (gate.sjekk && gate.sjekk.niva !== "ok" ? "usladdet" : "ok");
   w.running = true;
-  w.pipeline = "ki";
-  w.status = "KI leser…";
+  w.pipeline = "rag";
+  w.status = "LangGraph: RAG…";
   renderList();
   renderCard();
   const seq = ++kiSeq;
-  const rag = ragFor(sak).map((r) => `### ${r.tittel}\n${r.tekst}`).join("\n\n");
-  const maskinKrav = typeof kravSjekkKort === "function" ? kravSjekkKort(sak) : "";
-  const prompt = `Saksnummer: ${sak.id}\nOrganisasjon: ${sak.org}\nSøkt: ${sak.belop} kr\nPersonvern: ${w.pvSendt === "sladdet" ? "tekst er sladdet av øvelsesmodulen" : "tekst som i saken"}.\n\nSØKNAD OG DOKUMENTER:\n${gate.tekst}\n\nMASKINELL KRAVSJEKK (øvelse, ikke vedtak):\n${maskinKrav}\n\nUTDRAG (fiktiv øvelse 2026):\n${rag}\n\nSkriv først ## Tenkning, deretter semantikk, dokumentasjon, notat og brev. Bruk dokumentene i den samlede vurderingen. Ikke fatt vedtak.`;
-  addJournal({ type: "ki", sak: id, svar: force ? "Kjører KI på nytt" : "Første KI-kall" });
-  const kilder = ragFor(sak).map((r) => r.tittel);
+  const payload = {
+    task: "sak",
+    soknad: gate.tekst,
+    sak: {
+      id: sak.id,
+      org: sak.org,
+      belop: sak.belop,
+      aktivitet: sak.aktivitet,
+      flag: sak.flag,
+      jobb: sak.jobb,
+      personvernNiva: w.pv?.niva || ""
+    }
+  };
+  addJournal({ type: "ki", sak: id, svar: force ? "Kjører LangGraph på nytt" : "Første LangGraph-kjøring" });
   try {
-    const text = await callModelAPI(prompt, SYS);
+    w.pipeline = "ki";
+    const graph = await callGraphAPI(payload);
     if (seq !== kiSeq) return;
-    const parsed = parseKi(text);
-    w.semantic = parsed;
-    w.note = parsed.notat;
-    w.letter = parsed.brev || parsed.notat;
-    w.live = true;
+    const parsed = graph.parsed || {};
+    w.graph = graph;
+    w.semantic = {
+      malgruppe: parsed.malgruppe || { score: null, sitat: "ikke oppgitt" },
+      medvirkning: parsed.medvirkning || { score: null, sitat: "ikke oppgitt" },
+      gratis: parsed.gratis || { score: null, sitat: "ikke oppgitt" },
+      tenkning: parsed.tenkning || "",
+      notat: parsed.notat || "",
+      brev: parsed.brev || "",
+      raw: graph.raw || ""
+    };
+    w.note = parsed.notat || "";
+    w.letter = parsed.brev || parsed.notat || "";
+    w.live = graph.live === true;
+    w.error = graph.live ? "" : (graph.error || "simulert graf");
+    w.pipeline = graph.ok ? "utkast" : "sjekk";
     w.traceId = saveTrace({
       sak: id,
       org: sak.org,
-      oppgave: "Sakskort — vurdering og utkast",
-      live: true,
-      kilder,
-      prompt,
-      system: SYS,
+      oppgave: "Sakskort — LangGraph",
+      live: w.live,
+      kilder: (graph.retrieved || []).map(kilderLabel),
+      prompt: JSON.stringify({ task: "sak", id: sak.id, graph: true }),
+      system: "LangGraph: RAG → utkast → sjekk",
       tenkning: parsed.tenkning,
       utkast: parsed.notat,
       brev: parsed.brev,
-      raw: text
+      raw: graph.raw,
+      graph: graph.trace,
+      validation: graph.validation
     });
   } catch (e) {
     if (seq !== kiSeq) return;
@@ -1464,15 +1541,17 @@ async function runKI(id, force, pvValg) {
     w.note = fb.notat;
     w.letter = fb.brev;
     w.live = false;
-    w.error = e?.simulation ? "ingen nøkkel" : (e?.message || "feil");
+    w.graph = null;
+    w.error = e?.simulation ? "ingen nøkkel / graf" : (e?.message || "feil");
+    w.pipeline = "utkast";
     w.traceId = saveTrace({
       sak: id,
       org: sak.org,
-      oppgave: "Sakskort — vurdering og utkast",
+      oppgave: "Sakskort — LangGraph",
       live: false,
-      kilder,
-      prompt,
-      system: SYS,
+      kilder: ragFor(sak).map((r) => r.tittel),
+      prompt: JSON.stringify({ task: "sak", id: sak.id, graph: false }),
+      system: "LangGraph utilgjengelig — fallback",
       tenkning: fb.tenkning,
       utkast: fb.notat,
       brev: fb.brev,
@@ -1481,7 +1560,7 @@ async function runKI(id, force, pvValg) {
     });
   }
   w.running = false;
-  w.pipeline = "utkast";
+  if (w.pipeline !== "sjekk") w.pipeline = "utkast";
   w.kiDok = byggKiVurdering(sak, w);
   renderList();
   renderCard();
@@ -1580,7 +1659,7 @@ function setView(name) {
 
 function kiBanner(state, runningTxt) {
   if (state.running) return `<div class="note live-run">${runningTxt}</div>`;
-  if (state.live === true) return `<div class="note live-ok">KI har skrevet utkast. Du velger. Ikke vedtak.</div>`;
+  if (state.live === true) return `<div class="note live-ok">LangGraph har skrevet utkast etter sjekk. Du velger. Ikke vedtak.</div>`;
   if (state.live === false) return `<div class="note live-off"><strong>Ikke KI-svar.</strong> Ferdig øvelsestekst. ${esc(state.error || "")}</div>`;
   return `<div class="note">Klar til å kjøre KI.</div>`;
 }
@@ -1594,7 +1673,7 @@ function renderKlage() {
     box.innerHTML = `<p class="hint">${klage.running ? "Skriver to utkast…" : "Trykk «Kjør KI» eller vent — vi starter automatisk."}</p>`;
     return;
   }
-  box.innerHTML = `${klage.tenkning ? `<div class="think"><strong>Hva KI skrev mens den jobbet</strong><p class="mono">${esc(klage.tenkning)}</p><p><a href="/tilskudd/transparens${klage.traceId ? `#${klage.traceId}` : ""}">Åpne hele tankeloggen →</a></p></div>` : ""}
+  box.innerHTML = `${graphTraceHtml(klage.graph)}${klage.tenkning ? `<div class="think"><strong>Hva KI skrev mens den jobbet</strong><p class="mono">${esc(klage.tenkning)}</p><p><a href="/tilskudd/transparens${klage.traceId ? `#${klage.traceId}` : ""}">Åpne hele tankeloggen →</a></p></div>` : ""}
     <h3>Hva som er nytt</h3><p class="mono">${esc(klage.vurdering)}</p>
     <h3>Hvis du godtar kursleder-forklaringen</h3><p class="mono">${esc(klage.omgjoring)}</p>
     <h3>Hvis du ikke godtar den</h3><p class="mono">${esc(klage.opprettholdelse)}</p>`;
@@ -1609,7 +1688,7 @@ function renderSlutt() {
     box.innerHTML = `<p class="hint">${slutt.running ? "Skriver utkast…" : "Starter KI."}</p>`;
     return;
   }
-  box.innerHTML = `${slutt.tenkning ? `<div class="think"><strong>Hva KI skrev mens den jobbet</strong><p class="mono">${esc(slutt.tenkning)}</p><p><a href="/tilskudd/transparens${slutt.traceId ? `#${slutt.traceId}` : ""}">Åpne hele tankeloggen →</a></p></div>` : ""}
+    box.innerHTML = `${graphTraceHtml(slutt.graph)}${slutt.tenkning ? `<div class="think"><strong>Hva KI skrev mens den jobbet</strong><p class="mono">${esc(slutt.tenkning)}</p><p><a href="/tilskudd/transparens${slutt.traceId ? `#${slutt.traceId}` : ""}">Åpne hele tankeloggen →</a></p></div>` : ""}
     <h3>Hva som er avvik</h3><p class="mono">${esc(slutt.vurdering)}</p>
     <h3>Utkast til tilbakekreving</h3><p class="mono">${esc(slutt.tilbake)}</p>
     <h3>Hvis mer dokumentasjon kommer</h3><p>${esc(slutt.alternativ)}</p>`;
@@ -1620,15 +1699,34 @@ async function runKlage(force) {
   const sak = findSak("T-2629");
   klage.running = true;
   renderKlage();
-  const prompt = `Klage på T-2629. Opprinnelig: avkorting fordi admin var 32 %. Nytt faktum: 40 000 kr var kursleder (fag), ikke admin.\nSøknad: ${soknadTilModell(sak, "sladd")}\nUtdrag: ${RAG.admin.tekst}\n${RAG.klage.tekst}\nSkriv først ## Tenkning, deretter vurdering, omgjøring og opprettholdelse. Ikke vedtak.`;
   try {
-    const text = await callModelAPI(prompt, SYS_KLAGE);
-    const tnk = (text.split(/##\s*Tenkning/i)[1] || "").split(/##\s*Vurdering/i)[0].trim();
-    const v = (text.split(/##\s*Vurdering/i)[1] || text).split(/##\s*Utkast omgjøring/i)[0].trim();
-    const o = (text.split(/##\s*Utkast omgjøring/i)[1] || "").split(/##\s*Utkast opprettholdelse/i)[0].trim();
-    const p = (text.split(/##\s*Utkast opprettholdelse/i)[1] || "").trim();
-    klage.tenkning = tnk; klage.vurdering = v; klage.omgjoring = o; klage.opprettholdelse = p; klage.live = true;
-    klage.traceId = saveTrace({ sak: "T-2629", org: sak.org, oppgave: "Klage — to utkast", live: true, kilder: [RAG.admin.tittel, RAG.klage.tittel], prompt, system: SYS_KLAGE, tenkning: tnk, utkast: v, brev: o, raw: text });
+    const graph = await callGraphAPI({
+      task: "klage",
+      soknad: soknadTilModell(sak, "sladd"),
+      sak: { id: sak.id, org: sak.org, belop: sak.belop, aktivitet: sak.aktivitet, flag: sak.flag }
+    });
+    const p = graph.parsed || {};
+    klage.graph = graph;
+    klage.tenkning = p.tenkning || "";
+    klage.vurdering = p.vurdering || "";
+    klage.omgjoring = p.omgjoring || "";
+    klage.opprettholdelse = p.opprettholdelse || "";
+    klage.live = graph.live === true;
+    klage.traceId = saveTrace({
+      sak: "T-2629",
+      org: sak.org,
+      oppgave: "Klage — LangGraph",
+      live: klage.live,
+      kilder: (graph.retrieved || []).map(kilderLabel),
+      prompt: JSON.stringify({ task: "klage", id: "T-2629" }),
+      system: "LangGraph: RAG → utkast → sjekk",
+      tenkning: klage.tenkning,
+      utkast: klage.vurdering,
+      brev: klage.omgjoring,
+      raw: graph.raw,
+      graph: graph.trace,
+      validation: graph.validation
+    });
   } catch (e) {
     klage.tenkning = "1. Jeg leser at 40 000 kr skal være kursleder, ikke admin.\n2. Hvis det stemmer, synker adminandelen under 15 %.\n3. Jeg skriver to utkast. Du velger. Ikke vedtak.\nForhåndstekst — ikke modell.";
     klage.vurdering = "Nytt faktum: 40 000 kr var kursleder. Hvis du godtar det, synker adminandelen. Forhåndstekst — ikke modell.";
@@ -1636,7 +1734,8 @@ async function runKlage(force) {
     klage.opprettholdelse = "Utkast — ikke vedtak\n\nBehold opprinnelig avkorting mot 15 % admin.";
     klage.live = false;
     klage.error = e?.message || "feil";
-    klage.traceId = saveTrace({ sak: "T-2629", org: sak.org, oppgave: "Klage — to utkast", live: false, kilder: [RAG.admin.tittel, RAG.klage.tittel], prompt, system: SYS_KLAGE, tenkning: klage.tenkning, utkast: klage.vurdering, brev: klage.omgjoring, raw: "", error: klage.error });
+    klage.graph = null;
+    klage.traceId = saveTrace({ sak: "T-2629", org: sak.org, oppgave: "Klage — LangGraph", live: false, kilder: [RAG.admin.tittel, RAG.klage.tittel], prompt: "", system: "LangGraph utilgjengelig", tenkning: klage.tenkning, utkast: klage.vurdering, brev: klage.omgjoring, raw: "", error: klage.error });
   }
   klage.running = false;
   renderKlage();
@@ -1647,15 +1746,34 @@ async function runSlutt(force) {
   const sak = findSak("T-2631");
   slutt.running = true;
   renderSlutt();
-  const prompt = `Slutt T-2631. Innvilget 220 000. Brukt 140 000 på gressbane (ikke godkjent) og 80 000 på trening.\n${soknadTilModell(sak, "sladd")}\n${RAG.slutt.tekst}\nSkriv først ## Tenkning, deretter vurdering, tilbakekreving og alternativ. Ikke vedtak.`;
   try {
-    const text = await callModelAPI(prompt, SYS_SLUTT);
-    slutt.tenkning = (text.split(/##\s*Tenkning/i)[1] || "").split(/##\s*Vurdering/i)[0].trim();
-    slutt.vurdering = (text.split(/##\s*Vurdering/i)[1] || text).split(/##\s*Utkast tilbakekreving/i)[0].trim();
-    slutt.tilbake = (text.split(/##\s*Utkast tilbakekreving/i)[1] || "").split(/##\s*Alternativ/i)[0].trim();
-    slutt.alternativ = (text.split(/##\s*Alternativ/i)[1] || "").trim();
-    slutt.live = true;
-    slutt.traceId = saveTrace({ sak: "T-2631", org: sak.org, oppgave: "Slutt — tilbakekreving", live: true, kilder: [RAG.slutt.tittel], prompt, system: SYS_SLUTT, tenkning: slutt.tenkning, utkast: slutt.vurdering, brev: slutt.tilbake, raw: text });
+    const graph = await callGraphAPI({
+      task: "slutt",
+      soknad: soknadTilModell(sak, "sladd"),
+      sak: { id: sak.id, org: sak.org, belop: sak.belop, aktivitet: sak.aktivitet, flag: sak.flag }
+    });
+    const p = graph.parsed || {};
+    slutt.graph = graph;
+    slutt.tenkning = p.tenkning || "";
+    slutt.vurdering = p.vurdering || "";
+    slutt.tilbake = p.tilbake || "";
+    slutt.alternativ = p.alternativ || "";
+    slutt.live = graph.live === true;
+    slutt.traceId = saveTrace({
+      sak: "T-2631",
+      org: sak.org,
+      oppgave: "Slutt — LangGraph",
+      live: slutt.live,
+      kilder: (graph.retrieved || []).map(kilderLabel),
+      prompt: JSON.stringify({ task: "slutt", id: "T-2631" }),
+      system: "LangGraph: RAG → utkast → sjekk",
+      tenkning: slutt.tenkning,
+      utkast: slutt.vurdering,
+      brev: slutt.tilbake,
+      raw: graph.raw,
+      graph: graph.trace,
+      validation: graph.validation
+    });
   } catch (e) {
     slutt.tenkning = "1. Jeg deler 220 000 kr i 140 000 anlegg og 80 000 trening.\n2. Anlegg er ikke godkjent. Trening kan stå.\n3. Utkast til tilbakekreving — ikke innkreving.\nForhåndstekst — ikke modell.";
     slutt.vurdering = "140 000 kr til gressbane er avvik. 80 000 kr trening kan stå. Forhåndstekst — ikke modell.";
@@ -1663,7 +1781,8 @@ async function runSlutt(force) {
     slutt.alternativ = "Hvis anlegget likevel var godkjent, vurderer du saken på nytt.";
     slutt.live = false;
     slutt.error = e?.message || "feil";
-    slutt.traceId = saveTrace({ sak: "T-2631", org: sak.org, oppgave: "Slutt — tilbakekreving", live: false, kilder: [RAG.slutt.tittel], prompt, system: SYS_SLUTT, tenkning: slutt.tenkning, utkast: slutt.vurdering, brev: slutt.tilbake, raw: "", error: slutt.error });
+    slutt.graph = null;
+    slutt.traceId = saveTrace({ sak: "T-2631", org: sak.org, oppgave: "Slutt — LangGraph", live: false, kilder: [RAG.slutt.tittel], prompt: "", system: "LangGraph utilgjengelig", tenkning: slutt.tenkning, utkast: slutt.vurdering, brev: slutt.tilbake, raw: "", error: slutt.error });
   }
   slutt.running = false;
   renderSlutt();
@@ -1794,7 +1913,10 @@ function renderTransparens() {
   det.innerHTML = `
     <p class="mono" style="color:#4f46e5;font-weight:700;margin:0">${esc(sel.sak)} · ${esc(sel.atVis)}</p>
     <h2 style="margin:0.3rem 0">${esc(sel.oppgave)}</h2>
-    <p class="hint">${sel.live ? "Dette kom fra live KI via /api/chat." : `Forhåndstekst — ikke modell${sel.error ? ` (${esc(sel.error)})` : ""}.`}</p>
+    <p class="hint">${sel.live ? "Dette kom gjennom LangGraph (/api/graph)." : `Forhåndstekst — ikke live modell${sel.error ? ` (${esc(sel.error)})` : ""}.`}</p>
+    ${sel.graph?.length ? `<div class="think"><strong>Graf-steg</strong><ol class="graph-trace">${sel.graph.map((t) => `<li><strong>${esc(t.tittel)}</strong> — ${esc(t.detalj || "")}</li>`).join("")}</ol></div>` : ""}
+    ${sel.validation ? `<p class="hint">Sjekk: ${sel.validation.ok ? "godtatt" : esc((sel.validation.errors || []).join(" "))}.</p>` : ""}
+    <p class="hint">Ikke juridisk rådgivning. Utkastet er forarbeid — ikke vedtak.</p>
     <div class="think">
       <strong>Tenkning (skrevet før konklusjonen)</strong>
       <p class="mono">${esc(sel.tenkning || "Ikke oppgitt i svaret.")}</p>
@@ -1819,10 +1941,10 @@ function lenkSaksnr(text) {
 
 function koeRaderHtml(rader, hvorfor) {
   if (!rader.length) return `<p class="hint">Ingen i denne køen.</p>`;
-  return `<table><thead><tr><th>Sak</th><th>Søker</th><th>Ordning</th><th>Kommune</th><th>Søkt</th><th>Hvorfor</th></tr></thead><tbody>${rader.map((r) => {
+  return `<div class="table-wrap"><table><thead><tr><th>Sak</th><th>Søker</th><th>Ordning</th><th>Kommune</th><th>Søkt</th><th>Hvorfor</th></tr></thead><tbody>${rader.map((r) => {
     const grunn = hvorfor(r);
     return `<tr><td><a href="${sakLenke(r.sak.id)}">${esc(r.sak.id)}</a></td><td>${esc(r.sak.org)}</td><td>${esc(sakOrdning(r.sak).kortnavn || sakOrdningTekst(r.sak))}</td><td>${esc(r.sak.kommune)}</td><td>${kr(r.sak.belop)}</td><td>${esc(grunn)}</td></tr>`;
-  }).join("")}</tbody></table>`;
+  }).join("")}</tbody></table></div>`;
 }
 
 function svgStolpe(pct, farge) {
@@ -2224,6 +2346,17 @@ function initProtoNav() {
     btn.textContent = open ? "Lukk" : "Meny";
   });
   bar.insertBefore(btn, nav);
+}
+
+function initNav() {
+  const bar = document.querySelector(".proto-bar");
+  const btn = document.querySelector(".nav-toggle");
+  const nav = document.getElementById("protoNav");
+  if (!bar || !btn || !nav) return;
+  btn.addEventListener("click", () => {
+    const open = bar.classList.toggle("is-open");
+    btn.setAttribute("aria-expanded", open ? "true" : "false");
+  });
 }
 
 document.addEventListener("DOMContentLoaded", () => {

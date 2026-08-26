@@ -29,7 +29,7 @@ export default async function handler(req, res) {
 
   const model = process.env.OPENAI_MODEL || "gpt-4o-mini";
   const messages = [];
-  if (system) messages.push({ role: "system", content: system.slice(0, 6000) });
+  if (system) messages.push({ role: "system", content: system.slice(0, 24000) });
   messages.push({ role: "user", content: prompt });
 
   try {

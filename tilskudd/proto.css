@@ -14,7 +14,7 @@
 
 * { box-sizing: border-box; }
 html, body { margin: 0; }
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; overflow-x: hidden; }
 body.proto {
   font-family: Inter, system-ui, sans-serif;
   background:
@@ -23,6 +23,8 @@ body.proto {
   color: var(--ink);
   min-height: 100vh;
   line-height: 1.5;
+  overflow-x: hidden;
+  -webkit-text-size-adjust: 100%;
 }
 a:focus-visible, button:focus-visible, select:focus-visible, textarea:focus-visible, input:focus-visible {
   outline: 2px solid var(--accent);
@@ -43,6 +45,14 @@ a:focus-visible, button:focus-visible, select:focus-visible, textarea:focus-visi
   justify-content: space-between;
   gap: 0.65rem 1rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+.proto-bar-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex: 1 1 auto;
+  min-width: 0;
 }
 .proto-bar a { color: #e2e8f0; text-decoration: none; }
 .proto-bar a:hover { color: #fff; }
@@ -121,11 +131,11 @@ a:focus-visible, button:focus-visible, select:focus-visible, textarea:focus-visi
 
 .steps {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: 1fr;
   gap: 0.85rem;
   margin: 1.25rem 0;
 }
-@media (max-width: 800px) { .steps { grid-template-columns: 1fr; } }
+@media (min-width: 800px) { .steps { grid-template-columns: repeat(3, 1fr); } }
 .step {
   background: var(--card);
   border: 1px solid var(--line);
@@ -236,6 +246,7 @@ button.check-filter.on { outline: 2px solid var(--accent); outline-offset: 1px; 
 .check small { display: block; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; font-size: 0.7rem; }
 
 .split { display: grid; grid-template-columns: 1fr 1fr; gap: 1.1rem; }
+.split > * { min-width: 0; }
 @media (max-width: 1100px) { .split { grid-template-columns: 1fr; } }
 
 label.field { display: block; margin: 0.7rem 0; font-size: 0.8rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.04em; }
@@ -252,8 +263,10 @@ label.field input, label.field textarea, label.field select {
   border-radius: 8px;
   color: var(--ink);
 }
-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
-td, th { padding: 0.35rem 0.4rem; border-bottom: 1px solid #f1f5f9; text-align: left; }
+.table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; max-width: 100%; }
+table { width: 100%; min-width: 28rem; border-collapse: collapse; font-size: 0.88rem; }
+td, th { padding: 0.35rem 0.4rem; border-bottom: 1px solid #f1f5f9; text-align: left; vertical-align: top; }
+td, th, p, li { overflow-wrap: anywhere; }
 .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; white-space: pre-wrap; }
 .hint { font-size: 0.85rem; color: var(--muted); }
 .ramme {
@@ -267,7 +280,12 @@ td, th { padding: 0.35rem 0.4rem; border-bottom: 1px solid #f1f5f9; text-align: 
 .bar { height: 8px; background: #fff; border-radius: 99px; overflow: hidden; margin-top: 0.45rem; border: 1px solid #c7d2fe; }
 .bar > i { display: block; height: 100%; background: #f59e0b; }
 
-.pipe { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.4rem; margin-bottom: 0.85rem; }
+.pipe { display: grid; grid-template-columns: repeat(6, 1fr); gap: 0.4rem; margin-bottom: 0.85rem; }
+@media (max-width: 800px) { .pipe { grid-template-columns: repeat(3, 1fr); } }
+.graph-trace { margin: 0.4rem 0 0; padding-left: 1.15rem; font-size: 0.82rem; }
+.graph-trace li { margin: 0.2rem 0; }
+.graph-kilder { margin: 0.4rem 0 0; padding-left: 1.15rem; font-size: 0.82rem; }
+.graph-kilder li { margin: 0.25rem 0; padding-left: 0.45rem; }
 @media (max-width: 700px) { .pipe { grid-template-columns: 1fr 1fr; } }
 .pipe div { border-radius: 8px; padding: 0.45rem 0.5rem; font-size: 0.75rem; font-weight: 700; border: 1px solid #e2e8f0; background: #f1f5f9; color: #64748b; }
 .pipe .now { background: #4f46e5; color: #fff; border-color: #4338ca; }
@@ -344,8 +362,12 @@ button.kpi-klikk:hover { border-color: #818cf8; }
 button.kpi-klikk.on { border-color: var(--accent); background: #eef2ff; }
 .koe-blokk h3 { margin: 1.1rem 0 0.25rem; font-size: 1rem; }
 .svg-bar { display: block; width: 100%; height: 10px; margin: 0.35rem 0; }
-.chart-row { display: grid; grid-template-columns: minmax(8rem, 18rem) 1fr 2.5rem; gap: 0.5rem; align-items: center; font-size: 0.85rem; margin: 0.35rem 0; }
+.chart-row { display: grid; grid-template-columns: minmax(0, 18rem) minmax(4rem, 1fr) 2.5rem; gap: 0.5rem; align-items: center; font-size: 0.85rem; margin: 0.35rem 0; }
 .chart-row em { font-style: normal; font-weight: 700; text-align: right; }
+@media (max-width: 640px) {
+  .chart-row { grid-template-columns: 1fr auto; }
+  .chart-row .svg-bar { grid-column: 1 / -1; }
+}
 #analyseRot .panel { margin-bottom: 1rem; }
 #analyseRot .panel h2 { margin: 0 0 0.4rem; font-size: 1.15rem; }
 
@@ -473,6 +495,40 @@ button.kpi-klikk.on { border-color: var(--accent); background: #eef2ff; }
 .kat-tabell tfoot th, .kat-tabell tfoot td { background: #eef2ff; font-weight: 700; position: sticky; bottom: 0; }
 .kat-tabell td .hint { display: block; margin-top: 0.25rem; max-width: 22rem; }
 .tag:not([class*="tag-"]) { background: #f1f5f9; color: #475569; }
+
+
+.jus-modebar { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.75rem; margin: 0 0 1rem; }
+.jus-layout {
+  display: grid;
+  grid-template-columns: minmax(16rem, 22rem) minmax(0, 1fr);
+  gap: 1rem;
+  align-items: start;
+}
+@media (max-width: 900px) { .jus-layout { grid-template-columns: 1fr; } }
+.jus-kildeliste { display: flex; flex-direction: column; gap: 0.65rem; max-height: 70vh; overflow: auto; }
+.jus-kilde { border: 1px solid var(--line); border-radius: 10px; padding: 0.65rem 0.75rem; background: #f8fafc; }
+.jus-kilde h3 { margin: 0.15rem 0; font-size: 0.88rem; }
+.jus-kilde p { margin: 0.25rem 0 0; font-size: 0.8rem; line-height: 1.4; }
+.jus-kilde-meta { display: flex; gap: 0.4rem; align-items: center; margin: 0; }
+.jus-kilde-lov { border-left: 3px solid #1d4ed8; }
+.jus-kilde-veileder { border-left: 3px solid #7c3aed; }
+.jus-kilde-kurs { border-left: 3px solid #0f766e; }
+.jus-kilde-fiktiv { border-left: 3px solid #b45309; }
+.jus-kilde-on { outline: 2px solid var(--accent); }
+.jus-cite {
+  display: inline;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #4338ca;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.jus-sitater { margin: 0.4rem 0 0; padding-left: 1.1rem; font-size: 0.88rem; }
+.panel h2 .tag { vertical-align: middle; margin-left: 0.35rem; }
 
 footer.proto-foot {
   padding: 1.25rem;

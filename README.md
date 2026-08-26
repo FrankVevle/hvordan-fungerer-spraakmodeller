@@ -12,7 +12,7 @@ npx serve .
 
 ## Deploy
 
-Appen er en Vercel-side med `index.html` og serverless-ruten `/api/chat`. Prompt Lab og Datalab kaller OpenAI via den ruten. Sett `OPENAI_API_KEY` i `.env.local` (lokal `vercel dev`) og i Vercel-prosjektet. Uten nøkkel vises merkede simulerte eksempler.
+Appen er en Vercel-side med `index.html`, `/api/chat` (Prompt Lab / Datalab) og `/api/graph` (tilskudd: LangGraph med RAG → utkast → sjekk). Sett `OPENAI_API_KEY` i `.env.local` (`vercel dev`) og i Vercel-prosjektet. Uten nøkkel kjører grafen likevel med merkede øvelsesutkast og samme validator. Lokal kjøring av grafen krever `npm install` og `vercel dev`.
 
 ## Moduser
 
