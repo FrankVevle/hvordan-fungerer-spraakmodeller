@@ -2159,4 +2159,5 @@ document.addEventListener("DOMContentLoaded", () => {
   if ($("nis2Rot")) renderNis2();
   const ant = document.querySelector("[data-antall-saker]");
   if (ant) ant.textContent = `${SAKER.length} saker på 16 bokser. Filtrer forvalter, så klikk en ordning.`;
+  if ($("kiAnalyseMaskin") && !$("liste")) renderKiAnalyseMaskin();
 });

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KI-analyse — Tilskudd (øvelse)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/tilskudd/proto.css">
+</head>
+<body class="proto">
+  <header class="proto-bar">
+    <div class="proto-brand">Tilskudd (øvelse)<span>KI-analyse — forslag, ikke vedtak</span></div>
+    <nav class="proto-nav">
+      <a href="/tilskudd/">Start</a>
+      <a href="/tilskudd/velkommen">Min side</a>
+      <a href="/tilskudd/ordninger">Ordninger</a>
+      <a href="/tilskudd/behandle">Arbeidsliste</a>
+      <a class="is-on" href="/tilskudd/ki-analyse">KI-analyse</a>
+      <a href="/tilskudd/analyse">Portefølje</a>
+      <a href="/tilskudd/personvern">Personvern</a>
+      <a href="/tilskudd/aiact">KI-forordning</a>
+      <a href="/tilskudd/nis2">NIS 2</a>
+      <a href="/tilskudd/transparens">Hva KI tenkte</a>
+      <a href="/tilskudd/om">Slik virker det</a>
+      <a href="/tilskudd/soknad">Søk (simulert)</a>
+      <a href="/">Kurset</a>
+    </nav>
+  </header>
+  <main class="proto-shell proto-wide">
+    <div class="banner"><strong>Øvelse.</strong> KI-analyse av fiktive saker i de 16 boksene. Ikke Bufdir. Ikke vedtak. Du bestemmer.</div>
+    <section class="hero">
+      <h1>KI-analyse</h1>
+      <p>Maskinell opptelling først. Deretter kan du be KI se på kø, dokumentasjon og om sakene ligger i riktig boks. Filtrer forvalter, så kjør.</p>
+    </section>
+    <section class="panel" id="ki-analyse">
+      <label class="field">Forvalter
+        <select onchange="setForvalterFilter(this.value); renderKiAnalyseMaskin()">
+          <option value="alle">Alle</option>
+          <option value="Bufdir">Bufdir</option>
+          <option value="BFD">BFD</option>
+        </select>
+      </label>
+      <div id="kiAnalyseMaskin"></div>
+      <div class="chips" style="margin-top:0.6rem">
+        <button type="button" class="chip" onclick="settKiAnalyseSpm('Hvem kan ikke innstilles i det jeg ser nå?')">Hvem kan ikke innstilles?</button>
+        <button type="button" class="chip" onclick="settKiAnalyseSpm('Hvilke saker har svak dokumentasjon mot øvelseskravene?')">Svak dokumentasjon</button>
+        <button type="button" class="chip" onclick="settKiAnalyseSpm('Er sakene i riktig ordningsboks mot regelverket?')">Riktig boks?</button>
+        <button type="button" class="chip" onclick="settKiAnalyseSpm('Hva bør jeg åpne først, og hvorfor?')">Hva åpne først?</button>
+      </div>
+      <form onsubmit="sendKiAnalyse(event)">
+        <label class="field">Spørsmål til KI-analysen
+          <textarea id="kiAnalyseQ" rows="3" placeholder="F.eks. Hvilke saker bør Frank ta først?"></textarea>
+        </label>
+        <div class="btn-row">
+          <button class="btn btn-primary" type="submit">Kjør KI-analyse</button>
+          <a class="btn btn-ghost" href="/tilskudd/behandle">Til arbeidslisten</a>
+        </div>
+      </form>
+      <div id="kiAnalyseSvar"></div>
+    </section>
+    <div id="portefoljeLovRot"></div>
+  </main>
+  <footer class="proto-foot">Pedagogisk prototype. Ikke et fagsystem. Ikke Bufdir.</footer>
+  <script src="/tilskudd/ordninger.js"></script>
+  <script src="/tilskudd/personvern.js"></script>
+  <script src="/tilskudd/aiact.js"></script>
+  <script src="/tilskudd/nis2.js"></script>
+  <script src="/tilskudd/proto.js"></script>
+  <script src="/tilskudd/soknadskrav.js"></script>
+  <script src="/tilskudd/lovverk.js"></script>
+  <script src="/tilskudd/ansatt.js"></script>
+  <script src="/tilskudd/agent.js"></script>
+</body>
+</html>
