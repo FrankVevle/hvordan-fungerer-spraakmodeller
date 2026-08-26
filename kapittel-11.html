@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kapittel 11: Hvordan saksflyten stopper hallusinering · Hvordan Fungerer Språkmodeller?</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Fira+Code:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="site.css">
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen pb-32" data-page="kapittel-11.html">
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <a href="index.html" class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-purple-600 via-indigo-600 to-blue-500 flex items-center justify-center text-white font-black text-xl shadow-md shadow-purple-200">AI</div>
+        <div>
+          <h1 class="text-lg font-bold text-slate-900 leading-tight">Hvordan Fungerer Språkmodeller?</h1>
+          <p class="text-xs text-slate-500">Hver side er ett punkt</p>
+        </div>
+      </a>
+      <div class="bg-slate-100 p-1 rounded-xl flex border border-slate-200 text-xs font-semibold">
+        <button id="btnSimple" onclick="toggleMode('simple')" class="px-3.5 py-1.5 rounded-lg bg-white text-purple-700 shadow-sm transition-all font-bold">🟢 Enkel forklaring</button>
+        <button id="btnTech" onclick="toggleMode('tech')" class="px-3.5 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition-all">🔬 Teknisk dypdykk</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-4 sm:px-6 mt-8 space-y-6">
+    <p class="text-[11px] font-bold uppercase tracking-widest text-slate-500">Del 5 · Forslag</p>
+    <section class="space-y-6">
+      <div class="flex items-center gap-2">
+        <span class="w-8 h-8 rounded-lg bg-violet-800 text-white flex items-center justify-center font-bold text-sm">11</span>
+        <h2 class="text-xl font-bold text-slate-900">11. Hvordan saksflyten stopper hallusinering</h2>
+      </div>
+
+      <div class="bg-white p-5 sm:p-7 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+        <p class="text-slate-800 leading-relaxed text-base sm:text-lg">
+          En åpen chat kan skrive en paragraf som <em>høres</em> riktig ut. I tilskudd er det farlig: feil hjemmel, feil lik sak, eller et utkast som later som det er vedtak. Vi løser det ikke med «vær så snill, finn ikke på noe». Vi løser det med <strong>fast rekkefølge og en sjekk som ikke er KI</strong>.
+        </p>
+        <p class="text-sm text-slate-600 leading-relaxed">
+          I prototypen heter dette <strong>stegvis saksflyt</strong>. Det tekniske navnet er LangGraph: en koordinator som tvinger saken gjennom faste steg. Det er <em>ikke</em> fire frie agenter som diskuterer. Bare én av rollene er en språkmodell. De andre er grafen, kode — og deg.
+        </p>
+
+        <div id="flytScene" class="flyt-scene" aria-label="Animasjon av saksflyten på T-2622">
+          <div class="flyt-top">
+            <p class="flyt-kicker">Spill av på Brobyggerne (T-2622)</p>
+            <div class="flyt-btns">
+              <button type="button" id="flytPlay" class="flyt-btn">Pause</button>
+              <button type="button" id="flytPrev" class="flyt-btn flyt-btn-ghost">Forrige</button>
+              <button type="button" id="flytNext" class="flyt-btn flyt-btn-ghost">Neste</button>
+              <button type="button" id="flytRestart" class="flyt-btn flyt-btn-ghost">Fra start</button>
+            </div>
+          </div>
+
+          <article class="flyt-role" data-flyt="ork">
+            <span class="flyt-tag">Graf · ikke KI</span>
+            <strong>Koordinator</strong>
+            <em>Orkestrerer. Velger neste steg. Skriver ikke utkast.</em>
+          </article>
+
+          <div class="flyt-row">
+            <article class="flyt-role" data-flyt="rag">
+              <span class="flyt-tag">Kode</span>
+              <strong>Kildehenter</strong>
+              <em>Slår opp i mappa. Fellen blir liggende.</em>
+            </article>
+            <article class="flyt-role" data-flyt="gen">
+              <span class="flyt-tag">KI-modell</span>
+              <strong>Forslag</strong>
+              <em>Skriver utkast fra godkjente utdrag.</em>
+            </article>
+            <article class="flyt-role" data-flyt="val">
+              <span class="flyt-tag">Kode</span>
+              <strong>Sjekk</strong>
+              <em>Tester hjemmel, lik sak og «ikke vedtak».</em>
+            </article>
+            <article class="flyt-role" data-flyt="hit">
+              <span class="flyt-tag">Menneske</span>
+              <strong>Du</strong>
+              <em>Bekrefter. Ingenting sendes.</em>
+            </article>
+          </div>
+
+          <p class="flyt-loop" id="flytLoop" hidden>Sjekken sa nei → koordinatoren sender utkastet tilbake til forslag (maks to forsøk)</p>
+          <p class="flyt-snakk" id="flytSnakk"></p>
+          <ol class="flyt-log" id="flytLog"></ol>
+        </div>
+
+        <div>
+          <p class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Fire låser mot påhitt</p>
+          <div class="grid md:grid-cols-2 gap-3">
+            <article class="rounded-xl border border-slate-200 p-4 space-y-2">
+              <p class="text-[11px] font-bold uppercase tracking-wider text-violet-700">1 · Kontrollert mappe</p>
+              <p class="text-sm font-semibold text-slate-900">KI ser bare det som ligger på pulten</p>
+              <p class="text-sm text-slate-600 leading-relaxed">Før utkastet skrives, slår flyten opp i <em>vår</em> mappe: utlysning, øvelsesregler, lik sak, og merkede lovutdrag. Det som ikke er hentet, skal ikke brukes. En paragraf fra «det jeg tror jeg husker» er hallusinering — og den skal ikke få plass i notatet.</p>
+            </article>
+            <article class="rounded-xl border border-slate-200 p-4 space-y-2">
+              <p class="text-[11px] font-bold uppercase tracking-wider text-violet-700">2 · Fellen blir liggende</p>
+              <p class="text-sm font-semibold text-slate-900">Feil lik sak kan ligge i arkivet uten å bli hjemmel</p>
+              <p class="text-sm text-slate-600 leading-relaxed">I øvelsen ligger § 14 / Golfklubben i mappa, men merket som felle. Den går <strong>ikke</strong> med i utdragene KI får lov å sitere. Det er det samme prinsippet som at en gammel anleggssak ikke blir presedens for et jobbtilbud — selv om den ligger i samme system.</p>
+            </article>
+            <article class="rounded-xl border border-slate-200 p-4 space-y-2">
+              <p class="text-[11px] font-bold uppercase tracking-wider text-violet-700">3 · Maskinell sjekk</p>
+              <p class="text-sm font-semibold text-slate-900">Etter utkastet leser ikke KI seg selv — koden gjør det</p>
+              <p class="text-sm text-slate-600 leading-relaxed">Sjekken er bestemte tester: Er utkastet merket «ikke vedtak»? Siterer det en paragraf som ikke finnes i utdragene? Bruker jobbtilbud 4.2 Golfklubben som hjemmel? Mangler den lik sak Havblik? Feiler den, skrives utkastet på nytt — maks to forsøk — med feilen som tilbakemelding. Dette er ikke skjønn. Det er kontroll mot lista.</p>
+            </article>
+            <article class="rounded-xl border border-slate-200 p-4 space-y-2">
+              <p class="text-[11px] font-bold uppercase tracking-wider text-violet-700">4 · Mennesket</p>
+              <p class="text-sm font-semibold text-slate-900">Flyten sender ingenting</p>
+              <p class="text-sm text-slate-600 leading-relaxed">Selv et godkjent utkast er forarbeid. Du bekrefter, retter eller avviser. Forvaltningsloven § 2 og § 17 ligger i mappa nettopp for å si: dette er ikke vedtak, og utredningsplikten er din. KI-forordningen og personvernreglene peker samme vei: ikke automatisert vedtak.</p>
+            </article>
+          </div>
+        </div>
+
+        <div class="rounded-xl border border-violet-200 bg-violet-50 p-4 space-y-3">
+          <p class="text-xs font-bold uppercase tracking-wider text-violet-800">Eksempel du kan vise: Brobyggerne (T-2622)</p>
+          <div class="grid sm:grid-cols-2 gap-3 text-sm">
+            <div class="rounded-lg bg-white border border-rose-200 p-3">
+              <p class="font-semibold text-rose-900">Uten saksflyten</p>
+              <p class="text-slate-600 mt-1 leading-relaxed">En løs chat kan avslå med «§ 14» og vise til Golfklubben — fordi det høres ut som en tilskuddssak. Det er hallusinert hjemmel og feil lik sak.</p>
+            </div>
+            <div class="rounded-lg bg-white border border-emerald-200 p-3">
+              <p class="font-semibold text-emerald-900">Med saksflyten</p>
+              <p class="text-slate-600 mt-1 leading-relaxed">Oppslaget henter 4.2 og Havblik. Sjekken avviser § 14 / Golfklubben som hjemmel. Du ser sporet. Du avgjør innstillingen.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <p class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Hva sjekken faktisk tester</p>
+          <table class="w-full text-sm border-collapse">
+            <thead>
+              <tr class="text-left border-b border-slate-200">
+                <th class="py-2 pr-3 font-semibold text-slate-900">Test</th>
+                <th class="py-2 pr-3 font-semibold text-slate-900">Tilskuddsfaglig mening</th>
+                <th class="py-2 font-semibold text-slate-900">Hvis den feiler</th>
+              </tr>
+            </thead>
+            <tbody class="text-slate-700">
+              <tr class="border-b border-slate-100">
+                <td class="py-2.5 pr-3 font-medium">«Ikke vedtak»</td>
+                <td class="py-2.5 pr-3">Utkastet skal ikke late som enkeltvedtak</td>
+                <td class="py-2.5">Avvis. Skriv på nytt</td>
+              </tr>
+              <tr class="border-b border-slate-100">
+                <td class="py-2.5 pr-3 font-medium">Paragraf i utdragene</td>
+                <td class="py-2.5 pr-3">Du kan ikke sitere en § som ikke ligger i mappa</td>
+                <td class="py-2.5">Avvis. Det er påhitt</td>
+              </tr>
+              <tr class="border-b border-slate-100">
+                <td class="py-2.5 pr-3 font-medium">Riktig lik sak</td>
+                <td class="py-2.5 pr-3">Jobbtilbud skal ikke hvile på anleggssak</td>
+                <td class="py-2.5">Avvis Golfklubben / § 14</td>
+              </tr>
+              <tr class="border-b border-slate-100">
+                <td class="py-2.5 pr-3 font-medium">Riktig øvelsesregel</td>
+                <td class="py-2.5 pr-3">4.2 og Havblik skal faktisk brukes når saken er jobbtilbud</td>
+                <td class="py-2.5">Avvis tom henvisning</td>
+              </tr>
+              <tr>
+                <td class="py-2.5 pr-3 font-medium">Tenkning før konklusjon</td>
+                <td class="py-2.5 pr-3">Du skal kunne lese hva den brukte og lot være</td>
+                <td class="py-2.5">Avvis tynt notat</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <details class="rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <summary class="cursor-pointer font-semibold text-slate-900">Teknisk, kort — for den som spør «hva er LangGraph?»</summary>
+          <div class="mt-3 space-y-2 text-sm text-slate-700 leading-relaxed">
+            <p>LangGraph er et bibliotek som kjører en <strong>graf</strong>: noder med fast kant mellom seg. Hos oss er nodene <em>hent kilder → skriv utkast → sjekk</em>. Sjekken er vanlig programkode, ikke en ny modell. Feiler den, går kanten tilbake til utkast (maks to ganger). Temperaturen på modellen er lav (0,2), så den gjetter mindre fritt. Prompten inneholder bare godkjente utdrag — fellen er filtrert bort før den ser teksten.</p>
+            <p>Dette er det motsatte av én lang chat der saksbehandleren «håper» at modellen husker forskriften. Grafen tvinger rekkefølgen. Du tvinger vedtaket.</p>
+          </div>
+        </details>
+
+        <div class="rounded-xl border border-amber-200 bg-amber-50 p-4 space-y-2">
+          <p class="text-sm font-semibold text-amber-950">Hva dette <em>ikke</em> sikrer</p>
+          <p class="text-sm text-slate-700 leading-relaxed">Saksflyten stanser typisk hallusinering av <strong>hjemmel, lik sak og vedtakspreg</strong>. Den stanser ikke dårlig skjønn, tynn dokumentasjon eller at du overser noe i søknaden. Den erstatter ikke utredningsplikt. Den gjør ikke øvelsen til et vedtakssystem. Hvis sjekken slår feil to ganger, får du likevel se utkastet — merket — og du må si nei.</p>
+        </div>
+
+        <p class="text-xs text-slate-500">Øvelse. Ikke Bufdir. Ikke automatisert vedtak. <a href="tilskudd/" class="font-bold text-violet-800 underline underline-offset-2">Åpne prototypen</a> · <a href="kapittel-12.html" class="font-bold text-violet-800 underline underline-offset-2">Neste: forslag til gjennomføring</a></p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="max-w-6xl mx-auto px-4 sm:px-6 mt-16 pt-8 pb-4 border-t border-slate-200 text-center text-xs text-slate-500 font-medium">
+    <p>Pedagogisk øvelse. Ikke et Bufdir-verktøy. 27. august 2026.</p>
+  </footer>
+
+  <div id="chapterNav" class="fixed bottom-0 inset-x-0 z-50 bg-white/95 backdrop-blur border-t border-slate-200 px-4 py-3 shadow-[0_-8px_24px_rgba(15,23,42,0.08)]">
+    <div class="max-w-6xl mx-auto flex items-center justify-between gap-3">
+      <button type="button" id="btnPrevChapter" onclick="stepChapter(-1)" class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed">← Forrige</button>
+      <div class="text-center min-w-0">
+        <p id="chapterPartLabel" class="text-[11px] font-bold uppercase tracking-widest text-slate-500 truncate">Del 5 · Forslag</p>
+        <p id="chapterStepLabel" class="text-sm font-semibold text-slate-800">Kapittel 11: Saksflyt og hallusinering</p>
+      </div>
+      <button type="button" id="btnNextChapter" onclick="stepChapter(1)" class="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed">Neste →</button>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    (function () {
+      const steg = [
+        { role: "ork", text: "Koordinatoren tar imot T-2622 Brobyggerne. Fast rekkefølge — ikke fri chat.", log: "Start. Sak T-2622." },
+        { role: "rag", text: "Kildehenteren slår opp i mappa: 4.2 og Havblik. Golfklubben blokkeres.", log: "Hentet 4.2 + Havblik. Felle holdt tilbake." },
+        { role: "ork", text: "Koordinatoren sender bare godkjente utdrag videre. Den skriver ikke selv.", log: "Videre til forslag." },
+        { role: "gen", text: "Forslagsstilleren er den eneste KI-modellen. Den skriver utkast fra utdragene den fikk.", log: "Utkast 1 skrevet." },
+        { role: "val", text: "Sjekken er kode, ikke KI. Den leter etter feil hjemmel og manglende merking.", log: "Sjekk 1 kjører." },
+        { role: "val", mark: "fail", text: "Avvist: § 14 / Golfklubben som hjemmel. Koordinatoren sender saken tilbake.", log: "Avvist. Feil lik sak." },
+        { role: "gen", text: "Forslag på nytt, med feilen som tilbakemelding. Maks to forsøk.", log: "Utkast 2. Bruk 4.2 og Havblik." },
+        { role: "val", mark: "ok", text: "Sjekken godtar merking, hjemmel og lik sak. Neste er ikke sending — det er du.", log: "Sjekk 2: godtatt." },
+        { role: "hit", mark: "ok", text: "Saken ligger hos deg. Ingenting er sendt. Du avgjør innstillingen.", log: "Hos saksbehandler. Ikke vedtak." }
+      ];
+      const scene = document.getElementById("flytScene");
+      if (!scene) return;
+      const snakk = document.getElementById("flytSnakk");
+      const logg = document.getElementById("flytLog");
+      const loop = document.getElementById("flytLoop");
+      const playBtn = document.getElementById("flytPlay");
+      const roles = [...scene.querySelectorAll("[data-flyt]")];
+      let i = 0;
+      let timer = null;
+      const redusert = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      function tegn(idx) {
+        i = Math.max(0, Math.min(steg.length - 1, idx));
+        const s = steg[i];
+        roles.forEach((el) => {
+          el.classList.remove("is-on", "is-fail", "is-ok");
+          if (el.getAttribute("data-flyt") === s.role) {
+            el.classList.add(s.mark === "fail" ? "is-fail" : s.mark === "ok" ? "is-ok" : "is-on");
+          }
+        });
+        snakk.textContent = s.text;
+        loop.hidden = s.mark !== "fail";
+        logg.innerHTML = steg.slice(0, i + 1).map((rad, n) =>
+          `<li class="${n === i ? "is-new" : ""}">${n + 1}. ${rad.log}</li>`
+        ).join("");
+      }
+
+      function spill() {
+        stopp();
+        playBtn.textContent = "Pause";
+        timer = setInterval(() => {
+          if (i >= steg.length - 1) {
+            stopp();
+            playBtn.textContent = "Spill av";
+            return;
+          }
+          tegn(i + 1);
+        }, 2200);
+      }
+
+      function stopp() {
+        if (timer) clearInterval(timer);
+        timer = null;
+        playBtn.textContent = "Spill av";
+      }
+
+      document.getElementById("flytPlay").addEventListener("click", () => {
+        if (timer) stopp();
+        else {
+          if (i >= steg.length - 1) tegn(0);
+          spill();
+        }
+      });
+      document.getElementById("flytPrev").addEventListener("click", () => { stopp(); tegn(i - 1); });
+      document.getElementById("flytNext").addEventListener("click", () => { stopp(); tegn(i + 1); });
+      document.getElementById("flytRestart").addEventListener("click", () => { tegn(0); if (!redusert) spill(); });
+      tegn(0);
+      if (!redusert) spill();
+    })();
+  </script>
+</body>
+</html>

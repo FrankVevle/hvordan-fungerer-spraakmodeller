@@ -1,4 +1,29 @@
 const RAMME = 1000000;
+
+function aktivRamme(saker) {
+  const liste = saker || (typeof sakerFiltrert === "function" ? sakerFiltrert() : SAKER);
+  if (typeof finnOrdning !== "function") return RAMME;
+  const ids = new Set((liste || []).map((s) => s.ordningId || (typeof ORDNING_OVELSE_ID !== "undefined" ? ORDNING_OVELSE_ID : "inkludering-barn-unge")));
+  if (typeof ordningFilter !== "undefined" && ordningFilter && ordningFilter !== "alle") ids.add(ordningFilter);
+  let sum = 0;
+  let funnet = false;
+  ids.forEach((id) => {
+    const o = finnOrdning(id);
+    if (o && o.offentligBelop != null) {
+      sum += o.offentligBelop;
+      funnet = true;
+    }
+  });
+  return funnet ? sum : RAMME;
+}
+
+function sakRamme(sak) {
+  if (typeof finnOrdning === "function") {
+    const o = finnOrdning(sak?.ordningId || (typeof ORDNING_OVELSE_ID !== "undefined" ? ORDNING_OVELSE_ID : "inkludering-barn-unge"));
+    if (o && o.offentligBelop != null) return o.offentligBelop;
+  }
+  return aktivRamme([sak].filter(Boolean));
+}
 const ARCHIVE_KEY = "ovelseArkivMapper";
 const PORTAL_KEY = "ovelsePortalSaker";
 const TRACE_KEY = "ovelseKiSpor";
@@ -85,7 +110,7 @@ const BASE_SAKER = [
     kommune: "Oslo",
     aktivitet: "4.2 Jobbtilbud og veiledning",
     belop: 198000,
-    jobb: "LangGraph skal hente 4.2 og Havblik — ikke § 14. Du bekrefter likevel.",
+    jobb: "Saksflyten skal hente 4.2 og Havblik — ikke § 14. Du bekrefter likevel.",
     soknad: "Deltidsjobb og CV-kurs for 12 ungdommer. Samarbeid med bydel. Budsjett for lønn og veileder.",
     flag: "plantet",
     adminPct: 12,
@@ -436,7 +461,7 @@ const FALLBACK = {
     malgruppe: { score: 5, sitat: "lønnet praksis for 28 ungdommer" },
     medvirkning: { score: null, sitat: "ikke oppgitt" },
     gratis: { score: 4, sitat: "lønnet praksis" },
-    tenkning: "1. Formalia ser komplette ut i teksten jeg fikk.\n2. Admin 11 % er under 15 % — jeg foreslår ikke admin-kutt.\n3. 890 000 kr mot potten på 1 000 000 kr er et prioriteringsspørsmål. Jeg rangerer ikke hvem som skal kuttes.\n4. Medvirkning: ikke oppgitt.",
+    tenkning: "1. Formalia ser komplette ut i teksten jeg fikk.\n2. Admin 11 % er under 15 % — jeg foreslår ikke admin-kutt.\n3. 890 000 kr er stort, men mot offentlig ramme på inkludering er det et prioriteringsspørsmål. Jeg rangerer ikke hvem som skal kuttes.\n4. Medvirkning: ikke oppgitt.",
     brev: "Utkast — ikke vedtak\n\nSøknaden om 890 000 kr er formelt i orden. Innstilling mot ramme gjenstår hos deg."
   },
   "T-2603": {
@@ -603,7 +628,7 @@ function runGrantRules(sak) {
     checks.push({ status: "green", label: "Historikk", text: "Ingen åpen rapportmangel i øvelsen." });
   }
   if ((sak.flag === "ramme" || sak.id === "T-2632") && recommended > 0) {
-    checks.push({ status: "yellow", label: "Ramme", text: `Stort beløp mot potten ${kr(RAMME)}. KI kutter ikke. Du prioriterer.` });
+    checks.push({ status: "yellow", label: "Ramme", text: `Stort beløp mot offentlig ramme ${kr(sakRamme(sak))} (Tilskudd.no). KI kutter ikke. Du prioriterer.` });
   }
   if (sak.flag === "avvik" || sak.id === "T-2631") {
     recommended = 0;
@@ -707,7 +732,7 @@ function fallbackPortefoljeSvar(sporsmal) {
   const q = String(sporsmal || "").toLowerCase();
   const linjer = [
     "Ikke modell. Maskinell opptelling fra analysen:",
-    `${a.antall} saker. Søkt ${kr(a.sokt)} mot pott ${kr(RAMME)}.`,
+    `${a.antall} saker. Søkt ${kr(a.sokt)} mot offentlig ramme ${kr(aktivRamme())}.`,
     `Kan ikke innstilles (søker): ${a.koe.kanIkke.length}. Må avklares: ${a.koe.avklare.length}. Skjønn: ${a.koe.skjonn.length}. Plantet: ${a.koe.plantet.length}. Avvik: ${a.koe.avvik.length}.`,
     `Admin-kutt totalt ${kr(a.sokt - a.etterAdminKutt)}. Uten røde formalia/avvik kan ${a.utenRodeAntall} saker konkurrere om potten (${kr(a.sumKanKonkurrere)}).`
   ];
@@ -799,7 +824,7 @@ async function callGraphAPI(payload) {
       delay *= 2;
     }
   }
-  throw new Error("Kunne ikke kjøre LangGraph.");
+  throw new Error("Kunne ikke kjøre saksflyten.");
 }
 
 function kilderLabel(k) {
@@ -816,16 +841,20 @@ function graphKilderHtml(graph) {
     const cls = k.type === "lov" ? "jus-kilde-lov" : k.type === "veileder" || k.type === "kurs" ? "jus-kilde-veileder" : "jus-kilde-fiktiv";
     return `<li class="${cls}"><span class="mono">${esc(k.id || "—")}</span> ${esc(k.tittel || "")}${k.typeLabel ? ` <em>(${esc(k.typeLabel)})</em>` : ""}</li>`;
   }).join("");
-  return `<div class="think"><strong>Hentede kilder</strong><ul class="graph-kilder">${rows}</ul><p class="hint">Ikke juridisk rådgivning. Fiktive regler er øvelse. Du bekrefter — grafen sender ingenting.</p></div>`;
+  return `<div class="think"><strong>Hentede kilder</strong><ul class="graph-kilder">${rows}</ul><p class="hint">Ikke juridisk rådgivning. Fiktive regler er øvelse. Du bekrefter — saksflyten sender ingenting.</p></div>`;
+}
+
+function graphStegHtml(steps) {
+  if (!steps?.length) return "";
+  return `<ol class="graph-trace">${steps.map((t) => `<li><strong>${esc(t.tittel)}</strong>${t.detalj ? `<span>${esc(t.detalj)}</span>` : ""}</li>`).join("")}</ol>`;
 }
 
 function graphTraceHtml(graph) {
   if (!graph?.trace?.length && !graph?.retrieved?.length) return "";
-  const rows = (graph.trace || []).map((t) => `<li><strong>${esc(t.tittel)}</strong> — ${esc(t.detalj || "")}</li>`).join("");
   const sjekk = graph.validation?.ok
     ? `<p class="hint">Sjekken slapp utkastet gjennom. Du bekrefter fortsatt.</p>`
     : `<p class="hint">Sjekken slapp ikke utkastet gjennom: ${esc((graph.validation?.errors || []).join(" "))}</p>`;
-  return `${graphKilderHtml(graph)}<div class="think"><strong>LangGraph</strong><ol class="graph-trace">${rows}</ol>${sjekk}</div>`;
+  return `${graphKilderHtml(graph)}<div class="think"><strong>Stegvis saksflyt</strong>${graphStegHtml(graph.trace)}${sjekk}</div>`;
 }
 
 async function callModelAPI(prompt, system) {
@@ -1047,13 +1076,13 @@ function renderPipe(w) {
 function renderRamme() {
   const el = $("ramme");
   if (!el) return;
-  const sum = SAKER.reduce((n, s) => n + s.belop, 0);
-  const pct = Math.min(100, Math.round((sum / RAMME) * 100));
+  const liste = sakerFiltrert();
+  const sum = liste.reduce((n, s) => n + s.belop, 0);
+  const ramme = aktivRamme(liste);
+  const pct = Math.min(100, Math.round((sum / ramme) * 100));
   const o = typeof ordningOvelse === "function" ? ordningOvelse() : null;
-  const offentlig = o && typeof formatOffentligBelop === "function"
-    ? formatOffentligBelop(o, kr)
-    : "ikke oppgitt i kilden";
-  el.innerHTML = `<div class="ramme"><strong>Øvelsespott:</strong> ${kr(RAMME)} — fiktiv pott for prioritering. Vi fordeler ikke den offentlige rammen. <strong>Offentlig kontekst</strong> for ${esc(o?.navn || "Inkludering av barn og unge")}: ${esc(offentlig)}. ${SAKER.length} saker har søkt ${kr(sum)} mot øvelsespotten. KI kutter ikke for å få det til å gå opp. <strong>Du prioriterer.</strong><div class="bar"><i style="width:${pct}%"></i></div></div>`;
+  const snapshot = typeof ORDNINGER_SNAPSHOT !== "undefined" ? ORDNINGER_SNAPSHOT : "";
+  el.innerHTML = `<div class="ramme"><strong>Offentlig ramme:</strong> ${kr(ramme)} — tilgjengelige midler fra Tilskudd.no${snapshot ? ` (snapshot ${esc(snapshot)})` : ""}. Syntetiske saker mot ekte publiserte tall. Ikke live tildeling. ${liste.length} saker i visningen har søkt ${kr(sum)}. KI kutter ikke. <strong>Du prioriterer.</strong> Inkludering av barn og unge alene: ${o && typeof formatOffentligBelop === "function" ? esc(formatOffentligBelop(o, kr)) : "ikke oppgitt"}.<div class="bar"><i style="width:${pct}%"></i></div></div>`;
 }
 
 function sakerFiltrert() {
@@ -1236,7 +1265,13 @@ async function sendKiAnalyse(ev) {
     const dok = (s.dokumenter || []).filter((d) => d.status !== "ok").map((d) => d.id).join(",") || "ok";
     return `${s.id} | ${s.org} | ${sakOrdningTekst(s)} | ${s.flag} | søkt ${s.belop} | rød:${rod} | dok:${dok}`;
   }).join("\n");
-  const system = `Du er forvaltningsrådgiver i en øvelse. Du fatter aldri vedtak. Analyser KUN uttrekket. Siter T-nummer. Kort på norsk, maks 10 setninger. Pek på kø, dokumentasjon og mulig feil boks. Ikke omfordel potten. Ikke juridisk råd.`;
+  const system = `Du er forvaltningsrådgiver i en øvelse. Aldri vedtak. Bare uttrekket. Vanlig norsk.
+Gruppe svaret slik:
+1) Formalia — søker, rapport, revisor, admin.
+2) Dokumentasjon — tynne eller manglende vedlegg.
+3) Mulig feil ordning — bare hvis saken kan ligge i feil av de 16 boksene. Ikke bruk «Feil boks» som fast felt på hver sak.
+4) Prioritering — stort beløp mot offentlig ramme. Du kutter ikke.
+Ikke skriv LangGraph, RAG, Havblik eller intern teknikk. Siter T-nummer. Maks 12 setninger. Ikke juridisk råd.`;
   const prompt = `Frank ber om KI-analyse.\nSpørsmål: ${q}\nOmfang: ${ordningFilter === "alle" ? "synlige ordninger etter forvalterfilter" : ordningFilter}.\nUttrekk:\n${linjer}`;
   try {
     const text = await callModelAPI(prompt, system);
@@ -1332,7 +1367,7 @@ function renderCard() {
   const kiNote = w.running
     ? `<div class="note live-run">KI leser søknaden nå…</div>`
     : w.live === true
-      ? `<div class="note live-ok">Utkastet kom gjennom LangGraph (RAG + sjekk). Det er et forslag. Du fatter ikke vedtak her.</div>`
+      ? `<div class="note live-ok">Utkastet kom gjennom stegvis saksflyt (kilder → utkast → sjekk). Det er et forslag. Du fatter ikke vedtak her.</div>`
       : w.live === false
         ? `<div class="note live-off"><strong>Ikke KI-svar.</strong> Vi viser en ferdig øvelsestekst fordi live-kall ikke virket${w.error ? ` (${esc(w.error)})` : ""}.</div>`
         : `<div class="note">Venter på KI-steget.</div>`;
@@ -1370,7 +1405,7 @@ function renderCard() {
       <button class="btn btn-primary" type="button" ${w.running ? "disabled" : ""} onclick="runKI('${sak.id}', true)">Kjør KI på nytt</button>
     </div>
     ${kiNote}
-    ${planted ? `<div class="planted"><strong>Øvelse:</strong> I mappa ligger både jobbregel 4.2 og en felle (§ 14 / Golfklubben). LangGraph skal bare bruke 4.2 og Havblik. Les sporet — du bekrefter likevel.</div>` : ""}
+    ${planted ? `<div class="planted"><strong>Øvelse:</strong> I mappa ligger både jobbregel 4.2 og en felle (§ 14 / Golfklubben). Saksflyten skal bare bruke 4.2 og Havblik. Les sporet — du bekrefter likevel.</div>` : ""}
     ${w.graph ? graphTraceHtml(w.graph) : ""}
     <div class="split" style="margin-top:1rem">
       <div>
@@ -1481,7 +1516,7 @@ async function runKI(id, force, pvValg) {
   w.pvSendt = gate.sladdet ? "sladdet" : (gate.sjekk && gate.sjekk.niva !== "ok" ? "usladdet" : "ok");
   w.running = true;
   w.pipeline = "rag";
-  w.status = "LangGraph: RAG…";
+  w.status = "Henter kilder…";
   renderList();
   renderCard();
   const seq = ++kiSeq;
@@ -1498,7 +1533,7 @@ async function runKI(id, force, pvValg) {
       personvernNiva: w.pv?.niva || ""
     }
   };
-  addJournal({ type: "ki", sak: id, svar: force ? "Kjører LangGraph på nytt" : "Første LangGraph-kjøring" });
+  addJournal({ type: "ki", sak: id, svar: force ? "Kjører saksflyten på nytt" : "Første saksflyt" });
   try {
     w.pipeline = "ki";
     const graph = await callGraphAPI(payload);
@@ -1522,11 +1557,11 @@ async function runKI(id, force, pvValg) {
     w.traceId = saveTrace({
       sak: id,
       org: sak.org,
-      oppgave: "Sakskort — LangGraph",
+      oppgave: "Sakskort — stegvis saksflyt",
       live: w.live,
       kilder: (graph.retrieved || []).map(kilderLabel),
       prompt: JSON.stringify({ task: "sak", id: sak.id, graph: true }),
-      system: "LangGraph: RAG → utkast → sjekk",
+      system: "Stegvis saksflyt: kilder → utkast → sjekk",
       tenkning: parsed.tenkning,
       utkast: parsed.notat,
       brev: parsed.brev,
@@ -1547,11 +1582,11 @@ async function runKI(id, force, pvValg) {
     w.traceId = saveTrace({
       sak: id,
       org: sak.org,
-      oppgave: "Sakskort — LangGraph",
+      oppgave: "Sakskort — stegvis saksflyt",
       live: false,
       kilder: ragFor(sak).map((r) => r.tittel),
       prompt: JSON.stringify({ task: "sak", id: sak.id, graph: false }),
-      system: "LangGraph utilgjengelig — fallback",
+      system: "Saksflyt utilgjengelig — fallback",
       tenkning: fb.tenkning,
       utkast: fb.notat,
       brev: fb.brev,
@@ -1659,7 +1694,7 @@ function setView(name) {
 
 function kiBanner(state, runningTxt) {
   if (state.running) return `<div class="note live-run">${runningTxt}</div>`;
-  if (state.live === true) return `<div class="note live-ok">LangGraph har skrevet utkast etter sjekk. Du velger. Ikke vedtak.</div>`;
+  if (state.live === true) return `<div class="note live-ok">Saksflyten har skrevet utkast etter sjekk. Du velger. Ikke vedtak.</div>`;
   if (state.live === false) return `<div class="note live-off"><strong>Ikke KI-svar.</strong> Ferdig øvelsestekst. ${esc(state.error || "")}</div>`;
   return `<div class="note">Klar til å kjøre KI.</div>`;
 }
@@ -1715,11 +1750,11 @@ async function runKlage(force) {
     klage.traceId = saveTrace({
       sak: "T-2629",
       org: sak.org,
-      oppgave: "Klage — LangGraph",
+      oppgave: "Klage — stegvis saksflyt",
       live: klage.live,
       kilder: (graph.retrieved || []).map(kilderLabel),
       prompt: JSON.stringify({ task: "klage", id: "T-2629" }),
-      system: "LangGraph: RAG → utkast → sjekk",
+      system: "Stegvis saksflyt: kilder → utkast → sjekk",
       tenkning: klage.tenkning,
       utkast: klage.vurdering,
       brev: klage.omgjoring,
@@ -1735,7 +1770,7 @@ async function runKlage(force) {
     klage.live = false;
     klage.error = e?.message || "feil";
     klage.graph = null;
-    klage.traceId = saveTrace({ sak: "T-2629", org: sak.org, oppgave: "Klage — LangGraph", live: false, kilder: [RAG.admin.tittel, RAG.klage.tittel], prompt: "", system: "LangGraph utilgjengelig", tenkning: klage.tenkning, utkast: klage.vurdering, brev: klage.omgjoring, raw: "", error: klage.error });
+    klage.traceId = saveTrace({ sak: "T-2629", org: sak.org, oppgave: "Klage — stegvis saksflyt", live: false, kilder: [RAG.admin.tittel, RAG.klage.tittel], prompt: "", system: "Saksflyt utilgjengelig", tenkning: klage.tenkning, utkast: klage.vurdering, brev: klage.omgjoring, raw: "", error: klage.error });
   }
   klage.running = false;
   renderKlage();
@@ -1762,11 +1797,11 @@ async function runSlutt(force) {
     slutt.traceId = saveTrace({
       sak: "T-2631",
       org: sak.org,
-      oppgave: "Slutt — LangGraph",
+      oppgave: "Slutt — stegvis saksflyt",
       live: slutt.live,
       kilder: (graph.retrieved || []).map(kilderLabel),
       prompt: JSON.stringify({ task: "slutt", id: "T-2631" }),
-      system: "LangGraph: RAG → utkast → sjekk",
+      system: "Stegvis saksflyt: kilder → utkast → sjekk",
       tenkning: slutt.tenkning,
       utkast: slutt.vurdering,
       brev: slutt.tilbake,
@@ -1782,7 +1817,7 @@ async function runSlutt(force) {
     slutt.live = false;
     slutt.error = e?.message || "feil";
     slutt.graph = null;
-    slutt.traceId = saveTrace({ sak: "T-2631", org: sak.org, oppgave: "Slutt — LangGraph", live: false, kilder: [RAG.slutt.tittel], prompt: "", system: "LangGraph utilgjengelig", tenkning: slutt.tenkning, utkast: slutt.vurdering, brev: slutt.tilbake, raw: "", error: slutt.error });
+    slutt.traceId = saveTrace({ sak: "T-2631", org: sak.org, oppgave: "Slutt — stegvis saksflyt", live: false, kilder: [RAG.slutt.tittel], prompt: "", system: "Saksflyt utilgjengelig", tenkning: slutt.tenkning, utkast: slutt.vurdering, brev: slutt.tilbake, raw: "", error: slutt.error });
   }
   slutt.running = false;
   renderSlutt();
@@ -1867,6 +1902,8 @@ function fillPortalFromRegister() {
 }
 
 window.kr = kr;
+window.aktivRamme = aktivRamme;
+window.sakRamme = sakRamme;
 window.esc = esc;
 window.findSak = findSak;
 window.loadJson = loadJson;
@@ -1913,8 +1950,8 @@ function renderTransparens() {
   det.innerHTML = `
     <p class="mono" style="color:#4f46e5;font-weight:700;margin:0">${esc(sel.sak)} · ${esc(sel.atVis)}</p>
     <h2 style="margin:0.3rem 0">${esc(sel.oppgave)}</h2>
-    <p class="hint">${sel.live ? "Dette kom gjennom LangGraph (/api/graph)." : `Forhåndstekst — ikke live modell${sel.error ? ` (${esc(sel.error)})` : ""}.`}</p>
-    ${sel.graph?.length ? `<div class="think"><strong>Graf-steg</strong><ol class="graph-trace">${sel.graph.map((t) => `<li><strong>${esc(t.tittel)}</strong> — ${esc(t.detalj || "")}</li>`).join("")}</ol></div>` : ""}
+    <p class="hint">${sel.live ? "Dette kom gjennom stegvis saksflyt: kilder → utkast → sjekk." : `Forhåndstekst — ikke live modell${sel.error ? ` (${esc(sel.error)})` : ""}.`}</p>
+    ${sel.graph?.length ? `<div class="think"><strong>Hva saksflyten gjorde</strong>${graphStegHtml(sel.graph)}</div>` : ""}
     ${sel.validation ? `<p class="hint">Sjekk: ${sel.validation.ok ? "godtatt" : esc((sel.validation.errors || []).join(" "))}.</p>` : ""}
     <p class="hint">Ikke juridisk rådgivning. Utkastet er forarbeid — ikke vedtak.</p>
     <div class="think">
@@ -1980,7 +2017,7 @@ function renderAnalyse() {
     </section>
     <div class="kpi-grid">
       <div class="kpi"><b>${a.antall}</b><span>saker i bunken</span></div>
-      <div class="kpi"><b>${kr(a.sokt)}</b><span>søkt mot øvelsespott ${kr(RAMME)}</span></div>
+      <div class="kpi"><b>${kr(a.sokt)}</b><span>søkt mot offentlig ramme ${kr(aktivRamme())}</span></div>
       <div class="kpi"><b>${a.koe.kanIkke.length}</b><span>kan ikke innstilles</span></div>
       <div class="kpi"><b>${a.koe.avklare.length}</b><span>må avklares først</span></div>
     </div>
@@ -2006,13 +2043,13 @@ function renderAnalyse() {
 
     <section class="panel">
       <h2>B. Penger mot pott</h2>
-      <p class="hint">Innstillingssimulering mot øvelsespotten — ikke vedtak. Offentlig tall for ${esc((typeof ordningOvelse === "function" && ordningOvelse()?.navn) || "Inkludering av barn og unge")}: ${esc(typeof formatOffentligBelop === "function" && typeof ordningOvelse === "function" ? formatOffentligBelop(ordningOvelse(), kr) : "ikke oppgitt i kilden")}. Vi later ikke som vi fordeler det beløpet her.</p>
-      <p>Søkt totalt ${kr(a.sokt)} mot øvelsespott ${kr(RAMME)}. ${svgStolpe((a.sokt / RAMME) * 100, "#f59e0b")}</p>
+      <p class="hint">Syntetiske søknader mot offentlig ramme fra Tilskudd.no — ikke vedtak og ikke live fordeling.</p>
+      <p>Søkt totalt ${kr(a.sokt)} mot ramme ${kr(aktivRamme())}. ${svgStolpe((a.sokt / aktivRamme()) * 100, "#f59e0b")}</p>
       <p>Hvis du kutter all overskytende admin: ${kr(a.etterAdminKutt)} (likebehandling av 15 %-regelen).</p>
       <p>Hvis du tar ut røde formalia og avvik: ${a.utenRodeAntall} saker kan konkurrere, ${kr(a.sumKanKonkurrere)}.</p>
       <h3>De 10 største</h3>
       <table><thead><tr><th>Sak</th><th>Søker</th><th>Søkt</th><th>Andel av pott</th></tr></thead><tbody>
-      ${a.storst.map((r) => `<tr><td><a href="${sakLenke(r.sak.id)}">${esc(r.sak.id)}</a></td><td>${esc(r.sak.org)}</td><td>${kr(r.sak.belop)}</td><td>${Math.round((r.sak.belop / RAMME) * 100)} % ${svgStolpe((r.sak.belop / RAMME) * 100)}</td></tr>`).join("")}
+      ${a.storst.map((r) => `<tr><td><a href="${sakLenke(r.sak.id)}">${esc(r.sak.id)}</a></td><td>${esc(r.sak.org)}</td><td>${kr(r.sak.belop)}</td><td>${Math.round((r.sak.belop / aktivRamme()) * 100)} % ${svgStolpe((r.sak.belop / aktivRamme()) * 100)}</td></tr>`).join("")}
       </tbody></table>
     </section>
 

@@ -45,7 +45,7 @@
     <section class="panel" style="margin-bottom:1rem">
       <h2>Hvor dette ligger i veilederen</h2>
       <p>Intern bruker: du er saksbehandler. KI har lesetilgang og gjør forarbeid — den vedtar ikke og sender ikke brev. Mennesket godkjenner hver gang. Dette er en <strong>assistent</strong>, ikke en agent som utfører handlinger.</p>
-      <p>Prototypen er <strong>nivå 3</strong> (tilpasset, kontrollert datatilgang / RAG). Utkastet går gjennom <strong>LangGraph</strong>: RAG → utkast → sjekk (og nytt utkast hvis sjekken feiler). Dataene her er syntetiske. I skarp drift med personopplysninger (klasse D) kreves mer: DPIA/FRIA, eier i linja, logg som holder.</p>
+      <p>Prototypen er <strong>nivå 3</strong> (tilpasset, kontrollert datatilgang). Utkastet går gjennom <strong>stegvis saksflyt</strong>: kilder → utkast → sjekk (og nytt utkast hvis sjekken feiler). Dataene her er syntetiske. I skarp drift med personopplysninger (klasse D) kreves mer: DPIA/FRIA, eier i linja, logg som holder.</p>
     </section>
     <section class="panel" style="margin-bottom:1rem">
       <h2>1. Regler (alltid de samme)</h2>
@@ -64,8 +64,8 @@
       <p>Digitalsikkerhetsloven gjennomfører NIS 1. NIS 2 er under tilnærming; NSM har allerede speilet noen krav i forskriften. Prototypen er ikke samfunnsviktig tjeneste og varsler ikke hendelser. <a href="/tilskudd/nis2">Se hensynene</a>.</p>
     </section>
     <section class="panel" style="margin-bottom:1rem">
-      <h2>2. LangGraph (RAG, utkast, sjekk)</h2>
-      <p>Koordinatoren kjører faste steg. RAG henter godkjente utdrag — lov, fiktiv øvelsesregel og veileder. Fellen (§ 14 / Golfklubben) ligger i mappa, men går ikke til utkastet. Modellen scorer målgruppe, medvirkning og gratis, eller skriver «ikke oppgitt». Validatoren avviser feil hjemmel, manglende merking og påfunnede paragrafer. Først da ser du notat og brev.</p>
+      <h2>2. Stegvis saksflyt (kilder, utkast, sjekk)</h2>
+      <p>Koordinatoren kjører faste steg. Først hentes godkjente utdrag — lov, fiktiv øvelsesregel og veileder. Fellen (§ 14 / Golfklubben) ligger i mappa, men går ikke til utkastet. Modellen scorer målgruppe, medvirkning og gratis, eller skriver «ikke oppgitt». Sjekken avviser feil hjemmel, manglende merking og påfunnede paragrafer. Først da ser du notat og brev. <a href="/kapittel-11.html">Foil: hvordan dette stopper hallusinering</a>.</p>
     </section>
     <section class="panel" style="margin-bottom:1rem">
       <h2>3. Du (det som teller)</h2>
@@ -73,7 +73,7 @@
     </section>
     <section class="panel" style="margin-bottom:1rem">
       <h2>Ordningskatalogen</h2>
-      <p>Katalogen speiler de 16 boksene på Tilskudd.no (14 Bufdir + 2 BFD). De fiktive sakene er fordelt på boksene — ikke ekte søknader. Plantede øvelsessaker ligger under inkludering. Totalt budsjett er summen av tilgjengelige midler. Øvelsespotten er 1 mill. kr. <a href="/tilskudd/ordninger">Åpne katalogen</a>.</p>
+      <p>Katalogen speiler de 16 boksene på Tilskudd.no (14 Bufdir + 2 BFD). De fiktive sakene er fordelt på boksene — ikke ekte søknader. Plantede øvelsessaker ligger under inkludering. Rammen du prioriterer mot er boksenes «tilgjengelige midler» (inkludering: 614 656 000 kr). Ikke live tildeling. <a href="/tilskudd/ordninger">Åpne katalogen</a>.</p>
     </section>
     <section class="panel" style="margin-bottom:1rem">
       <h2>Min side og assistenten</h2>

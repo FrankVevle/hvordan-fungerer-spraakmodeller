@@ -282,8 +282,42 @@ td, th, p, li { overflow-wrap: anywhere; }
 
 .pipe { display: grid; grid-template-columns: repeat(6, 1fr); gap: 0.4rem; margin-bottom: 0.85rem; }
 @media (max-width: 800px) { .pipe { grid-template-columns: repeat(3, 1fr); } }
-.graph-trace { margin: 0.4rem 0 0; padding-left: 1.15rem; font-size: 0.82rem; }
-.graph-trace li { margin: 0.2rem 0; }
+.graph-trace {
+  list-style: none;
+  margin: 0.65rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+  counter-reset: saksflyt;
+}
+.graph-trace li {
+  margin: 0;
+  padding: 0.65rem 0.8rem 0.65rem 2.4rem;
+  position: relative;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+.graph-trace li::before {
+  counter-increment: saksflyt;
+  content: counter(saksflyt);
+  position: absolute;
+  left: 0.65rem;
+  top: 0.7rem;
+  width: 1.35rem;
+  height: 1.35rem;
+  border-radius: 999px;
+  background: #4f46e5;
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 800;
+  display: grid;
+  place-items: center;
+}
+.graph-trace li strong { display: block; color: #0f172a; }
+.graph-trace li span { display: block; margin-top: 0.2rem; color: #475569; font-weight: 450; }
 .graph-kilder { margin: 0.4rem 0 0; padding-left: 1.15rem; font-size: 0.82rem; }
 .graph-kilder li { margin: 0.25rem 0; padding-left: 0.45rem; }
 @media (max-width: 700px) { .pipe { grid-template-columns: 1fr 1fr; } }

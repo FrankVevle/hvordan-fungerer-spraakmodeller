@@ -21,6 +21,7 @@ const SITE_PAGES = [
   { file: "kapittel-8.html", title: "Kapittel 8 · Åpne data-øvelse", part: "Del 3" },
   { file: "kapittel-9.html", title: "Kapittel 9 · Tilskuddsløpet", part: "Del 4" },
   { file: "kapittel-10.html", title: "Kapittel 10 · Personlig agent", part: "Del 4" },
+  { file: "kapittel-11.html", title: "Kapittel 11 · Saksflyt og hallusinering", part: "Del 5" },
   { file: "kapittel-12.html", title: "Kapittel 12 · Forslag til gjennomføring", part: "Del 5" }
 ];
 
@@ -3214,16 +3215,16 @@ const LANGGRAPH_STEPS = [
   {
     id: "ork1",
     node: "orkestrator",
-    tittel: "1. Koordinator (LangGraph)",
+    tittel: "1. Koordinator",
     tilstand: "Sak T-2622 Brobyggerne. Ingen kilder hentet ennå.",
     tekst: "Koordinatoren ber RAG slå opp aktivitetstype og om vi har en lik sak. Den skriver ikke svaret selv."
   },
   {
     id: "rag1",
     node: "rag",
-    tittel: "2. RAG slår opp i mappa",
+    tittel: "2. Henter kilder fra mappa",
     tilstand: "Treff: jobbtilbud 4.2 og Havblik. Golfklubben ligger i mappa som anlegg — ikke som lik sak.",
-    tekst: "RAG kan bare sitere det den faktisk hentet — øvelsesregel 4.2, Havblik og lovutdrag som fvl § 2 og § 17. En paragraf som ikke er i uttrekket, skal ikke brukes. § 14 / Golfklubben ligger i mappa som felle."
+    tekst: "Oppslaget kan bare sitere det den faktisk hentet — øvelsesregel 4.2, Havblik og lovutdrag som fvl § 2 og § 17. En paragraf som ikke er i uttrekket, skal ikke brukes. § 14 / Golfklubben ligger i mappa som felle."
   },
   {
     id: "val1",
@@ -3235,7 +3236,7 @@ const LANGGRAPH_STEPS = [
   {
     id: "ork2",
     node: "orkestrator",
-    tittel: "4. LangGraph sender saken til deg",
+    tittel: "4. Saksflyten sender saken til deg",
     tilstand: "validering feilet. Neste steg er saksbehandler, ikke utkast.",
     tekst: "Koordinatoren fatter ikke vedtak. Feilen skal være synlig."
   },
@@ -3244,7 +3245,7 @@ const LANGGRAPH_STEPS = [
     node: "menneske",
     tittel: "5. Du avgjør",
     tilstand: "Forslaget avvises. Ingenting er sendt.",
-    tekst: "Bekreft, avvis med begrunnelse, eller la saken stå. Uten deg går ikke LangGraph videre til utkast."
+    tekst: "Bekreft, avvis med begrunnelse, eller la saken stå. Uten deg går ikke saksflyten videre til utkast."
   },
   {
     id: "lev",
@@ -3291,7 +3292,7 @@ async function runLiveLangGraph() {
   const box = document.getElementById("langGraphLive");
   if (!box) return;
   box.classList.remove("hidden");
-  box.innerHTML = `<p class="text-xs text-slate-600">Kjører LangGraph (RAG → utkast → sjekk)…</p>`;
+  box.innerHTML = `<p class="text-xs text-slate-600">Kjører stegvis saksflyt (kilder → utkast → sjekk)…</p>`;
   try {
     const response = await fetch("/api/graph", {
       method: "POST",
@@ -3304,7 +3305,7 @@ async function runLiveLangGraph() {
           belop: 198000,
           aktivitet: "4.2 Jobbtilbud og veiledning",
           flag: "plantet",
-          jobb: "LangGraph skal hente 4.2 og Havblik."
+          jobb: "Saksflyten skal hente 4.2 og Havblik."
         },
         soknad: "Deltidsjobb og CV-kurs for 12 ungdommer. Samarbeid med bydel. Budsjett for lønn og veileder."
       })

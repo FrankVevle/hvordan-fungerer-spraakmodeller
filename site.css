@@ -49,6 +49,111 @@ body { font-family: 'Inter', sans-serif; }
     }
     .grant-card { animation: grantIn 0.35s ease both; }
 
+    .flyt-scene {
+      background: #0f172a;
+      color: #e2e8f0;
+      border-radius: 1.1rem;
+      padding: 1.1rem 1.15rem 1.2rem;
+      border: 1px solid #1e293b;
+    }
+    .flyt-top {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.6rem;
+      margin-bottom: 0.85rem;
+    }
+    .flyt-kicker {
+      margin: 0;
+      font-size: 0.7rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #a78bfa;
+    }
+    .flyt-btns { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+    .flyt-btn {
+      border: 0;
+      border-radius: 0.55rem;
+      padding: 0.35rem 0.7rem;
+      font-size: 0.75rem;
+      font-weight: 700;
+      background: #7c3aed;
+      color: #fff;
+      cursor: pointer;
+    }
+    .flyt-btn-ghost { background: #1e293b; color: #cbd5e1; }
+    .flyt-role {
+      border: 1px solid #334155;
+      background: #111827;
+      border-radius: 0.85rem;
+      padding: 0.7rem 0.8rem;
+      opacity: 0.42;
+      transition: opacity 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease, transform 0.35s ease;
+    }
+    .flyt-role strong { display: block; color: #fff; font-size: 0.95rem; }
+    .flyt-role em { display: block; margin-top: 0.2rem; font-style: normal; font-size: 0.75rem; color: #94a3b8; line-height: 1.4; }
+    .flyt-tag {
+      display: inline-block;
+      margin-bottom: 0.25rem;
+      font-size: 0.62rem;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #c4b5fd;
+    }
+    .flyt-role[data-flyt="ork"] { margin-bottom: 0.7rem; }
+    .flyt-row {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 0.55rem;
+    }
+    @media (max-width: 800px) {
+      .flyt-row { grid-template-columns: 1fr 1fr; }
+    }
+    .flyt-role.is-on {
+      opacity: 1;
+      border-color: #a78bfa;
+      box-shadow: 0 0 0 2px rgba(167, 139, 250, 0.35);
+      transform: translateY(-2px);
+    }
+    .flyt-role.is-fail { opacity: 1; border-color: #fb7185; box-shadow: 0 0 0 2px rgba(251, 113, 133, 0.35); }
+    .flyt-role.is-ok { opacity: 1; border-color: #34d399; box-shadow: 0 0 0 2px rgba(52, 211, 153, 0.3); }
+    .flyt-loop {
+      margin: 0.7rem 0 0;
+      padding: 0.45rem 0.65rem;
+      border-radius: 0.55rem;
+      background: #4c0519;
+      color: #fecdd3;
+      font-size: 0.78rem;
+      font-weight: 650;
+    }
+    .flyt-snakk {
+      min-height: 3.1rem;
+      margin: 0.75rem 0 0;
+      padding: 0.7rem 0.8rem;
+      border-radius: 0.75rem;
+      background: #1e293b;
+      color: #f8fafc;
+      font-size: 0.92rem;
+      line-height: 1.45;
+    }
+    .flyt-log {
+      margin: 0.55rem 0 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      gap: 0.2rem;
+      font-size: 0.72rem;
+      color: #94a3b8;
+      font-family: "Fira Code", monospace;
+    }
+    .flyt-log li.is-new { color: #e2e8f0; }
+    @media (prefers-reduced-motion: reduce) {
+      .flyt-role { transition: none; }
+    }
+
     .modal-details {
       display: block !important;
       margin-top: 0.75rem;
