@@ -2206,7 +2206,28 @@ window.sendKiAnalyse = sendKiAnalyse;
 window.settKiAnalyseSpm = settKiAnalyseSpm;
 window.renderKiAnalyseMaskin = renderKiAnalyseMaskin;
 
+function initProtoNav() {
+  const bar = document.querySelector(".proto-bar");
+  const nav = document.querySelector(".proto-nav");
+  if (!bar || !nav || nav.dataset.ready) return;
+  nav.dataset.ready = "1";
+  if (!nav.id) nav.id = "proto-nav";
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.className = "proto-nav-toggle";
+  btn.setAttribute("aria-expanded", "false");
+  btn.setAttribute("aria-controls", nav.id);
+  btn.textContent = "Meny";
+  btn.addEventListener("click", () => {
+    const open = bar.classList.toggle("nav-open");
+    btn.setAttribute("aria-expanded", open ? "true" : "false");
+    btn.textContent = open ? "Lukk" : "Meny";
+  });
+  bar.insertBefore(btn, nav);
+}
+
 document.addEventListener("DOMContentLoaded", () => {
+  initProtoNav();
   if ($("sporListe")) {
     renderTransparens();
     window.addEventListener("hashchange", renderTransparens);
