@@ -65,7 +65,8 @@ function personvernKobleSaker(saker) {
 }
 
 function personvernKildeTekst(sak) {
-  return [sak.soknad || "", sak.org || ""].join("\n");
+  const full = typeof sakFulltekst === "function" ? sakFulltekst(sak) : (sak.soknad || "");
+  return [full, sak.org || ""].join("\n");
 }
 
 function personvernNivaVinner(a, b) {
@@ -105,8 +106,8 @@ function sjekkPersonvern(sak) {
   return {
     niva,
     funn,
-    sladdet: sladdPersonvernTekst(sak.soknad || "", funn),
-    raa: sak.soknad || ""
+    sladdet: sladdPersonvernTekst(typeof sakFulltekst === "function" ? sakFulltekst(sak) : (sak.soknad || ""), funn),
+    raa: typeof sakFulltekst === "function" ? sakFulltekst(sak) : (sak.soknad || "")
   };
 }
 

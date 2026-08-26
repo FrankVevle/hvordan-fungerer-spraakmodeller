@@ -13,23 +13,29 @@
     <div class="proto-brand">Tilskudd (øvelse)<span>Portefølje — kø, pott og spørsmål</span></div>
     <nav class="proto-nav">
       <a href="/tilskudd/">Start</a>
+      <a href="/tilskudd/velkommen">Min side</a>
+      <a href="/tilskudd/ordninger">Ordninger</a>
       <a href="/tilskudd/behandle">Arbeidsliste</a>
+      <a href="/tilskudd/ki-analyse">KI-analyse</a>
       <a class="is-on" href="/tilskudd/analyse">Portefølje</a>
       <a href="/tilskudd/personvern">Personvern</a>
+      <a href="/tilskudd/aiact">KI-forordning</a>
+      <a href="/tilskudd/nis2">NIS 2</a>
       <a href="/tilskudd/transparens">Hva KI tenkte</a>
       <a href="/tilskudd/om">Slik virker det</a>
       <a href="/">Kurset</a>
     </nav>
   </header>
   <main class="proto-shell proto-wide">
-    <div class="banner"><strong>Øvelse.</strong> Fiktiv ordning. Maskinell opptelling. KI fatter ikke vedtak. Vi kjører ikke vurdering på hver sak — modellen får et uttrekk av bunken.</div>
+    <div class="banner"><strong>Øvelse.</strong> Fiktive saker fordelt på 16 tilskuddsområder. Øvelsespotten er 1 mill. kr — ikke de offentlige rammene. KI fatter ikke vedtak.</div>
     <section class="hero">
       <h1>Hva gjør du i dag — og hva kan du ikke innstille?</h1>
       <p>Kø, penger, likebehandling og risiko. Åpne en sak når du skal bruke skjønn. Spør KI om hele bunken nederst. Uttrekket til KI er sladdet av <a href="/tilskudd/personvern">personvernmodulen</a>.</p>
     </section>
     <div id="analyseRot"></div>
+    <div id="portefoljeLovRot"></div>
     <section class="panel" style="margin-top:1rem">
-      <h2>Spør KI om hele bunken</h2>
+      <h2>KI-analyse av hele bunken</h2>
       <p class="hint">Modellen får én linje per sak (samme fakta som reglene). Siter saksnummer. Ikke vedtak.</p>
       <form id="pfForm" onsubmit="sendPortefoljeSporsmal(event)">
         <label class="field">Spørsmål
@@ -50,7 +56,14 @@
     </section>
   </main>
   <footer class="proto-foot">Pedagogisk prototype. Ikke Bufdir. Ikke vedtak.</footer>
+  <script src="/tilskudd/ordninger.js"></script>
   <script src="/tilskudd/personvern.js"></script>
+  <script src="/tilskudd/aiact.js"></script>
+  <script src="/tilskudd/nis2.js"></script>
   <script src="/tilskudd/proto.js"></script>
+  <script src="/tilskudd/soknadskrav.js"></script>
+  <script src="/tilskudd/lovverk.js"></script>
+  <script src="/tilskudd/ansatt.js"></script>
+  <script src="/tilskudd/agent.js"></script>
 </body>
 </html>

@@ -13,9 +13,14 @@
     <div class="proto-brand">Tilskudd (øvelse)<span>Slik virker prototypen</span></div>
     <nav class="proto-nav">
       <a href="/tilskudd/">Start</a>
+      <a href="/tilskudd/velkommen">Min side</a>
+      <a href="/tilskudd/ordninger">Ordninger</a>
       <a href="/tilskudd/behandle">Arbeidsliste</a>
+      <a href="/tilskudd/ki-analyse">KI-analyse</a>
       <a href="/tilskudd/analyse">Portefølje</a>
       <a href="/tilskudd/personvern">Personvern</a>
+      <a href="/tilskudd/aiact">KI-forordning</a>
+      <a href="/tilskudd/nis2">NIS 2</a>
       <a href="/tilskudd/transparens">Hva KI tenkte</a>
       <a class="is-on" href="/tilskudd/om">Slik virker det</a>
       <a href="/tilskudd/soknad">Søk (simulert)</a>
@@ -37,12 +42,28 @@
       <p>En egen modul leter etter fødselsnummer, helse, navngitte barn, e-post, telefon og adresse. Rødt stopper automatisk KI. Standard er sladdet tekst. Dette er mønstersøk, ikke et vedtak om at behandlingen er lovlig. <a href="/tilskudd/personvern">Se sjekken av hele bunken</a>.</p>
     </section>
     <section class="panel" style="margin-bottom:1rem">
+      <h2>1c. KI-forordningen</h2>
+      <p>KI er beslutningsstøtte. Hvis dette var ekte tilskuddsforvaltning, ville det sannsynligvis vært høyrisiko. Ingen samsvarserklæring. <a href="/tilskudd/aiact">Se hensynene</a>.</p>
+    </section>
+    <section class="panel" style="margin-bottom:1rem">
+      <h2>1d. NIS 2 og Norges tilnærming</h2>
+      <p>Digitalsikkerhetsloven gjennomfører NIS 1. NIS 2 er under tilnærming; NSM har allerede speilet noen krav i forskriften. Prototypen er ikke samfunnsviktig tjeneste og varsler ikke hendelser. <a href="/tilskudd/nis2">Se hensynene</a>.</p>
+    </section>
+    <section class="panel" style="margin-bottom:1rem">
       <h2>2. KI (leser og skriver)</h2>
       <p>Modellen får bare søknadsteksten og noen fiktive utdrag. Den scorer målgruppe, medvirkning og gratis — eller skriver «ikke oppgitt». Deretter et notat og et brev merket som utkast.</p>
     </section>
     <section class="panel" style="margin-bottom:1rem">
       <h2>3. Du (det som teller)</h2>
       <p>Bekreft, juster beløp, avvis med grunn, eller la saken stå. På T-2622 er poenget at KI har hentet feil paragraf. Da skal du stoppe den.</p>
+    </section>
+    <section class="panel" style="margin-bottom:1rem">
+      <h2>Ordningskatalogen</h2>
+      <p>Katalogen speiler de 16 boksene på Tilskudd.no (14 Bufdir + 2 BFD). De fiktive sakene er fordelt på boksene — ikke ekte søknader. Plantede øvelsessaker ligger under inkludering. Totalt budsjett er summen av tilgjengelige midler. Øvelsespotten er 1 mill. kr. <a href="/tilskudd/ordninger">Åpne katalogen</a>.</p>
+    </section>
+    <section class="panel" style="margin-bottom:1rem">
+      <h2>Min side og assistenten</h2>
+      <p>Frank er en fiktiv saksbehandler med en tildelt bunke. Hver søknad har syntetisk dokumentasjon (mål, etikk, plan, budsjett) og et øvelseskart over lov. KI leser dokumentene i den samlede vurderingen — ikke vedtak. <a href="/tilskudd/velkommen">Åpne min side</a>.</p>
     </section>
     <section class="panel" style="margin-bottom:1rem">
       <h2>Bygget nå, og det som bare er tegnet</h2>
@@ -52,5 +73,14 @@
     <p><a class="btn btn-primary" href="/tilskudd/behandle">Gå til arbeidslisten</a></p>
   </main>
   <footer class="proto-foot">Pedagogisk prototype. Ikke et fagsystem.</footer>
+  <script src="/tilskudd/ordninger.js"></script>
+  <script src="/tilskudd/personvern.js"></script>
+  <script src="/tilskudd/aiact.js"></script>
+  <script src="/tilskudd/nis2.js"></script>
+  <script src="/tilskudd/proto.js"></script>
+  <script src="/tilskudd/soknadskrav.js"></script>
+  <script src="/tilskudd/lovverk.js"></script>
+  <script src="/tilskudd/ansatt.js"></script>
+  <script src="/tilskudd/agent.js"></script>
 </body>
 </html>

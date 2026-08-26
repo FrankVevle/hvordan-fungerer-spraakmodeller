@@ -13,9 +13,14 @@
     <div class="proto-brand">Tilskudd (øvelse)<span>Simulert innsending</span></div>
     <nav class="proto-nav">
       <a href="/tilskudd/">Start</a>
+      <a href="/tilskudd/velkommen">Min side</a>
+      <a href="/tilskudd/ordninger">Ordninger</a>
       <a href="/tilskudd/behandle">Arbeidsliste</a>
+      <a href="/tilskudd/ki-analyse">KI-analyse</a>
       <a href="/tilskudd/analyse">Portefølje</a>
       <a href="/tilskudd/personvern">Personvern</a>
+      <a href="/tilskudd/aiact">KI-forordning</a>
+      <a href="/tilskudd/nis2">NIS 2</a>
       <a href="/tilskudd/transparens">Hva KI tenkte</a>
       <a href="/tilskudd/om">Slik virker det</a>
       <a class="is-on" href="/tilskudd/soknad">Søk (simulert)</a>
@@ -23,10 +28,13 @@
     </nav>
   </header>
   <main class="proto-shell" style="max-width:40rem;margin:0 auto">
-    <div class="banner">Dette er ikke en ekte søknadsportal. Teksten lagres bare i nettleseren din.</div>
+    <div class="banner"><strong>Ikke Bufdir. Ikke Tilskudd.no.</strong> Simulert innsending. Teksten lagres bare i nettleseren. Vi tildeler ikke ekte penger.</div>
     <section class="panel">
       <h1>Send en fiktiv søknad</h1>
-      <p class="hint">Prøv org.nr. 999 555 666 (Åsby bibliotekvenner) eller 999 333 001 (AS som ikke kan søke).</p>
+      <p class="hint">Prøv org.nr. 999 555 666 (Åsby bibliotekvenner) eller 999 333 001 (AS som ikke kan søke). Velg en ordning fra katalogen — saksbunken i øvelsen ligger under inkludering.</p>
+      <label class="field">Ordning
+        <select id="pOrdning"></select>
+      </label>
       <label class="field">Organisasjonsnummer
         <input id="pOrgnr" type="text" value="999 555 666" />
       </label>
@@ -51,7 +59,14 @@
     </section>
   </main>
   <footer class="proto-foot">Simulert portal. Ikke sending til noe fagsystem.</footer>
+  <script src="/tilskudd/ordninger.js"></script>
   <script src="/tilskudd/personvern.js"></script>
+  <script src="/tilskudd/aiact.js"></script>
+  <script src="/tilskudd/nis2.js"></script>
   <script src="/tilskudd/proto.js"></script>
+  <script src="/tilskudd/soknadskrav.js"></script>
+  <script src="/tilskudd/lovverk.js"></script>
+  <script src="/tilskudd/ansatt.js"></script>
+  <script src="/tilskudd/agent.js"></script>
 </body>
 </html>

@@ -252,6 +252,7 @@ function utvidNySak(row, i, opt = {}) {
     orgnr,
     kommune,
     aktivitet,
+    ordningId: typeof ORDNING_OVELSE_ID !== "undefined" ? ORDNING_OVELSE_ID : "inkludering-barn-unge",
     belop,
     jobb,
     soknad,
@@ -362,6 +363,43 @@ const SAKER = BASE_SAKER
   .concat(NYE_SAKER_FRO.map((row, i) => utvidNySak(row, i)))
   .concat(FLERE_SAKER_FRO.map((row, i) => utvidNySak(row, i, { orgPrefix: "997", idStart: 2801 })));
 
+const ORDNING_FAST_INKLUDERING = new Set(["T-2629", "T-2631", "T-2622", "T-2612", "T-2632", "T-2801"]);
+
+function knyttSakerTilOrdninger(saker) {
+  const inkl = typeof ORDNING_OVELSE_ID !== "undefined" ? ORDNING_OVELSE_ID : "inkludering-barn-unge";
+  const pool = (typeof ORDNINGER !== "undefined" ? ORDNINGER : []).map((o) => o.id);
+  const ids = pool.length ? pool : [inkl];
+  let n = 0;
+  saker.forEach((s) => {
+    if (ORDNING_FAST_INKLUDERING.has(s.id) || s.flag === "plantet") {
+      s.ordningId = inkl;
+      return;
+    }
+    s.ordningId = ids[n % ids.length];
+    n += 1;
+  });
+}
+
+knyttSakerTilOrdninger(SAKER);
+
+let ordningFilter = "alle";
+let forvalterFilter = "alle";
+
+function sakOrdning(sak) {
+  const id = sak?.ordningId || (typeof ORDNING_OVELSE_ID !== "undefined" ? ORDNING_OVELSE_ID : "inkludering-barn-unge");
+  if (typeof finnOrdning === "function") {
+    const o = finnOrdning(id);
+    if (o) return o;
+  }
+  return { id, navn: "Inkludering av barn og unge", kortnavn: "Inkludering (øvelse)", ovelse: true };
+}
+
+function sakOrdningTekst(sak) {
+  const o = sakOrdning(sak);
+  if (typeof ordningVisningsnavn === "function") return ordningVisningsnavn(o, true);
+  return o.kortnavn || o.navn;
+}
+
 if (typeof personvernKobleSaker === "function") personvernKobleSaker(SAKER);
 
 const REGISTER = SAKER.filter((s) => !/Privatperson/.test(s.org)).map((s) => ({
@@ -380,7 +418,9 @@ const RAG = {
   planted: { tittel: "Feil hentet utdrag (øvelse)", tekst: "Likebehandling: Golfklubben Fjord (T-2621) fikk avslag. Sim. forskrift § 14 om investering. Anbefalt avslag." },
   klage: { tittel: "Øvelsesregel · nytt faktum", tekst: "Honorar til kursleder er faglig aktivitet, ikke generell administrasjon, når det følger av dokumentasjon. Omgjøring er saksbehandlers. KI fatter ikke vedtak." },
   slutt: { tittel: "Øvelsesregel · slutt", tekst: "Tilskudd brukt i strid med vilkår kan kreves tilbake forholdsmessig. Godkjent aktivitet holdes utenfor. Forslag — ikke innkreving." },
-  personvern: { tittel: "Øvelsesregel 2026 · personvern", tekst: "Fødselsnummer, helse og navngitte barn skal sladdes før teksten går til KI. E-post, telefon og adresse sladdes som hovedregel. Modulen er mønstersøk — ikke et vedtak om lovlighet." }
+  personvern: { tittel: "Øvelsesregel 2026 · personvern", tekst: "Fødselsnummer, helse og navngitte barn skal sladdes før teksten går til KI. E-post, telefon og adresse sladdes som hovedregel. Modulen er mønstersøk — ikke et vedtak om lovlighet." },
+  aiact: { tittel: "Øvelse · KI-forordningen", tekst: "Du er beslutningsstøtte. Mennesket fatter ikke vedtak i denne prototypen. Hvis dette var ekte tilskuddsforvaltning, ville bruken sannsynligvis vært høyrisiko (vedlegg III). Ingen samsvarserklæring." },
+  nis2: { tittel: "Øvelse · NIS 2 og Norge", tekst: "Norge gjennomfører NIS 1 i digitalsikkerhetsloven. NIS 2 er under tilnærming, ikke ferdig i norsk rett. NSM er kontaktpunkt. Denne prototypen er ikke en samfunnsviktig tjeneste og varsler ikke hendelser." }
 };
 
 const FALLBACK = {
@@ -439,15 +479,17 @@ function fallbackFromSak(sak) {
       : `1. Jeg leste søknaden til ${sak.org}.\n2. Flagget i øvelsen er ${sak.flag}.\n3. Jeg skriver utkast, ikke vedtak.`,
     notat: planted
       ? "Anbefalt avslag med henvisning til § 14 og Golfklubben Fjord (T-2621)."
-      : `Øvelsesutkast for ${sak.id}. ${sak.jobb} Ikke vedtak.`,
-    brev: `Utkast — ikke vedtak\n\nTil ${sak.org}\n\n${sak.soknad}\n\nDette er et forslag til saksbehandler.`
+      : `Øvelsesutkast for ${sak.id}. ${sak.jobb} Dokumentasjonen er lest i øvelsen. Ikke vedtak.`,
+    brev: `Utkast — ikke vedtak\n\nTil ${sak.org}\n\n${sak.soknad}\n\nDette er et forslag til saksbehandler.`,
+    ...(typeof fallbackDokSemantikk === "function" ? fallbackDokSemantikk(sak) : {})
   };
 }
 
 const SYS = `Du er forvaltningsrådgiver i en pedagogisk øvelse (2026). Du fatter ALDRI vedtak. Du er ikke Bufdir.
-Du får KUN søknadstekst og utdrag under. Hvis noe mangler: skriv «ikke oppgitt».
-Admin 15 % og revisor 200 000 kr er øvelsesregler 2026.
-Svar på norsk. Start ALLTID med tenkning — skriv høyt hva du gjør, før du konkluderer.
+Etter KI-forordningen (EU) 2024/1689 er du beslutningsstøtte: søkeren og saksbehandleren skal se at dette er utkast, ikke automatisert vedtak.
+Du får søknadstekst, syntetiske søknadsdokumenter og utdrag. Hvis noe mangler: skriv «ikke oppgitt».
+Admin 15 %, revisor 200 000 kr og øvelseskrav til innhold (mål, rekruttering, plan, samarbeid, budsjett, egenfinansiering, etikk) er øvelse 2026 — ikke live Bufdir.
+Svar på norsk. Start ALLTID med tenkning — skriv høyt hva du gjør, før du konkluderer. Les dokumentene, ikke bare ingressen.
 
 ## Tenkning
 Nummererte setninger (5–8):
@@ -465,6 +507,22 @@ Medvirkning: N/5
 Sitat medvirkning: "..." eller ikke oppgitt
 Gratis: N/5
 Sitat gratis: "..." eller ikke oppgitt
+
+## Dokumentasjon
+Mål og evaluering: N/5
+Sitat mål: "..." eller ikke oppgitt
+Rekruttering: N/5
+Sitat rekruttering: "..." eller ikke oppgitt
+Fremdrift: N/5
+Sitat fremdrift: "..." eller ikke oppgitt
+Samarbeid: N/5
+Sitat samarbeid: "..." eller ikke oppgitt
+Budsjett og egenfinansiering: N/5
+Sitat budsjett: "..." eller ikke oppgitt
+Etikk og trygghet: N/5
+Sitat etikk: "..." eller ikke oppgitt
+Samlet dokumentasjon: N/5
+Sitat samlet: "..." eller ikke oppgitt
 
 ## Saksnotat
 Kort innstillingsforslag. Ikke fatt vedtak.
@@ -549,6 +607,11 @@ function runGrantRules(sak) {
     recommended = 0;
     checks.push({ status: "red", label: "Slutt", text: "Deler av beløpet er brukt utenfor vilkår. Utkast: tilbakekreving. Ikke innkreving." });
   }
+  if (typeof sjekkSoknadskrav === "function") {
+    sjekkSoknadskrav(sak).forEach((c) => {
+      if (["etikk", "egen", "profitt", "mal", "plan"].includes(c.id)) checks.push(c);
+    });
+  }
   return { checks, recommended };
 }
 
@@ -592,6 +655,12 @@ function analyserPortefolje() {
     if (!perAkt[k]) perAkt[k] = [];
     perAkt[k].push(r);
   });
+  const perOrdning = {};
+  rader.forEach((r) => {
+    const k = r.sak.ordningId || (typeof ORDNING_OVELSE_ID !== "undefined" ? ORDNING_OVELSE_ID : "inkludering-barn-unge");
+    if (!perOrdning[k]) perOrdning[k] = [];
+    perOrdning[k].push(r);
+  });
   const perKommune = {};
   rader.forEach((r) => {
     perKommune[r.sak.kommune] = (perKommune[r.sak.kommune] || 0) + 1;
@@ -608,6 +677,7 @@ function analyserPortefolje() {
     koe,
     adminOver,
     perAkt,
+    perOrdning,
     toppKommuner,
     storst,
     risiko: {
@@ -626,7 +696,7 @@ function portefoljeDigest() {
     const rod = r.røde.map((c) => c.label).join("/") || "-";
     const gul = r.gule.map((c) => c.label).join("/") || "-";
     const setning = String(soknadTilModell(r.sak, "sladd") || "").replace(/\s+/g, " ").slice(0, 90);
-    return `${r.sak.id} | ${r.sak.org} | ${r.sak.kommune} | ${r.sak.aktivitet} | søkt ${r.sak.belop} | admin ${r.sak.adminPct}% | ${r.sak.flag} | anbefalt ${r.rules.recommended} | rød:${rod} | gul:${gul} | ${setning}`;
+    return `${r.sak.id} | ${r.sak.org} | ${sakOrdningTekst(r.sak)} | ${r.sak.aktivitet} | søkt ${r.sak.belop} | admin ${r.sak.adminPct}% | ${r.sak.flag} | anbefalt ${r.rules.recommended} | rød:${rod} | gul:${gul} | ${setning}`;
   }).join("\n");
 }
 
@@ -696,6 +766,7 @@ function ragFor(sak) {
   if (sak.id === "T-2629") items.push(RAG.klage);
   if (sak.flag === "avvik" || sak.id === "T-2631") items.push(RAG.slutt);
   if (typeof sjekkPersonvern === "function" && sjekkPersonvern(sak).niva !== "ok") items.push(RAG.personvern);
+  if (RAG.aiact) items.push(RAG.aiact);
   return items;
 }
 
@@ -746,6 +817,13 @@ function parseKi(text) {
     malgruppe: { score: score(grab("Målgruppe")), sitat: grab("Sitat målgruppe") || "ikke oppgitt" },
     medvirkning: { score: score(grab("Medvirkning")), sitat: grab("Sitat medvirkning") || "ikke oppgitt" },
     gratis: { score: score(grab("Gratis")), sitat: grab("Sitat gratis") || "ikke oppgitt" },
+    dokMal: { score: score(grab("Mål og evaluering")), sitat: grab("Sitat mål") || "ikke oppgitt" },
+    dokMalg: { score: score(grab("Rekruttering")), sitat: grab("Sitat rekruttering") || "ikke oppgitt" },
+    dokPlan: { score: score(grab("Fremdrift")), sitat: grab("Sitat fremdrift") || "ikke oppgitt" },
+    dokSam: { score: score(grab("Samarbeid")), sitat: grab("Sitat samarbeid") || "ikke oppgitt" },
+    dokOkonomi: { score: score(grab("Budsjett og egenfinansiering")), sitat: grab("Sitat budsjett") || "ikke oppgitt" },
+    dokEtikk: { score: score(grab("Etikk og trygghet")), sitat: grab("Sitat etikk") || "ikke oppgitt" },
+    dokSamlet: { score: score(grab("Samlet dokumentasjon")), sitat: grab("Sitat samlet") || "ikke oppgitt" },
     tenkning,
     notat: note || text.trim(),
     brev: brev || "",
@@ -781,6 +859,7 @@ function ensure(id) {
       live: null,
       error: "",
       hitl: "",
+      grunn: "",
       running: false,
       pv: typeof sjekkPersonvern === "function" ? sjekkPersonvern(sak) : null,
       pvValg: "",
@@ -840,6 +919,15 @@ function byggKiVurdering(sak, w) {
     linje("Målgruppe", sem.malgruppe),
     linje("Medvirkning", sem.medvirkning),
     linje("Gratis", sem.gratis),
+    "",
+    "## Dokumentasjon",
+    linje("Mål og evaluering", sem.dokMal),
+    linje("Rekruttering", sem.dokMalg),
+    linje("Fremdrift", sem.dokPlan),
+    linje("Samarbeid", sem.dokSam),
+    linje("Budsjett og egenfinansiering", sem.dokOkonomi),
+    linje("Etikk og trygghet", sem.dokEtikk),
+    linje("Samlet dokumentasjon", sem.dokSamlet),
     "",
     "## Tenkning",
     sem.tenkning || "(ikke oppgitt)",
@@ -907,15 +995,27 @@ function renderRamme() {
   if (!el) return;
   const sum = SAKER.reduce((n, s) => n + s.belop, 0);
   const pct = Math.min(100, Math.round((sum / RAMME) * 100));
-  el.innerHTML = `<div class="ramme"><strong>Pott i øvelsen:</strong> ${kr(RAMME)}. ${SAKER.length} saker har søkt ${kr(sum)} til sammen. KI kutter ikke for å få det til å gå opp. <strong>Du prioriterer.</strong><div class="bar"><i style="width:${pct}%"></i></div></div>`;
+  const o = typeof ordningOvelse === "function" ? ordningOvelse() : null;
+  const offentlig = o && typeof formatOffentligBelop === "function"
+    ? formatOffentligBelop(o, kr)
+    : "ikke oppgitt i kilden";
+  el.innerHTML = `<div class="ramme"><strong>Øvelsespott:</strong> ${kr(RAMME)} — fiktiv pott for prioritering. Vi fordeler ikke den offentlige rammen. <strong>Offentlig kontekst</strong> for ${esc(o?.navn || "Inkludering av barn og unge")}: ${esc(offentlig)}. ${SAKER.length} saker har søkt ${kr(sum)} mot øvelsespotten. KI kutter ikke for å få det til å gå opp. <strong>Du prioriterer.</strong><div class="bar"><i style="width:${pct}%"></i></div></div>`;
 }
 
 function sakerFiltrert() {
-  if (listFilter === "alle") return SAKER;
-  if (listFilter === "personvern") {
-    return SAKER.filter((s) => typeof sjekkPersonvern === "function" && sjekkPersonvern(s).niva !== "ok");
+  let liste = SAKER;
+  if (ordningFilter !== "alle") {
+    liste = liste.filter((s) => (s.ordningId || ORDNING_OVELSE_ID) === ordningFilter);
   }
-  return SAKER.filter((s) => s.flag === listFilter);
+  if (listFilter === "alle") return liste;
+  if (listFilter === "frank") {
+    const mine = typeof FRANK_TILDELTE !== "undefined" ? FRANK_TILDELTE : [];
+    return liste.filter((s) => mine.includes(s.id));
+  }
+  if (listFilter === "personvern") {
+    return liste.filter((s) => typeof sjekkPersonvern === "function" && sjekkPersonvern(s).niva !== "ok");
+  }
+  return liste.filter((s) => s.flag === listFilter);
 }
 
 function setListFilter(flag) {
@@ -923,28 +1023,127 @@ function setListFilter(flag) {
   renderList();
 }
 
+function setForvalterFilter(v) {
+  forvalterFilter = v || "alle";
+  renderList();
+}
+
+function setOrdningFilter(id) {
+  const neste = id || "alle";
+  ordningFilter = ordningFilter === neste ? "alle" : neste;
+  if (selected && ordningFilter !== "alle") {
+    const sak = findSak(selected);
+    if (sak && (sak.ordningId || ORDNING_OVELSE_ID) !== ordningFilter) selected = null;
+  }
+  renderList();
+  if (!selected) renderCard();
+  try { history.replaceState(null, "", ordningFilter === "alle" ? location.pathname : `#ordning=${ordningFilter}`); } catch (_e) { /* ignore */ }
+}
+
+function visOrdninger() {
+  const alle = typeof ORDNINGER !== "undefined" ? ORDNINGER : [];
+  return alle.filter((o) => !o.ikkeSokbar && (forvalterFilter === "alle" || o.forvalter === forvalterFilter));
+}
+
 function renderList() {
   const box = $("liste");
   if (!box) return;
-  const flags = ["alle", "ok", "avkorting", "formalia", "historikk", "ramme", "avvik", "plantet", "personvern"];
-  const chips = flags.map((f) => {
-    const n = f === "alle"
-      ? SAKER.length
-      : f === "personvern"
-        ? SAKER.filter((s) => typeof sjekkPersonvern === "function" && sjekkPersonvern(s).niva !== "ok").length
-        : SAKER.filter((s) => s.flag === f).length;
-    const on = listFilter === f;
-    const label = f === "alle" ? "Alle" : f === "personvern" ? "Personvern" : tagText(f);
-    return `<button type="button" class="chip ${on ? "on" : ""}" onclick="setListFilter('${f}')">${label} ${n}</button>`;
+  const ordninger = visOrdninger();
+  const bokser = ordninger.map((o) => {
+    const n = SAKER.filter((s) => (s.ordningId || ORDNING_OVELSE_ID) === o.id).length;
+    const sokt = SAKER.filter((s) => (s.ordningId || ORDNING_OVELSE_ID) === o.id).reduce((sum, s) => sum + s.belop, 0);
+    const merke = o.id === ORDNING_OVELSE_ID ? "Øvelse" : o.forvalter;
+    const on = ordningFilter === o.id;
+    return `<button type="button" class="ordning-boks ${on ? "on" : ""}" onclick="setOrdningFilter('${esc(o.id)}')">
+      <div class="meta"><span>${esc(o.dtId || "")}</span><span class="tag ${on ? "tag-ramme" : "tag-ok"}">${esc(merke)}</span></div>
+      <h3>${esc(o.kortnavn || o.navn)}</h3>
+      <p class="amt">${n} saker · søkt ${kr(sokt)}</p>
+      <p class="job">${esc(o.forvalter)} · ${esc(o.tema || "")}</p>
+    </button>`;
   }).join("");
-  const rows = sakerFiltrert().map((sak) => `
-    <button type="button" class="${selected === sak.id ? "on" : ""}" onclick="openSak('${sak.id}')">
-      <div class="meta"><span>${sak.id}</span><span class="tag ${tagClass(sak.flag)}">${tagText(sak.flag)}</span>${typeof sjekkPersonvern === "function" && sjekkPersonvern(sak).niva !== "ok" ? `<span class="tag ${sjekkPersonvern(sak).niva === "rod" ? "tag-formalia" : "tag-avkorting"}">PV</span>` : ""}</div>
-      <h3>${esc(sak.org)}</h3>
-      <p class="amt">${kr(sak.belop)}</p>
-      <p class="job">${esc(sak.jobb)}</p>
-    </button>`).join("");
-  box.innerHTML = `<div class="chips">${chips}</div>${rows}`;
+  const saker = sakerFiltrert();
+  const sakKort = ordningFilter === "alle"
+    ? `<p class="hint">Klikk en ordningsboks for å se sakene. Fiktive saker. Ikke Bufdir.</p>`
+    : `<div class="sak-rutenett">${saker.map((sak) => `
+      <button type="button" class="${selected === sak.id ? "on" : ""}" onclick="openSak('${sak.id}')">
+        <div class="meta"><span>${sak.id}</span><span class="tag ${tagClass(sak.flag)}">${tagText(sak.flag)}</span>${typeof sjekkPersonvern === "function" && sjekkPersonvern(sak).niva !== "ok" ? `<span class="tag ${sjekkPersonvern(sak).niva === "rod" ? "tag-formalia" : "tag-avkorting"}">PV</span>` : ""}</div>
+        <h3>${esc(sak.org)}</h3>
+        <p class="amt">${kr(sak.belop)}</p>
+        <p class="job">${esc(sak.jobb)}</p>
+      </button>`).join("") || "<p class='hint'>Ingen saker i denne boksen med dagens filter.</p>"}</div>`;
+  box.innerHTML = `<label class="field">Forvalter
+      <select onchange="setForvalterFilter(this.value)">
+        <option value="alle" ${forvalterFilter === "alle" ? "selected" : ""}>Alle</option>
+        <option value="Bufdir" ${forvalterFilter === "Bufdir" ? "selected" : ""}>Bufdir</option>
+        <option value="BFD" ${forvalterFilter === "BFD" ? "selected" : ""}>BFD</option>
+      </select>
+    </label>
+    <div class="ordning-rutenett">${bokser}</div>
+    ${ordningFilter !== "alle" ? `<h3 class="sak-rutenett-tittel">${saker.length} saker i valgt boks</h3>` : ""}
+    ${sakKort}`;
+  renderKiAnalyseMaskin();
+}
+
+function sakerIKiAnalyse() {
+  if (ordningFilter !== "alle") return sakerFiltrert();
+  const ids = new Set(visOrdninger().map((o) => o.id));
+  return SAKER.filter((s) => ids.has(s.ordningId || ORDNING_OVELSE_ID));
+}
+
+function renderKiAnalyseMaskin() {
+  const rot = $("kiAnalyseMaskin");
+  if (!rot) return;
+  const saker = sakerIKiAnalyse();
+  const rader = saker.map((sak) => {
+    const rules = runGrantRules(sak);
+    return { sak, rules, rød: rules.checks.filter((c) => c.status === "red"), gul: rules.checks.filter((c) => c.status === "yellow") };
+  });
+  const kanIkke = rader.filter((r) => r.rød.some((c) => c.label === "Søker" || c.id === "profitt"));
+  const svakDok = saker.filter((s) => (s.dokumenter || []).some((d) => d.status !== "ok"));
+  const plantet = saker.filter((s) => s.flag === "plantet");
+  const omfang = ordningFilter === "alle"
+    ? `${visOrdninger().length} synlige ordninger`
+    : (typeof sakOrdningTekst === "function" && saker[0] ? sakOrdningTekst(saker[0]) : ordningFilter);
+  rot.innerHTML = `<div class="kpi-grid">
+    <div class="kpi"><b>${saker.length}</b><span>saker i analysen (${esc(omfang)})</span></div>
+    <div class="kpi"><b>${kanIkke.length}</b><span>kan ikke innstilles</span></div>
+    <div class="kpi"><b>${svakDok.length}</b><span>svak eller manglende dokumentasjon</span></div>
+    <div class="kpi"><b>${plantet.length}</b><span>plantede øvelsessaker</span></div>
+  </div>
+  <p class="hint">Maskinell opptelling. KI-analysen under bruker de samme sakene. Ikke vedtak.</p>`;
+}
+
+function settKiAnalyseSpm(tekst) {
+  const q = $("kiAnalyseQ");
+  if (q) q.value = tekst;
+}
+
+function kiAnalyseFallback(spm, saker) {
+  const kanIkke = saker.filter((s) => runGrantRules(s).checks.some((c) => c.status === "red" && (c.label === "Søker" || c.id === "profitt")));
+  const svak = saker.filter((s) => (s.dokumenter || []).some((d) => d.status !== "ok"));
+  return `Ikke modell. I utvalget er det ${saker.length} saker. Kan ikke innstilles: ${kanIkke.map((s) => s.id).join(", ") || "ingen"}. Svak dokumentasjon: ${svak.slice(0, 8).map((s) => s.id).join(", ") || "ingen"}. Spørsmål var: ${spm}. Ikke vedtak.`;
+}
+
+async function sendKiAnalyse(ev) {
+  if (ev) ev.preventDefault();
+  const q = ($("kiAnalyseQ")?.value || "").trim() || "Gi en kort KI-analyse av det jeg ser: kø, dokumentasjon og om sakene ligger i riktig boks.";
+  const out = $("kiAnalyseSvar");
+  if (!out) return;
+  const saker = sakerIKiAnalyse();
+  out.innerHTML = `<div class="note live-run">Analyserer ${saker.length} saker…</div>`;
+  const linjer = saker.map((s) => {
+    const rod = runGrantRules(s).checks.filter((c) => c.status === "red").map((c) => c.label).join("/") || "-";
+    const dok = (s.dokumenter || []).filter((d) => d.status !== "ok").map((d) => d.id).join(",") || "ok";
+    return `${s.id} | ${s.org} | ${sakOrdningTekst(s)} | ${s.flag} | søkt ${s.belop} | rød:${rod} | dok:${dok}`;
+  }).join("\n");
+  const system = `Du er forvaltningsrådgiver i en øvelse. Du fatter aldri vedtak. Analyser KUN uttrekket. Siter T-nummer. Kort på norsk, maks 10 setninger. Pek på kø, dokumentasjon og mulig feil boks. Ikke omfordel potten. Ikke juridisk råd.`;
+  const prompt = `Frank ber om KI-analyse.\nSpørsmål: ${q}\nOmfang: ${ordningFilter === "alle" ? "synlige ordninger etter forvalterfilter" : ordningFilter}.\nUttrekk:\n${linjer}`;
+  try {
+    const text = await callModelAPI(prompt, system);
+    out.innerHTML = `<div class="note live-ok">Live KI-analyse. Forslag — ikke vedtak.</div><p>${typeof lenkSaksnr === "function" ? lenkSaksnr(text) : esc(text)}</p>`;
+  } catch (_e) {
+    out.innerHTML = `<div class="note live-off"><strong>Ikke modell.</strong> Ferdig øvelsestekst.</div><p>${esc(kiAnalyseFallback(q, saker))}</p>`;
+  }
 }
 
 function renderJournal() {
@@ -976,14 +1175,50 @@ function pvKortHtml(sak, w) {
     ${knapper}`;
 }
 
+function nis2KortHtml(sak, w) {
+  if (typeof sjekkNis2Sak !== "function") return `<p class="hint">NIS 2-modulen er ikke lastet.</p>`;
+  const nis = sjekkNis2Sak(sak, {
+    work: w,
+    pv: typeof sjekkPersonvern === "function" ? sjekkPersonvern(sak) : { niva: "ok" },
+    harSpor: Boolean(w.traceId)
+  });
+  const cls = nis.klasse === "hoy-konsekvens" ? "check-yellow" : "check-green";
+  return `<div class="check ${cls}"><small>${esc(nis.klasseTekst)}</small>${esc(NIS2_REF)}. Prototypen er ikke innmeldt hos NSM.</div>
+    <ul>${nis.grunner.map((g) => `<li>${esc(g)}</li>`).join("")}
+      <li>${esc(nis.varsling)}</li>
+    </ul>
+    <p class="hint"><a href="/tilskudd/nis2">Norges tilnærming og full liste</a>. Ikke samsvar.</p>`;
+}
+
+function aiActKortHtml(sak, w) {
+  if (typeof sjekkAiActSak !== "function") return `<p class="hint">KI-forordningsmodulen er ikke lastet.</p>`;
+  const act = sjekkAiActSak(sak, { work: w, pv: typeof sjekkPersonvern === "function" ? sjekkPersonvern(sak) : { niva: "ok" }, harSpor: Boolean(w.traceId) });
+  const cls = act.klasse === "hoy-tilsyn" ? "check-yellow" : "check-green";
+  return `<div class="check ${cls}"><small>${esc(act.klasseTekst)} · ${esc(act.bruk)}</small>Ikke automatisert vedtak. ${esc(AIACT_REF || "KI-forordningen")}.</div>
+    <ul>${act.grunner.map((g) => `<li>${esc(g)}</li>`).join("")}
+      <li>Tilsyn: ${esc(act.tilsyn)}</li>
+      <li>Logging i øvelsen: ${act.logging ? "spor finnes" : "ingen spor ennå"}</li>
+    </ul>
+    <p class="hint"><a href="/tilskudd/aiact">Systemkrav og full klassifisert liste</a>. Ikke samsvarserklæring.</p>`;
+}
+
 function semRow(label, item) {
   const score = item?.score != null ? `${item.score}/5` : "—";
   return `<tr><td>${esc(label)}</td><td class="mono">${score}</td><td>${esc(item?.sitat || "ikke oppgitt")}</td></tr>`;
 }
 
+function aktivEditorId() {
+  const el = document.activeElement;
+  if (el && ["belop", "notat", "brev", "grunn"].includes(el.id)) return el.id;
+  return "";
+}
+
 function renderCard() {
   const box = $("kort");
   if (!box) return;
+  if (selected && work[selected]) readEditors(work[selected]);
+  const fokus = aktivEditorId();
+  const caret = fokus && document.activeElement ? document.activeElement.selectionStart : null;
   renderRamme();
   if (!selected) {
     renderPipe(null);
@@ -1022,14 +1257,14 @@ function renderCard() {
     ? `<ul class="arkiv-liste">${arkiv.dokumenter.map((d) => `<li><strong>${esc(d.tittel)}</strong> · ${esc(d.at)}<br><span class="hint">${esc(d.merknad || "Simulert journalpost.")}</span></li>`).join("")}</ul>`
     : `<p class="hint">Ingen journalposter i øvelsesarkivet på denne saken ennå.</p>`;
   const sem = w.semantic
-    ? `<table><thead><tr><th>Tema</th><th>Score</th><th>Sitat</th></tr></thead><tbody>${semRow("Målgruppe", w.semantic.malgruppe)}${semRow("Medvirkning", w.semantic.medvirkning)}${semRow("Gratis", w.semantic.gratis)}</tbody></table>`
+    ? `<table><thead><tr><th>Tema</th><th>Score</th><th>Sitat</th></tr></thead><tbody>${semRow("Målgruppe", w.semantic.malgruppe)}${semRow("Medvirkning", w.semantic.medvirkning)}${semRow("Gratis", w.semantic.gratis)}${semRow("Mål og evaluering", w.semantic.dokMal)}${semRow("Rekruttering", w.semantic.dokMalg)}${semRow("Fremdrift", w.semantic.dokPlan)}${semRow("Samarbeid", w.semantic.dokSam)}${semRow("Budsjett / egenandel", w.semantic.dokOkonomi)}${semRow("Etikk og trygghet", w.semantic.dokEtikk)}${semRow("Samlet dokumentasjon", w.semantic.dokSamlet)}</tbody></table>`
     : `<p class="hint">${w.running ? "Leser teksten…" : "Ingen tekstvurdering ennå."}</p>`;
   box.innerHTML = `
     <div style="display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;align-items:flex-start">
       <div>
         <p class="mono" style="margin:0;color:#4f46e5;font-weight:700">${sak.id}</p>
         <h2 style="margin:0.15rem 0">${esc(sak.org)}</h2>
-        <p class="hint" style="margin:0">${esc(sak.kommune)} · ${esc(sak.aktivitet)}</p>
+        <p class="hint" style="margin:0">${esc(sakOrdningTekst(sak))} · ${esc(sak.kommune)} · ${esc(sak.aktivitet)}</p>
         <p style="margin:0.55rem 0 0;font-weight:650">Din jobb: ${esc(sak.jobb)}</p>
       </div>
       <button class="btn btn-primary" type="button" ${w.running ? "disabled" : ""} onclick="runKI('${sak.id}', true)">Kjør KI på nytt</button>
@@ -1040,10 +1275,13 @@ function renderCard() {
       <div>
         <h3>Søknaden</h3>
         <p>${esc(sak.soknad)}</p>
+        <h3>All dokumentasjon</h3>
+        ${typeof dokVisHtml === "function" ? dokVisHtml(sak) : `<p class="hint">${esc(sak.soknad)}</p>`}
         <h3>Budsjett</h3>
         <table>${budsjett}</table>
         <h3>Vedlegg</h3>
         <ul>${vedlegg}${kiVedlegg}</ul>
+        ${typeof sakLovHtml === "function" ? sakLovHtml(sak) : ""}
         <h3>Arkiv (øvelse)</h3>
         <p class="hint">Simulert journal — ikke Elements eller annen ekte arkivløsning.</p>
         ${arkivListe}
@@ -1051,6 +1289,10 @@ function renderCard() {
       <div>
         <h3>Personvern</h3>
         ${pvKortHtml(sak, w)}
+        <h3>KI-forordningen</h3>
+        ${aiActKortHtml(sak, w)}
+        <h3>NIS 2 / Norge</h3>
+        ${nis2KortHtml(sak, w)}
         <h3>Det tallene viser</h3>
         ${checks}
         <h3>Det KI sier om teksten</h3>
@@ -1065,8 +1307,8 @@ function renderCard() {
         <label class="field">Utkast til brev
           <textarea id="brev" rows="5" class="mono">${esc(w.letter)}</textarea>
         </label>
-        <label class="field">Din grunn (må fylles ved avvis)
-          <input id="grunn" type="text" placeholder="Skriv hvorfor…" />
+        <label class="field">Din merknad til bekreft, juster eller avvis
+          <textarea id="grunn" rows="3" placeholder="Skriv hva du mener — påkrevd ved avvis, valgfri ellers.">${esc(w.grunn || "")}</textarea>
         </label>
         <div class="btn-row">
           <button class="btn btn-dark" type="button" onclick="hitl('bekreft')">Bekreft forslag</button>
@@ -1074,22 +1316,42 @@ function renderCard() {
           <button class="btn btn-ghost" type="button" onclick="hitl('avvis')">Avvis med grunn</button>
           <button class="btn btn-ghost" type="button" onclick="hitl('sta')">La stå</button>
         </div>
-        <p class="hint">Ingenting blir vedtak. Vi lagrer bare et øvelsesnotat i nettleseren.</p>
+        <p class="hint">Skriv i feltet over, så trykk en knapp. Ingenting blir vedtak. Vi lagrer bare et øvelsesnotat i nettleseren.</p>
         ${w.hitl ? `<p><strong>${esc(w.hitl)}</strong></p>` : ""}
       </div>
     </div>`;
+  ["belop", "notat", "brev", "grunn"].forEach((id) => {
+    const el = $(id);
+    if (!el) return;
+    el.addEventListener("input", () => {
+      if (selected && work[selected]) readEditors(work[selected]);
+    });
+  });
+  if (fokus && $(fokus)) {
+    $(fokus).focus();
+    try {
+      if (caret != null && $(fokus).setSelectionRange) $(fokus).setSelectionRange(caret, caret);
+    } catch (_e) { /* ignore */ }
+  }
 }
 
 function readEditors(w) {
+  if (!w) return;
   if ($("belop") && $("belop").value !== "") w.recommended = Number($("belop").value) || 0;
   if ($("notat")) w.note = $("notat").value;
   if ($("brev")) w.letter = $("brev").value;
+  if ($("grunn")) w.grunn = $("grunn").value;
 }
 
 function openSak(id) {
   const sak = findSak(id);
   if (!sak) return;
   selected = id;
+  if (sak.ordningId) {
+    ordningFilter = sak.ordningId;
+    const o = typeof sakOrdning === "function" ? sakOrdning(sak) : null;
+    if (o?.forvalter) forvalterFilter = o.forvalter;
+  }
   const w = ensure(id);
   if (!journal.some((j) => j.sak === id && j.type === "regler")) {
     addJournal({ type: "regler", sak: id, svar: w.rules.checks.map((c) => `${c.label}: ${c.status}`).join("; ") });
@@ -1123,7 +1385,8 @@ async function runKI(id, force, pvValg) {
   renderCard();
   const seq = ++kiSeq;
   const rag = ragFor(sak).map((r) => `### ${r.tittel}\n${r.tekst}`).join("\n\n");
-  const prompt = `Saksnummer: ${sak.id}\nOrganisasjon: ${sak.org}\nSøkt: ${sak.belop} kr\nPersonvern: ${w.pvSendt === "sladdet" ? "søknadstekst er sladdet av øvelsesmodulen" : "søknadstekst som i saken"}.\n\nSØKNADSTEKST:\n${gate.tekst}\n\nUTDRAG (fiktiv øvelse 2026):\n${rag}\n\nSkriv først ## Tenkning, deretter semantikk, notat og brev. Ikke fatt vedtak.`;
+  const maskinKrav = typeof kravSjekkKort === "function" ? kravSjekkKort(sak) : "";
+  const prompt = `Saksnummer: ${sak.id}\nOrganisasjon: ${sak.org}\nSøkt: ${sak.belop} kr\nPersonvern: ${w.pvSendt === "sladdet" ? "tekst er sladdet av øvelsesmodulen" : "tekst som i saken"}.\n\nSØKNAD OG DOKUMENTER:\n${gate.tekst}\n\nMASKINELL KRAVSJEKK (øvelse, ikke vedtak):\n${maskinKrav}\n\nUTDRAG (fiktiv øvelse 2026):\n${rag}\n\nSkriv først ## Tenkning, deretter semantikk, dokumentasjon, notat og brev. Bruk dokumentene i den samlede vurderingen. Ikke fatt vedtak.`;
   addJournal({ type: "ki", sak: id, svar: force ? "Kjører KI på nytt" : "Første KI-kall" });
   const kilder = ragFor(sak).map((r) => r.tittel);
   try {
@@ -1202,21 +1465,23 @@ function hitl(action) {
   if (!selected) return;
   const w = ensure(selected);
   readEditors(w);
-  const grunn = ($("grunn")?.value || "").trim();
+  const grunn = String(w.grunn || "").trim();
   w.pipeline = "hitl";
   if (action === "bekreft") {
-    w.hitl = `Du bekreftet forslaget på ${kr(w.recommended)}. Fortsatt ikke et vedtak.`;
+    w.hitl = `Du bekreftet forslaget på ${kr(w.recommended)}.${grunn ? ` Merknad: ${grunn}` : ""} Fortsatt ikke et vedtak.`;
   } else if (action === "juster") {
-    w.hitl = `Du justerte til ${kr(w.recommended)}. ${grunn || "Ingen skriftlig grunn."}`;
+    w.hitl = `Du justerte til ${kr(w.recommended)}. ${grunn || "Ingen skriftlig merknad."}`;
   } else if (action === "avvis") {
     if (!grunn) {
-      w.hitl = "Skriv en grunn før du avviser.";
+      w.hitl = "Skriv en merknad i feltet over før du avviser.";
       renderCard();
+      const felt = $("grunn");
+      if (felt) felt.focus();
       return;
     }
     w.hitl = `Du avviste forslaget: ${grunn}`;
   } else {
-    w.hitl = "Saken står. Ingen godkjenning.";
+    w.hitl = grunn ? `Saken står. Merknad: ${grunn}` : "Saken står. Ingen godkjenning.";
   }
   addJournal({ type: "du", sak: selected, svar: w.hitl });
   if (action === "bekreft" || action === "juster") arkiver(selected, w, action);
@@ -1387,15 +1652,16 @@ function submitSoknad() {
   const org = ($("pOrg")?.value || "").trim();
   const belop = Number($("pBelop")?.value || 0);
   const soknad = ($("pTekst")?.value || "").trim();
+  const ordningId = ($("pOrdning")?.value || (typeof ORDNING_OVELSE_ID !== "undefined" ? ORDNING_OVELSE_ID : "inkludering-barn-unge")).trim();
   const status = $("pStatus");
-  if (!orgnr || !org || !belop || !soknad) {
+  if (!orgnr || !org || !belop || !soknad || !ordningId) {
     if (status) status.textContent = "Fyll ut alle feltene.";
     return;
   }
   const pv = typeof sjekkFritekstPersonvern === "function" ? sjekkFritekstPersonvern(`${org}\n${soknad}`) : { niva: "ok", funn: [] };
   const list = loadJson(PORTAL_KEY, []);
   const id = `T-9${String(100 + list.length).slice(-3)}`;
-  list.push({ id, orgnr, org, belop, soknad, at: new Date().toLocaleString("no-NO") });
+  list.push({ id, orgnr, org, belop, soknad, ordningId, at: new Date().toLocaleString("no-NO") });
   saveJson(PORTAL_KEY, list);
   if (status) {
     const lagret = `Lagret ${id} i denne nettleseren. Åpne arbeidslisten for å fortsette som saksbehandler.`;
@@ -1411,8 +1677,19 @@ function renderMine() {
   if (!box) return;
   const list = loadJson(PORTAL_KEY, []);
   box.innerHTML = list.length
-    ? list.map((p) => `<p>${esc(p.id)} · ${esc(p.org)} · ${kr(p.belop)}</p>`).join("")
+    ? list.map((p) => `<p>${esc(p.id)} · ${esc(p.org)} · ${esc(sakOrdningTekst(p))} · ${kr(p.belop)}</p>`).join("")
     : `<p class="hint">Ingen innsendinger her ennå.</p>`;
+}
+
+function fyllOrdningVelger() {
+  const sel = $("pOrdning");
+  if (!sel || typeof ORDNINGER === "undefined") return;
+  const cur = sel.value || ORDNING_OVELSE_ID;
+  sel.innerHTML = ORDNINGER.filter((o) => !o.ikkeSokbar).map((o) => {
+    const merke = o.id === ORDNING_OVELSE_ID ? " (øvelsessaker i prototypen)" : "";
+    const budsjett = o.offentligBelop != null ? ` · tilgjengelig ${kr(o.offentligBelop)}` : "";
+    return `<option value="${esc(o.id)}" ${o.id === cur ? "selected" : ""}>${esc(o.navn)}${merke} · ${esc(o.forvalter)}${budsjett}</option>`;
+  }).join("");
 }
 
 function fillPortalFromRegister() {
@@ -1423,7 +1700,17 @@ function fillPortalFromRegister() {
     : "Ikke i tabellen. Du kan likevel sende.";
 }
 
+window.kr = kr;
+window.esc = esc;
+window.findSak = findSak;
+window.loadJson = loadJson;
+window.saveJson = saveJson;
+window.callModelAPI = callModelAPI;
+window.sakOrdning = sakOrdning;
+window.sakOrdningTekst = sakOrdningTekst;
 window.setListFilter = setListFilter;
+window.setOrdningFilter = setOrdningFilter;
+window.setForvalterFilter = setForvalterFilter;
 window.openSak = openSak;
 window.runKI = runKI;
 window.hitl = hitl;
@@ -1484,9 +1771,9 @@ function lenkSaksnr(text) {
 
 function koeRaderHtml(rader, hvorfor) {
   if (!rader.length) return `<p class="hint">Ingen i denne køen.</p>`;
-  return `<table><thead><tr><th>Sak</th><th>Søker</th><th>Kommune</th><th>Søkt</th><th>Hvorfor</th></tr></thead><tbody>${rader.map((r) => {
+  return `<table><thead><tr><th>Sak</th><th>Søker</th><th>Ordning</th><th>Kommune</th><th>Søkt</th><th>Hvorfor</th></tr></thead><tbody>${rader.map((r) => {
     const grunn = hvorfor(r);
-    return `<tr><td><a href="${sakLenke(r.sak.id)}">${esc(r.sak.id)}</a></td><td>${esc(r.sak.org)}</td><td>${esc(r.sak.kommune)}</td><td>${kr(r.sak.belop)}</td><td>${esc(grunn)}</td></tr>`;
+    return `<tr><td><a href="${sakLenke(r.sak.id)}">${esc(r.sak.id)}</a></td><td>${esc(r.sak.org)}</td><td>${esc(sakOrdning(r.sak).kortnavn || sakOrdningTekst(r.sak))}</td><td>${esc(r.sak.kommune)}</td><td>${kr(r.sak.belop)}</td><td>${esc(grunn)}</td></tr>`;
   }).join("")}</tbody></table>`;
 }
 
@@ -1502,10 +1789,28 @@ function renderAnalyse() {
   const aktMax = Math.max(...Object.values(a.perAkt).map((x) => x.length), 1);
   const kommMax = Math.max(...a.toppKommuner.map((x) => x[1]), 1);
   rot.innerHTML = `
-    <p class="hint">Maskinell opptelling med øvelsesreglene. Skjønn skjer på sakskortet. Dette er ikke statistikk for ledelsen — det er køen din.</p>
+    <p class="hint">Maskinell opptelling med øvelsesreglene. Sakene er fordelt på de 16 Tilskudd.no-boksene (fiktivt — ikke ekte søknader). Skjønn skjer på sakskortet.</p>
+    <section class="panel">
+      <h2>Tilskuddsområder</h2>
+      <p class="hint">Samme inndeling som filteret på Tilskudd.no (BFD + Bufdir). Klikk en boks for å åpne sakene.</p>
+      <div class="ordning-kort-liste">
+        ${(typeof ORDNINGER !== "undefined" ? ORDNINGER : []).map((o) => {
+          const liste = a.perOrdning[o.id] || [];
+          const sokt = liste.reduce((s, r) => s + r.sak.belop, 0);
+          const frist = typeof formatFrist === "function" ? formatFrist(o.frist) : o.frist;
+          return `<a class="ordning-kort" href="/tilskudd/behandle#ordning=${esc(o.id)}">
+            <div class="ordning-kort-frist">${esc(frist)}</div>
+            <div>
+              <h3>${esc(o.navn)}</h3>
+              <p>${esc(o.forvalter)} · ${esc(o.tema)} · ${liste.length} saker · søkt ${kr(sokt)}</p>
+            </div>
+          </a>`;
+        }).join("")}
+      </div>
+    </section>
     <div class="kpi-grid">
       <div class="kpi"><b>${a.antall}</b><span>saker i bunken</span></div>
-      <div class="kpi"><b>${kr(a.sokt)}</b><span>søkt mot pott ${kr(RAMME)}</span></div>
+      <div class="kpi"><b>${kr(a.sokt)}</b><span>søkt mot øvelsespott ${kr(RAMME)}</span></div>
       <div class="kpi"><b>${a.koe.kanIkke.length}</b><span>kan ikke innstilles</span></div>
       <div class="kpi"><b>${a.koe.avklare.length}</b><span>må avklares først</span></div>
     </div>
@@ -1531,8 +1836,8 @@ function renderAnalyse() {
 
     <section class="panel">
       <h2>B. Penger mot pott</h2>
-      <p class="hint">Innstillingssimulering — ikke vedtak.</p>
-      <p>Søkt totalt ${kr(a.sokt)} mot ${kr(RAMME)}. ${svgStolpe((a.sokt / RAMME) * 100, "#f59e0b")}</p>
+      <p class="hint">Innstillingssimulering mot øvelsespotten — ikke vedtak. Offentlig tall for ${esc((typeof ordningOvelse === "function" && ordningOvelse()?.navn) || "Inkludering av barn og unge")}: ${esc(typeof formatOffentligBelop === "function" && typeof ordningOvelse === "function" ? formatOffentligBelop(ordningOvelse(), kr) : "ikke oppgitt i kilden")}. Vi later ikke som vi fordeler det beløpet her.</p>
+      <p>Søkt totalt ${kr(a.sokt)} mot øvelsespott ${kr(RAMME)}. ${svgStolpe((a.sokt / RAMME) * 100, "#f59e0b")}</p>
       <p>Hvis du kutter all overskytende admin: ${kr(a.etterAdminKutt)} (likebehandling av 15 %-regelen).</p>
       <p>Hvis du tar ut røde formalia og avvik: ${a.utenRodeAntall} saker kan konkurrere, ${kr(a.sumKanKonkurrere)}.</p>
       <h3>De 10 største</h3>
@@ -1551,8 +1856,8 @@ function renderAnalyse() {
       ${Object.keys(a.perAkt).sort().map((k) => {
         const liste = a.perAkt[k];
         return `<details><summary>${esc(k)} · ${liste.length} saker · søkt ${kr(liste.reduce((s, r) => s + r.sak.belop, 0))}</summary>
-          <table><thead><tr><th>Sak</th><th>Søker</th><th>Kommune</th><th>Søkt</th><th>Admin</th><th>Flagg</th></tr></thead><tbody>
-          ${liste.map((r) => `<tr><td><a href="${sakLenke(r.sak.id)}">${esc(r.sak.id)}</a></td><td>${esc(r.sak.org)}</td><td>${esc(r.sak.kommune)}</td><td>${kr(r.sak.belop)}</td><td>${r.sak.adminPct} %</td><td>${esc(tagText(r.sak.flag))}</td></tr>`).join("")}
+          <table><thead><tr><th>Sak</th><th>Søker</th><th>Ordning</th><th>Kommune</th><th>Søkt</th><th>Admin</th><th>Flagg</th></tr></thead><tbody>
+          ${liste.map((r) => `<tr><td><a href="${sakLenke(r.sak.id)}">${esc(r.sak.id)}</a></td><td>${esc(r.sak.org)}</td><td>${esc(sakOrdning(r.sak).kortnavn || sakOrdningTekst(r.sak))}</td><td>${esc(r.sak.kommune)}</td><td>${kr(r.sak.belop)}</td><td>${r.sak.adminPct} %</td><td>${esc(tagText(r.sak.flag))}</td></tr>`).join("")}
           </tbody></table></details>`;
       }).join("")}
     </section>
@@ -1591,38 +1896,238 @@ async function sendPortefoljeSporsmal(ev) {
     <div class="think"><p>${lenkSaksnr(res.text)}</p></div>`;
 }
 
+let pvTabellFilter = "alle";
+
+function pvKlasse(niva) {
+  if (niva === "rod") return { tag: "tag-formalia", tekst: "Rød", ki: "Stopp — sladd først" };
+  if (niva === "gul") return { tag: "tag-avkorting", tekst: "Gul", ki: "Sladd som hovedregel" };
+  return { tag: "tag-ok", tekst: "Grønn", ki: "Ingen mønsterfunn" };
+}
+
+function setPvTabellFilter(niva) {
+  pvTabellFilter = niva;
+  renderPersonvern();
+}
+
 function renderPersonvern() {
   const rot = $("pvRot");
   if (!rot || typeof sjekkHelePortefoljenPersonvern !== "function") return;
   const p = sjekkHelePortefoljenPersonvern(SAKER);
-  const radHtml = (rader) => rader.length
-    ? `<table><thead><tr><th>Sak</th><th>Søker</th><th>Funn</th></tr></thead><tbody>${rader.map((r) => `<tr><td><a href="/tilskudd/behandle#${r.sak.id}">${esc(r.sak.id)}</a></td><td>${esc(r.sak.org)}</td><td>${r.sjekk.funn.map((f) => `${esc(f.label)}${f.treff ? ` (${esc(f.treff)})` : ""}`).join("; ")}</td></tr>`).join("")}</tbody></table>`
-    : `<p class="hint">Ingen i denne gruppen.</p>`;
+  const rang = { rod: 0, gul: 1, ok: 2 };
+  const alle = [...p.rader].sort((a, b) => {
+    const d = (rang[a.sjekk.niva] ?? 9) - (rang[b.sjekk.niva] ?? 9);
+    return d !== 0 ? d : a.sak.id.localeCompare(b.sak.id, "nb");
+  });
+  const vist = pvTabellFilter === "alle" ? alle : alle.filter((r) => r.sjekk.niva === pvTabellFilter);
+  const chips = [
+    ["alle", `Alle ${p.antall}`],
+    ["rod", `Rød ${p.rod.length}`],
+    ["gul", `Gul ${p.gul.length}`],
+    ["ok", `Grønn ${p.ok.length}`]
+  ].map(([id, label]) => `<button type="button" class="chip ${pvTabellFilter === id ? "on" : ""}" onclick="setPvTabellFilter('${id}')">${label}</button>`).join("");
+  const rader = vist.map((r) => {
+    const k = pvKlasse(r.sjekk.niva);
+    const funn = r.sjekk.funn.length
+      ? r.sjekk.funn.map((f) => esc(f.label)).join(", ")
+      : "—";
+    return `<tr class="pv-rad-${r.sjekk.niva}">
+      <td><a href="/tilskudd/behandle#${r.sak.id}">${esc(r.sak.id)}</a></td>
+      <td>${esc(r.sak.org)}</td>
+      <td>${esc(sakOrdning(r.sak).kortnavn || sakOrdningTekst(r.sak))}</td>
+      <td>${esc(r.sak.kommune)}</td>
+      <td><span class="tag ${tagClass(r.sak.flag)}">${esc(tagText(r.sak.flag))}</span></td>
+      <td><span class="tag ${k.tag}">${k.tekst}</span></td>
+      <td>${funn}</td>
+      <td>${esc(k.ki)}</td>
+    </tr>`;
+  }).join("");
   rot.innerHTML = `
     <div class="kpi-grid">
-      <div class="kpi"><b>${p.antall}</b><span>saker sjekket nå</span></div>
+      <div class="kpi"><b>${p.antall}</b><span>saker i full tabell</span></div>
       <div class="kpi"><b>${p.rod.length}</b><span>røde — sladd før KI</span></div>
       <div class="kpi"><b>${p.gul.length}</b><span>gule — sladdes som hovedregel</span></div>
-      <div class="kpi"><b>${p.ok.length}</b><span>ingen mønsterfunn</span></div>
+      <div class="kpi"><b>${p.ok.length}</b><span>grønne — ingen mønsterfunn</span></div>
     </div>
     <section class="panel">
-      <h2>Rødt nå</h2>
-      <p class="hint">Fødselsnummer, helse eller navngitt barn. KI startet ikke automatisk på disse.</p>
-      ${radHtml(p.rod)}
-    </section>
-    <section class="panel">
-      <h2>Gult nå</h2>
-      <p class="hint">E-post, telefon, adresse eller privatperson som søker.</p>
-      ${radHtml(p.gul)}
+      <h2>Full klassifisert liste</h2>
+      <p class="hint">Alle ${p.antall} saker. Sortert rød → gul → grønn. Klassifiseringen er mønstersøk, ikke vedtak. Klikk saksnummer for sakskortet.</p>
+      <div class="chips">${chips}</div>
+      <div class="tabell-wrap">
+        <table class="pv-tabell">
+          <thead>
+            <tr>
+              <th>Sak</th>
+              <th>Søker</th>
+              <th>Ordning</th>
+              <th>Kommune</th>
+              <th>Sakstype</th>
+              <th>Personvern</th>
+              <th>Funn</th>
+              <th>Før KI</th>
+            </tr>
+          </thead>
+          <tbody>${rader || `<tr><td colspan="8">Ingen i dette filteret.</td></tr>`}</tbody>
+        </table>
+      </div>
+      <p class="hint">${vist.length} av ${p.antall} vist.</p>
     </section>
   `;
 }
 
 window.renderTransparens = renderTransparens;
 window.renderPersonvern = renderPersonvern;
+window.setPvTabellFilter = setPvTabellFilter;
+
+let aiActTabellFilter = "alle";
+
+function setAiActTabellFilter(id) {
+  aiActTabellFilter = id;
+  renderAiAct();
+}
+
+function renderAiAct() {
+  const rot = $("aiActRot");
+  if (!rot || typeof sjekkAiActSystem !== "function") return;
+  const system = sjekkAiActSystem();
+  const porte = sjekkHelePortefoljenAiAct(SAKER, (sak) => {
+    const w = work[sak.id] || {};
+    const spor = loadJson(TRACE_KEY, []).some((t) => t.sak === sak.id);
+    return { work: w, harSpor: spor };
+  });
+  const nivaCls = { ok: "check-green", gul: "check-yellow", rod: "check-red" };
+  const sjekker = system.map((s) => `<div class="check ${nivaCls[s.niva] || "check-yellow"}"><small>${esc(s.art)} · ${s.niva === "ok" ? "OK i øvelsen" : s.niva === "rod" ? "Ikke oppfylt" : "Begrenset"}</small><strong>${esc(s.tittel)}</strong><br>${esc(s.tekst)}</div>`).join("");
+  const alle = [...porte.rader].sort((a, b) => {
+    if (a.act.klasse !== b.act.klasse) return a.act.klasse === "hoy-tilsyn" ? -1 : 1;
+    return a.sak.id.localeCompare(b.sak.id, "nb");
+  });
+  const vist = aiActTabellFilter === "alle" ? alle : alle.filter((r) => r.act.klasse === aiActTabellFilter);
+  const chips = [
+    ["alle", `Alle ${porte.antall}`],
+    ["hoy-tilsyn", `Høyt tilsyn ${porte.hoy.length}`],
+    ["standard", `Standard ${porte.standard.length}`]
+  ].map(([id, label]) => `<button type="button" class="chip ${aiActTabellFilter === id ? "on" : ""}" onclick="setAiActTabellFilter('${id}')">${label}</button>`).join("");
+  const rader = vist.map((r) => `<tr class="${r.act.klasse === "hoy-tilsyn" ? "pv-rad-gul" : "pv-rad-ok"}">
+    <td><a href="/tilskudd/behandle#${r.sak.id}">${esc(r.sak.id)}</a></td>
+    <td>${esc(r.sak.org)}</td>
+    <td>${esc(sakOrdning(r.sak).kortnavn || sakOrdningTekst(r.sak))}</td>
+    <td><span class="tag ${tagClass(r.sak.flag)}">${esc(tagText(r.sak.flag))}</span></td>
+    <td>${esc(r.act.bruk)}</td>
+    <td><span class="tag ${r.act.klasse === "hoy-tilsyn" ? "tag-avkorting" : "tag-ok"}">${esc(r.act.klasseTekst)}</span></td>
+    <td>${esc(r.act.tilsyn)}</td>
+    <td>${r.act.logging ? "Spor" : "—"}</td>
+    <td>${r.act.grunner.map((g) => esc(g)).join("; ")}</td>
+  </tr>`).join("");
+  rot.innerHTML = `
+    <div class="kpi-grid">
+      <div class="kpi"><b>${porte.antall}</b><span>saker klassifisert</span></div>
+      <div class="kpi"><b>${porte.hoy.length}</b><span>høyt tilsyn i øvelsen</span></div>
+      <div class="kpi"><b>${porte.standard.length}</b><span>standard beslutningsstøtte</span></div>
+      <div class="kpi"><b>0</b><span>automatiserte vedtak</span></div>
+    </div>
+    <section class="panel">
+      <h2>Systemet mot forordningen</h2>
+      <p class="hint">${esc(AIACT_REF)}. Øvelsesvurdering — ikke samsvar, ikke juridisk råd.</p>
+      ${sjekker}
+    </section>
+    <section class="panel">
+      <h2>Full klassifisert saksliste</h2>
+      <p class="hint">Alle saker er beslutningsstøtte. «Høyt tilsyn» er plantet feil, avvik eller rødt personvern. Ingen rad er et vedtak.</p>
+      <div class="chips">${chips}</div>
+      <div class="tabell-wrap">
+        <table class="pv-tabell">
+          <thead>
+            <tr>
+              <th>Sak</th><th>Søker</th><th>Ordning</th><th>Sakstype</th><th>Bruk</th><th>Klasse</th><th>Tilsyn</th><th>Logg</th><th>Hensyn</th>
+            </tr>
+          </thead>
+          <tbody>${rader}</tbody>
+        </table>
+      </div>
+      <p class="hint">${vist.length} av ${porte.antall} vist.</p>
+    </section>
+  `;
+}
+
+window.renderAiAct = renderAiAct;
+window.setAiActTabellFilter = setAiActTabellFilter;
+
+let nis2TabellFilter = "alle";
+
+function setNis2TabellFilter(id) {
+  nis2TabellFilter = id;
+  renderNis2();
+}
+
+function renderNis2() {
+  const rot = $("nis2Rot");
+  if (!rot || typeof sjekkNis2System !== "function") return;
+  const system = sjekkNis2System();
+  const porte = sjekkHelePortefoljenNis2(SAKER, (sak) => {
+    const w = work[sak.id] || {};
+    const spor = loadJson(TRACE_KEY, []).some((t) => t.sak === sak.id);
+    return { work: w, harSpor: spor };
+  });
+  const nivaCls = { ok: "check-green", gul: "check-yellow", rod: "check-red" };
+  const sjekker = system.map((s) => `<div class="check ${nivaCls[s.niva] || "check-yellow"}"><small>${esc(s.art)} · ${s.niva === "ok" ? "OK / avklart i øvelsen" : s.niva === "rod" ? "Ikke på plass" : "Tilnærming / gap"}</small><strong>${esc(s.tittel)}</strong><br>${esc(s.tekst)}</div>`).join("");
+  const alle = [...porte.rader].sort((a, b) => {
+    if (a.nis.klasse !== b.nis.klasse) return a.nis.klasse === "hoy-konsekvens" ? -1 : 1;
+    return a.sak.id.localeCompare(b.sak.id, "nb");
+  });
+  const vist = nis2TabellFilter === "alle" ? alle : alle.filter((r) => r.nis.klasse === nis2TabellFilter);
+  const chips = [
+    ["alle", `Alle ${porte.antall}`],
+    ["hoy-konsekvens", `Høyere konsekvens ${porte.hoy.length}`],
+    ["standard", `Standard ${porte.standard.length}`]
+  ].map(([id, label]) => `<button type="button" class="chip ${nis2TabellFilter === id ? "on" : ""}" onclick="setNis2TabellFilter('${id}')">${label}</button>`).join("");
+  const rader = vist.map((r) => `<tr class="${r.nis.klasse === "hoy-konsekvens" ? "pv-rad-gul" : "pv-rad-ok"}">
+    <td><a href="/tilskudd/behandle#${r.sak.id}">${esc(r.sak.id)}</a></td>
+    <td>${esc(r.sak.org)}</td>
+    <td>${esc(sakOrdning(r.sak).kortnavn || sakOrdningTekst(r.sak))}</td>
+    <td><span class="tag ${tagClass(r.sak.flag)}">${esc(tagText(r.sak.flag))}</span></td>
+    <td><span class="tag ${r.nis.klasse === "hoy-konsekvens" ? "tag-avkorting" : "tag-ok"}">${esc(r.nis.klasseTekst)}</span></td>
+    <td>${r.nis.sendtUt ? "Kan ha gått til OpenAI" : "Ikke sendt ut"}</td>
+    <td>Nei — øvelse</td>
+    <td>${r.nis.grunner.map((g) => esc(g)).join("; ")}</td>
+  </tr>`).join("");
+  rot.innerHTML = `
+    <div class="kpi-grid">
+      <div class="kpi"><b>${porte.antall}</b><span>saker i tabellen</span></div>
+      <div class="kpi"><b>${porte.hoy.length}</b><span>høyere konsekvens ved hendelse</span></div>
+      <div class="kpi"><b>${porte.sendt.length}</b><span>med spor mot tredjepart i øvelsen</span></div>
+      <div class="kpi"><b>0</b><span>varsler til NSM</span></div>
+    </div>
+    <section class="panel">
+      <h2>Norges tilnærming</h2>
+      <p class="hint">${esc(NIS2_REF)}. Kilder i øvelsen: NSM-veileder til digitalsikkerhetsloven (NIS 1 i kraft; NIS 2 under tilnærming).</p>
+      ${sjekker}
+    </section>
+    <section class="panel">
+      <h2>Full klassifisert saksliste</h2>
+      <p class="hint">Ingen sak er «NIS 2-godkjent». Klassene viser øvelseskonsekvens hvis noe lekker eller KI-leverandøren svikter.</p>
+      <div class="chips">${chips}</div>
+      <div class="tabell-wrap">
+        <table class="pv-tabell">
+          <thead>
+            <tr>
+              <th>Sak</th><th>Søker</th><th>Ordning</th><th>Sakstype</th><th>Konsekvens</th><th>Leverandør</th><th>Varslet NSM</th><th>Hensyn</th>
+            </tr>
+          </thead>
+          <tbody>${rader}</tbody>
+        </table>
+      </div>
+      <p class="hint">${vist.length} av ${porte.antall} vist.</p>
+    </section>
+  `;
+}
+
+window.renderNis2 = renderNis2;
+window.setNis2TabellFilter = setNis2TabellFilter;
 window.renderAnalyse = renderAnalyse;
 window.sendPortefoljeSporsmal = sendPortefoljeSporsmal;
 window.sporPortefolje = sporPortefolje;
+window.sendKiAnalyse = sendKiAnalyse;
+window.settKiAnalyseSpm = settKiAnalyseSpm;
+window.renderKiAnalyseMaskin = renderKiAnalyseMaskin;
 
 document.addEventListener("DOMContentLoaded", () => {
   if ($("sporListe")) {
@@ -1635,15 +2140,24 @@ document.addEventListener("DOMContentLoaded", () => {
     renderJournal();
     renderCard();
     const hash = (location.hash || "").replace("#", "");
-    if (hash && findSak(hash)) openSak(hash);
+    if (hash.startsWith("ordning=")) {
+      ordningFilter = hash.slice(8) || "alle";
+      renderList();
+    } else if (hash === "ki-analyse") {
+      $("ki-analyse")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    } else if (hash && findSak(hash)) openSak(hash);
   }
   if ($("view-klage") && !$("view-klage").hidden) runKlage(false);
   if ($("pOrgnr")) {
+    fyllOrdningVelger();
     fillPortalFromRegister();
     renderMine();
   }
   if ($("analyseRot")) renderAnalyse();
   if ($("pvRot")) renderPersonvern();
+  if ($("aiActRot")) renderAiAct();
+  if ($("nis2Rot")) renderNis2();
   const ant = document.querySelector("[data-antall-saker]");
-  if (ant) ant.textContent = `${SAKER.length} saker. Filtrer, så åpne. Hver sak har én oppgave.`;
+  if (ant) ant.textContent = `${SAKER.length} saker på 16 bokser. Filtrer forvalter, så klikk en ordning.`;
+  if ($("kiAnalyseMaskin") && !$("liste")) renderKiAnalyseMaskin();
 });

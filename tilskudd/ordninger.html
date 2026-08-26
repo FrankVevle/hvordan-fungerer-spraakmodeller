@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ordninger — Tilskudd (øvelse)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/tilskudd/proto.css">
+</head>
+<body class="proto">
+  <header class="proto-bar">
+    <div class="proto-brand">Tilskudd (øvelse)<span>Katalog — ikke utlysning</span></div>
+    <nav class="proto-nav">
+      <a href="/tilskudd/">Start</a>
+      <a href="/tilskudd/velkommen">Min side</a>
+      <a class="is-on" href="/tilskudd/ordninger">Ordninger</a>
+      <a href="/tilskudd/behandle">Arbeidsliste</a>
+      <a href="/tilskudd/ki-analyse">KI-analyse</a>
+      <a href="/tilskudd/analyse">Portefølje</a>
+      <a href="/tilskudd/personvern">Personvern</a>
+      <a href="/tilskudd/aiact">KI-forordning</a>
+      <a href="/tilskudd/nis2">NIS 2</a>
+      <a href="/tilskudd/transparens">Hva KI tenkte</a>
+      <a href="/tilskudd/om">Slik virker det</a>
+      <a href="/tilskudd/soknad">Søk (simulert)</a>
+      <a href="/">Kurset</a>
+    </nav>
+  </header>
+  <main class="proto-shell proto-wide">
+    <div class="banner"><strong>Øvelse.</strong> Snapshot av de 16 boksene på Tilskudd.no (14 Bufdir + 2 BFD). Ikke Bufdir. Ikke Tilskudd.no. Vi tildeler ikke ekte penger. De fiktive sakene er fordelt på boksene.</div>
+    <section class="hero">
+      <h1>Hvilke ordninger forvalter Bufdir og BFD?</h1>
+      <p>Hver rad er én boks i filteret på Tilskudd.no. <strong>Budsjett totalt</strong> er summen av «Tilgjengelige midler» på boksene. <strong>Budsjett per tilskudd</strong> er det samme feltet på hver boks, pluss tildelt 2026 der det er publisert. Øvelsespotten er 1 mill. kr — vi fordeler ikke disse offentlige tallene.</p>
+      <p style="margin-top:0.75rem"><a href="https://tilskudd.lottstift.no/ordninger?ADMINISTRATOR=972417793&amp;ADMINISTRATOR=986128433" target="_blank" rel="noopener">Tilskudd.no (BFD + Bufdir)</a> · <a href="https://www.bufdir.no/tilskudd/" target="_blank" rel="noopener">bufdir.no/tilskudd</a></p>
+    </section>
+    <section class="panel">
+      <label class="field">Forvalter
+        <select id="katForvalter" onchange="renderOrdningskatalog()">
+          <option value="alle">Alle</option>
+          <option value="Bufdir">Bufdir</option>
+          <option value="BFD">BFD</option>
+        </select>
+      </label>
+      <div id="katalogRot"></div>
+    </section>
+  </main>
+  <footer class="proto-foot">Pedagogisk prototype. Snapshot, ikke live API. Ikke et fagsystem.</footer>
+  <script src="/tilskudd/ordninger.js"></script>
+  <script src="/tilskudd/personvern.js"></script>
+  <script src="/tilskudd/aiact.js"></script>
+  <script src="/tilskudd/nis2.js"></script>
+  <script src="/tilskudd/proto.js"></script>
+  <script src="/tilskudd/soknadskrav.js"></script>
+  <script src="/tilskudd/lovverk.js"></script>
+  <script src="/tilskudd/ansatt.js"></script>
+  <script src="/tilskudd/agent.js"></script>
+  <script>document.addEventListener("DOMContentLoaded", renderOrdningskatalog);</script>
+</body>
+</html>
