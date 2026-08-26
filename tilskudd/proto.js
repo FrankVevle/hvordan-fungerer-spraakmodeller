@@ -1081,6 +1081,69 @@ function renderList() {
     <div class="ordning-rutenett">${bokser}</div>
     ${ordningFilter !== "alle" ? `<h3 class="sak-rutenett-tittel">${saker.length} saker i valgt boks</h3>` : ""}
     ${sakKort}`;
+  renderKiAnalyseMaskin();
+}
+
+function sakerIKiAnalyse() {
+  if (ordningFilter !== "alle") return sakerFiltrert();
+  const ids = new Set(visOrdninger().map((o) => o.id));
+  return SAKER.filter((s) => ids.has(s.ordningId || ORDNING_OVELSE_ID));
+}
+
+function renderKiAnalyseMaskin() {
+  const rot = $("kiAnalyseMaskin");
+  if (!rot) return;
+  const saker = sakerIKiAnalyse();
+  const rader = saker.map((sak) => {
+    const rules = runGrantRules(sak);
+    return { sak, rules, rød: rules.checks.filter((c) => c.status === "red"), gul: rules.checks.filter((c) => c.status === "yellow") };
+  });
+  const kanIkke = rader.filter((r) => r.rød.some((c) => c.label === "Søker" || c.id === "profitt"));
+  const svakDok = saker.filter((s) => (s.dokumenter || []).some((d) => d.status !== "ok"));
+  const plantet = saker.filter((s) => s.flag === "plantet");
+  const omfang = ordningFilter === "alle"
+    ? `${visOrdninger().length} synlige ordninger`
+    : (typeof sakOrdningTekst === "function" && saker[0] ? sakOrdningTekst(saker[0]) : ordningFilter);
+  rot.innerHTML = `<div class="kpi-grid">
+    <div class="kpi"><b>${saker.length}</b><span>saker i analysen (${esc(omfang)})</span></div>
+    <div class="kpi"><b>${kanIkke.length}</b><span>kan ikke innstilles</span></div>
+    <div class="kpi"><b>${svakDok.length}</b><span>svak eller manglende dokumentasjon</span></div>
+    <div class="kpi"><b>${plantet.length}</b><span>plantede øvelsessaker</span></div>
+  </div>
+  <p class="hint">Maskinell opptelling. KI-analysen under bruker de samme sakene. Ikke vedtak.</p>`;
+}
+
+function settKiAnalyseSpm(tekst) {
+  const q = $("kiAnalyseQ");
+  if (q) q.value = tekst;
+}
+
+function kiAnalyseFallback(spm, saker) {
+  const kanIkke = saker.filter((s) => runGrantRules(s).checks.some((c) => c.status === "red" && (c.label === "Søker" || c.id === "profitt")));
+  const svak = saker.filter((s) => (s.dokumenter || []).some((d) => d.status !== "ok"));
+  return `Ikke modell. I utvalget er det ${saker.length} saker. Kan ikke innstilles: ${kanIkke.map((s) => s.id).join(", ") || "ingen"}. Svak dokumentasjon: ${svak.slice(0, 8).map((s) => s.id).join(", ") || "ingen"}. Spørsmål var: ${spm}. Ikke vedtak.`;
+}
+
+async function sendKiAnalyse(ev) {
+  if (ev) ev.preventDefault();
+  const q = ($("kiAnalyseQ")?.value || "").trim() || "Gi en kort KI-analyse av det jeg ser: kø, dokumentasjon og om sakene ligger i riktig boks.";
+  const out = $("kiAnalyseSvar");
+  if (!out) return;
+  const saker = sakerIKiAnalyse();
+  out.innerHTML = `<div class="note live-run">Analyserer ${saker.length} saker…</div>`;
+  const linjer = saker.map((s) => {
+    const rod = runGrantRules(s).checks.filter((c) => c.status === "red").map((c) => c.label).join("/") || "-";
+    const dok = (s.dokumenter || []).filter((d) => d.status !== "ok").map((d) => d.id).join(",") || "ok";
+    return `${s.id} | ${s.org} | ${sakOrdningTekst(s)} | ${s.flag} | søkt ${s.belop} | rød:${rod} | dok:${dok}`;
+  }).join("\n");
+  const system = `Du er forvaltningsrådgiver i en øvelse. Du fatter aldri vedtak. Analyser KUN uttrekket. Siter T-nummer. Kort på norsk, maks 10 setninger. Pek på kø, dokumentasjon og mulig feil boks. Ikke omfordel potten. Ikke juridisk råd.`;
+  const prompt = `Frank ber om KI-analyse.\nSpørsmål: ${q}\nOmfang: ${ordningFilter === "alle" ? "synlige ordninger etter forvalterfilter" : ordningFilter}.\nUttrekk:\n${linjer}`;
+  try {
+    const text = await callModelAPI(prompt, system);
+    out.innerHTML = `<div class="note live-ok">Live KI-analyse. Forslag — ikke vedtak.</div><p>${typeof lenkSaksnr === "function" ? lenkSaksnr(text) : esc(text)}</p>`;
+  } catch (_e) {
+    out.innerHTML = `<div class="note live-off"><strong>Ikke modell.</strong> Ferdig øvelsestekst.</div><p>${esc(kiAnalyseFallback(q, saker))}</p>`;
+  }
 }
 
 function renderJournal() {
@@ -2062,6 +2125,9 @@ window.setNis2TabellFilter = setNis2TabellFilter;
 window.renderAnalyse = renderAnalyse;
 window.sendPortefoljeSporsmal = sendPortefoljeSporsmal;
 window.sporPortefolje = sporPortefolje;
+window.sendKiAnalyse = sendKiAnalyse;
+window.settKiAnalyseSpm = settKiAnalyseSpm;
+window.renderKiAnalyseMaskin = renderKiAnalyseMaskin;
 
 document.addEventListener("DOMContentLoaded", () => {
   if ($("sporListe")) {
@@ -2077,6 +2143,8 @@ document.addEventListener("DOMContentLoaded", () => {
     if (hash.startsWith("ordning=")) {
       ordningFilter = hash.slice(8) || "alle";
       renderList();
+    } else if (hash === "ki-analyse") {
+      $("ki-analyse")?.scrollIntoView({ behavior: "smooth", block: "start" });
     } else if (hash && findSak(hash)) openSak(hash);
   }
   if ($("view-klage") && !$("view-klage").hidden) runKlage(false);

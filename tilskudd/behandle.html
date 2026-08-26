@@ -16,6 +16,7 @@
       <a href="/tilskudd/velkommen">Min side</a>
       <a href="/tilskudd/ordninger">Ordninger</a>
       <a data-nav="arbeid" class="is-on" href="/tilskudd/behandle">Arbeidsliste</a>
+      <a href="/tilskudd/behandle#ki-analyse">KI-analyse</a>
       <a href="/tilskudd/analyse">Portefølje</a>
       <a href="/tilskudd/personvern">Personvern</a>
       <a href="/tilskudd/aiact">KI-forordning</a>
@@ -39,6 +40,26 @@
           <h2 style="margin:0 0 0.35rem;font-size:1.1rem">Ordninger</h2>
           <p class="hint" style="margin-top:0" data-antall-saker>Klikk en boks. Filtrer forvalter over boksene.</p>
           <div id="liste"></div>
+        </section>
+        <section class="panel" id="ki-analyse">
+          <h2>KI-analyse av boksene</h2>
+          <p class="hint">Vi laget denne tidligere på porteføljen. Her analyserer KI de synlige ordningene — eller den boksen du har klikket. Forslag, ikke vedtak.</p>
+          <div id="kiAnalyseMaskin"></div>
+          <div class="chips" style="margin-top:0.6rem">
+            <button type="button" class="chip" onclick="settKiAnalyseSpm('Hvem kan ikke innstilles i det jeg ser nå?')">Hvem kan ikke innstilles?</button>
+            <button type="button" class="chip" onclick="settKiAnalyseSpm('Hvilke saker har svak dokumentasjon mot øvelseskravene?')">Svak dokumentasjon</button>
+            <button type="button" class="chip" onclick="settKiAnalyseSpm('Er sakene i riktig ordningsboks mot regelverket?')">Riktig boks?</button>
+            <button type="button" class="chip" onclick="settKiAnalyseSpm('Hva bør jeg åpne først, og hvorfor?')">Hva åpne først?</button>
+          </div>
+          <form onsubmit="sendKiAnalyse(event)">
+            <label class="field">Spørsmål til KI-analysen
+              <textarea id="kiAnalyseQ" rows="2" placeholder="F.eks. Hvilke saker i denne boksen kan jeg ikke innstille?"></textarea>
+            </label>
+            <div class="btn-row">
+              <button class="btn btn-primary" type="submit">Kjør KI-analyse</button>
+            </div>
+          </form>
+          <div id="kiAnalyseSvar"></div>
         </section>
         <div id="kort" class="panel"></div>
         <div class="panel">

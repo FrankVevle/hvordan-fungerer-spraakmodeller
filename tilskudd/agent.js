@@ -99,6 +99,7 @@ function byggAgentUi() {
         <button type="button" class="chip" data-agent-q="Kjenner vi regelverk knyttet til tilskudd?">Regelverk</button>
         <button type="button" class="chip" data-agent-q="Evaluer fordelingen av sakene mine mot regelverk">Fordeling</button>
         <button type="button" class="chip" data-agent-q="Vurder all dokumentasjon i T-2629 og gi en samlet vurdering">Dokumentasjon T-2629</button>
+        <button type="button" class="chip" data-agent-q="Kjør en KI-analyse av sakene i bunken min: kø, dokumentasjon og feil boks">KI-analyse</button>
       </div>
       <form id="kiAgentForm">
         <label class="field">Spør assistenten
