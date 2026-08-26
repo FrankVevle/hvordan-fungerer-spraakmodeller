@@ -384,6 +384,7 @@ knyttSakerTilOrdninger(SAKER);
 
 let ordningFilter = "alle";
 let forvalterFilter = "alle";
+let frankBoksFilter = null;
 
 function sakOrdning(sak) {
   const id = sak?.ordningId || (typeof ORDNING_OVELSE_ID !== "undefined" ? ORDNING_OVELSE_ID : "inkludering-barn-unge");
@@ -1004,6 +1005,17 @@ function renderRamme() {
 
 function sakerFiltrert() {
   let liste = SAKER;
+  if (frankBoksFilter === "tildelt" || frankBoksFilter === "startet" || frankBoksFilter === "ikke_startet") {
+    const mine = typeof FRANK_TILDELTE !== "undefined" ? FRANK_TILDELTE : [];
+    liste = liste.filter((s) => mine.includes(s.id));
+    if (frankBoksFilter === "startet" && typeof frankSakStatus === "function") {
+      liste = liste.filter((s) => frankSakStatus(s.id) === "startet");
+    }
+    if (frankBoksFilter === "ikke_startet" && typeof frankSakStatus === "function") {
+      liste = liste.filter((s) => frankSakStatus(s.id) !== "startet");
+    }
+    return liste;
+  }
   if (ordningFilter !== "alle") {
     liste = liste.filter((s) => (s.ordningId || ORDNING_OVELSE_ID) === ordningFilter);
   }
@@ -1028,9 +1040,24 @@ function setForvalterFilter(v) {
   renderList();
 }
 
+function setFrankArbeidBoks(nøkkel) {
+  frankBoksFilter = frankBoksFilter === nøkkel ? null : nøkkel;
+  if (frankBoksFilter) ordningFilter = "alle";
+  if (selected && frankBoksFilter) {
+    const mine = sakerFiltrert();
+    if (!mine.some((s) => s.id === selected)) selected = null;
+  }
+  renderList();
+  if (!selected) renderCard();
+  try {
+    history.replaceState(null, "", frankBoksFilter ? `#frank=${frankBoksFilter}` : location.pathname);
+  } catch (_e) { /* ignore */ }
+}
+
 function setOrdningFilter(id) {
   const neste = id || "alle";
   ordningFilter = ordningFilter === neste ? "alle" : neste;
+  if (ordningFilter !== "alle") frankBoksFilter = null;
   if (selected && ordningFilter !== "alle") {
     const sak = findSak(selected);
     if (sak && (sak.ordningId || ORDNING_OVELSE_ID) !== ordningFilter) selected = null;
@@ -1062,8 +1089,16 @@ function renderList() {
     </button>`;
   }).join("");
   const saker = sakerFiltrert();
-  const sakKort = ordningFilter === "alle"
-    ? `<p class="hint">Klikk en ordningsboks for å se sakene. Fiktive saker. Ikke Bufdir.</p>`
+  const mine = typeof FRANK_TILDELTE !== "undefined" ? FRANK_TILDELTE : [];
+  const frankSakerAlle = typeof findSak === "function" ? mine.map((id) => findSak(id)).filter(Boolean) : [];
+  const frankStartet = frankSakerAlle.filter((s) => typeof frankSakStatus === "function" && frankSakStatus(s.id) === "startet");
+  const frankVent = frankSakerAlle.filter((s) => typeof frankSakStatus !== "function" || frankSakStatus(s.id) !== "startet");
+  const frankBoks = (nøkkel, tall, tekst) => `<button type="button" class="kpi kpi-klikk ${frankBoksFilter === nøkkel ? "on" : ""}" onclick="setFrankArbeidBoks('${nøkkel}')">
+      <b>${tall}</b><span>${tekst}</span>
+    </button>`;
+  const visSaker = ordningFilter !== "alle" || !!frankBoksFilter;
+  const sakKort = !visSaker
+    ? `<p class="hint">Klikk «fordelt til deg», «startet» eller en ordningsboks for å se sakene. Fiktive saker. Ikke Bufdir.</p>`
     : `<div class="sak-rutenett">${saker.map((sak) => `
       <button type="button" class="${selected === sak.id ? "on" : ""}" onclick="openSak('${sak.id}')">
         <div class="meta"><span>${sak.id}</span><span class="tag ${tagClass(sak.flag)}">${tagText(sak.flag)}</span>${typeof sjekkPersonvern === "function" && sjekkPersonvern(sak).niva !== "ok" ? `<span class="tag ${sjekkPersonvern(sak).niva === "rod" ? "tag-formalia" : "tag-avkorting"}">PV</span>` : ""}</div>
@@ -1071,6 +1106,13 @@ function renderList() {
         <p class="amt">${kr(sak.belop)}</p>
         <p class="job">${esc(sak.jobb)}</p>
       </button>`).join("") || "<p class='hint'>Ingen saker i denne boksen med dagens filter.</p>"}</div>`;
+  const sakTittel = frankBoksFilter === "tildelt"
+    ? `${saker.length} saker fordelt til deg`
+    : frankBoksFilter === "startet"
+      ? `${saker.length} saker du har startet`
+      : frankBoksFilter === "ikke_startet"
+        ? `${saker.length} saker du ikke har startet`
+        : `${saker.length} saker i valgt boks`;
   box.innerHTML = `<label class="field">Forvalter
       <select onchange="setForvalterFilter(this.value)">
         <option value="alle" ${forvalterFilter === "alle" ? "selected" : ""}>Alle</option>
@@ -1078,14 +1120,19 @@ function renderList() {
         <option value="BFD" ${forvalterFilter === "BFD" ? "selected" : ""}>BFD</option>
       </select>
     </label>
+    <div class="kpi-grid frank-boks-rutenett">
+      ${frankBoks("tildelt", frankSakerAlle.length, "saker fordelt til deg")}
+      ${frankBoks("startet", frankStartet.length, "du har startet")}
+      ${frankBoks("ikke_startet", frankVent.length, "ikke startet ennå")}
+    </div>
     <div class="ordning-rutenett">${bokser}</div>
-    ${ordningFilter !== "alle" ? `<h3 class="sak-rutenett-tittel">${saker.length} saker i valgt boks</h3>` : ""}
+    ${visSaker ? `<h3 class="sak-rutenett-tittel">${sakTittel}</h3>` : ""}
     ${sakKort}`;
   renderKiAnalyseMaskin();
 }
 
 function sakerIKiAnalyse() {
-  if (ordningFilter !== "alle") return sakerFiltrert();
+  if (ordningFilter !== "alle" || frankBoksFilter) return sakerFiltrert();
   const ids = new Set(visOrdninger().map((o) => o.id));
   return SAKER.filter((s) => ids.has(s.ordningId || ORDNING_OVELSE_ID));
 }
@@ -1710,6 +1757,7 @@ window.sakOrdning = sakOrdning;
 window.sakOrdningTekst = sakOrdningTekst;
 window.setListFilter = setListFilter;
 window.setOrdningFilter = setOrdningFilter;
+window.setFrankArbeidBoks = setFrankArbeidBoks;
 window.setForvalterFilter = setForvalterFilter;
 window.openSak = openSak;
 window.runKI = runKI;
@@ -1979,9 +2027,18 @@ window.renderPersonvern = renderPersonvern;
 window.setPvTabellFilter = setPvTabellFilter;
 
 let aiActTabellFilter = "alle";
+let aiActArtFilter = null;
 
 function setAiActTabellFilter(id) {
   aiActTabellFilter = id;
+  renderAiAct();
+}
+
+function setAiActArtFilter(id) {
+  aiActArtFilter = aiActArtFilter === id ? null : id;
+  try {
+    history.replaceState(null, "", aiActArtFilter ? `#art=${aiActArtFilter}` : location.pathname);
+  } catch (_e) { /* ignore */ }
   renderAiAct();
 }
 
@@ -1989,22 +2046,34 @@ function renderAiAct() {
   const rot = $("aiActRot");
   if (!rot || typeof sjekkAiActSystem !== "function") return;
   const system = sjekkAiActSystem();
-  const porte = sjekkHelePortefoljenAiAct(SAKER, (sak) => {
+  const ctxFor = (sak) => {
     const w = work[sak.id] || {};
     const spor = loadJson(TRACE_KEY, []).some((t) => t.sak === sak.id);
     return { work: w, harSpor: spor };
-  });
+  };
+  const porte = sjekkHelePortefoljenAiAct(SAKER, ctxFor);
+  const valgt = typeof finnAiActSjekk === "function" ? finnAiActSjekk(aiActArtFilter) : null;
+  const nivaTekst = (niva) => (niva === "ok" ? "OK i øvelsen" : niva === "rod" ? "Ikke oppfylt" : "Begrenset");
   const nivaCls = { ok: "check-green", gul: "check-yellow", rod: "check-red" };
-  const sjekker = system.map((s) => `<div class="check ${nivaCls[s.niva] || "check-yellow"}"><small>${esc(s.art)} · ${s.niva === "ok" ? "OK i øvelsen" : s.niva === "rod" ? "Ikke oppfylt" : "Begrenset"}</small><strong>${esc(s.tittel)}</strong><br>${esc(s.tekst)}</div>`).join("");
+  const sjekker = system.map((s) => {
+    const on = aiActArtFilter === s.id;
+    return `<button type="button" class="check check-filter ${nivaCls[s.niva] || "check-yellow"} ${on ? "on" : ""}" onclick="setAiActArtFilter('${esc(s.id)}')">
+      <small>${esc(s.art)} · ${nivaTekst(s.niva)}</small><strong>${esc(s.tittel)}</strong><br>${esc(s.tekst)}
+    </button>`;
+  }).join("");
   const alle = [...porte.rader].sort((a, b) => {
     if (a.act.klasse !== b.act.klasse) return a.act.klasse === "hoy-tilsyn" ? -1 : 1;
     return a.sak.id.localeCompare(b.sak.id, "nb");
   });
-  const vist = aiActTabellFilter === "alle" ? alle : alle.filter((r) => r.act.klasse === aiActTabellFilter);
+  let etterArt = alle;
+  if (valgt && typeof sakTrefferAiActSjekk === "function") {
+    etterArt = alle.filter((r) => sakTrefferAiActSjekk(valgt, r.sak, r.act, ctxFor(r.sak)));
+  }
+  const vist = aiActTabellFilter === "alle" ? etterArt : etterArt.filter((r) => r.act.klasse === aiActTabellFilter);
   const chips = [
-    ["alle", `Alle ${porte.antall}`],
-    ["hoy-tilsyn", `Høyt tilsyn ${porte.hoy.length}`],
-    ["standard", `Standard ${porte.standard.length}`]
+    ["alle", `Alle i utvalg ${etterArt.length}`],
+    ["hoy-tilsyn", `Høyt tilsyn ${etterArt.filter((r) => r.act.klasse === "hoy-tilsyn").length}`],
+    ["standard", `Standard ${etterArt.filter((r) => r.act.klasse === "standard").length}`]
   ].map(([id, label]) => `<button type="button" class="chip ${aiActTabellFilter === id ? "on" : ""}" onclick="setAiActTabellFilter('${id}')">${label}</button>`).join("");
   const rader = vist.map((r) => `<tr class="${r.act.klasse === "hoy-tilsyn" ? "pv-rad-gul" : "pv-rad-ok"}">
     <td><a href="/tilskudd/behandle#${r.sak.id}">${esc(r.sak.id)}</a></td>
@@ -2017,6 +2086,12 @@ function renderAiAct() {
     <td>${r.act.logging ? "Spor" : "—"}</td>
     <td>${r.act.grunner.map((g) => esc(g)).join("; ")}</td>
   </tr>`).join("");
+  const listeTittel = valgt
+    ? `${valgt.art} · ${valgt.tittel}`
+    : "Full klassifisert saksliste";
+  const listeHint = valgt
+    ? (valgt.filterHint || "Saker som treffer dette hensynet. Klikk kortet igjen for å vise alle.")
+    : "Klikk et kort over for å filtrere listen. «Høyt tilsyn» er plantet feil, avvik eller rødt personvern. Ingen rad er et vedtak.";
   rot.innerHTML = `
     <div class="kpi-grid">
       <div class="kpi"><b>${porte.antall}</b><span>saker klassifisert</span></div>
@@ -2026,12 +2101,12 @@ function renderAiAct() {
     </div>
     <section class="panel">
       <h2>Systemet mot forordningen</h2>
-      <p class="hint">${esc(AIACT_REF)}. Øvelsesvurdering — ikke samsvar, ikke juridisk råd.</p>
+      <p class="hint">${esc(AIACT_REF)}. Klikk et kort — listen under viser sakene som hører til. Klikk samme kort igjen for å fjerne filteret. Øvelse, ikke samsvar, ikke juridisk råd.</p>
       ${sjekker}
     </section>
-    <section class="panel">
-      <h2>Full klassifisert saksliste</h2>
-      <p class="hint">Alle saker er beslutningsstøtte. «Høyt tilsyn» er plantet feil, avvik eller rødt personvern. Ingen rad er et vedtak.</p>
+    <section class="panel" id="aiActListe">
+      <h2>${esc(listeTittel)}</h2>
+      <p class="hint">${esc(listeHint)}</p>
       <div class="chips">${chips}</div>
       <div class="tabell-wrap">
         <table class="pv-tabell">
@@ -2040,16 +2115,18 @@ function renderAiAct() {
               <th>Sak</th><th>Søker</th><th>Ordning</th><th>Sakstype</th><th>Bruk</th><th>Klasse</th><th>Tilsyn</th><th>Logg</th><th>Hensyn</th>
             </tr>
           </thead>
-          <tbody>${rader}</tbody>
+          <tbody>${rader || `<tr><td colspan="9">Ingen saker i dette filteret.</td></tr>`}</tbody>
         </table>
       </div>
       <p class="hint">${vist.length} av ${porte.antall} vist.</p>
     </section>
   `;
+  if (valgt) $("aiActListe")?.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 window.renderAiAct = renderAiAct;
 window.setAiActTabellFilter = setAiActTabellFilter;
+window.setAiActArtFilter = setAiActArtFilter;
 
 let nis2TabellFilter = "alle";
 
@@ -2143,6 +2220,9 @@ document.addEventListener("DOMContentLoaded", () => {
     if (hash.startsWith("ordning=")) {
       ordningFilter = hash.slice(8) || "alle";
       renderList();
+    } else if (hash.startsWith("frank=")) {
+      frankBoksFilter = hash.slice(6) || null;
+      renderList();
     } else if (hash === "ki-analyse") {
       $("ki-analyse")?.scrollIntoView({ behavior: "smooth", block: "start" });
     } else if (hash && findSak(hash)) openSak(hash);
@@ -2155,9 +2235,13 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   if ($("analyseRot")) renderAnalyse();
   if ($("pvRot")) renderPersonvern();
-  if ($("aiActRot")) renderAiAct();
+  if ($("aiActRot")) {
+    const hash = (location.hash || "").replace("#", "");
+    if (hash.startsWith("art=")) aiActArtFilter = hash.slice(4) || null;
+    renderAiAct();
+  }
   if ($("nis2Rot")) renderNis2();
   const ant = document.querySelector("[data-antall-saker]");
-  if (ant) ant.textContent = `${SAKER.length} saker på 16 bokser. Filtrer forvalter, så klikk en ordning.`;
+  if (ant) ant.textContent = `${SAKER.length} saker på 16 bokser. Klikk «fordelt til deg» eller en ordning for å se saker.`;
   if ($("kiAnalyseMaskin") && !$("liste")) renderKiAnalyseMaskin();
 });

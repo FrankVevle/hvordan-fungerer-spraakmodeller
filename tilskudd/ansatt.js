@@ -162,12 +162,29 @@ function frankDigest() {
   }).join("\n");
 }
 
+let frankBoksFilter = null;
+
+function frankSakerIBoks(nøkkel) {
+  const saker = frankSaker();
+  if (nøkkel === "startet") return saker.filter((s) => frankSakStatus(s.id) === "startet");
+  if (nøkkel === "ikke_startet") return saker.filter((s) => frankSakStatus(s.id) !== "startet");
+  return saker;
+}
+
+function setFrankBoksFilter(nøkkel) {
+  frankBoksFilter = frankBoksFilter === nøkkel ? null : nøkkel;
+  try {
+    history.replaceState(null, "", frankBoksFilter ? `#${frankBoksFilter}` : location.pathname);
+  } catch (_e) { /* ignore */ }
+  renderFrankVelkommen();
+}
+
 function renderFrankVelkommen() {
   const rot = document.getElementById("frankRot");
   if (!rot) return;
   const saker = frankSaker();
-  const startet = saker.filter((s) => frankSakStatus(s.id) === "startet");
-  const vent = saker.filter((s) => frankSakStatus(s.id) !== "startet");
+  const startet = frankSakerIBoks("startet");
+  const vent = frankSakerIBoks("ikke_startet");
   const krFn = typeof kr === "function" ? kr : (n) => `${n} kr`;
   const escFn = typeof esc === "function" ? esc : (s) => String(s ?? "").replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
   const rad = (s) => {
@@ -181,23 +198,30 @@ function renderFrankVelkommen() {
       <p class="job">${escFn(s.jobb)}</p>
     </a>`;
   };
+  const boks = (nøkkel, tall, tekst) => `<button type="button" class="kpi kpi-klikk ${frankBoksFilter === nøkkel ? "on" : ""}" onclick="setFrankBoksFilter('${nøkkel}')">
+      <b>${tall}</b><span>${tekst}</span>
+    </button>`;
+  const titler = {
+    tildelt: "Saker fordelt til deg",
+    startet: "Saker du har startet",
+    ikke_startet: "Saker du ikke har startet"
+  };
+  const valgte = frankBoksFilter ? frankSakerIBoks(frankBoksFilter) : [];
+  const sakPanel = frankBoksFilter
+    ? `<section class="panel" id="frankSaker">
+      <h2>${escFn(titler[frankBoksFilter] || "Saker")}</h2>
+      <p class="hint">Klikk en sak for å åpne den. Klikk samme boks igjen for å skjule listen. Fiktive saker.</p>
+      <div class="frank-sak-liste">${valgte.map(rad).join("") || "<p class='hint'>Ingen saker i denne boksen.</p>"}</div>
+    </section>`
+    : `<p class="hint">Klikk en boks over for å se sakene. Samme mønster som arbeidslisten.</p>`;
   rot.innerHTML = `
-    <div class="kpi-grid">
-      <div class="kpi"><b>${saker.length}</b><span>saker fordelt til deg</span></div>
-      <div class="kpi"><b>${startet.length}</b><span>du har startet</span></div>
-      <div class="kpi"><b>${vent.length}</b><span>ikke startet ennå</span></div>
-      <div class="kpi"><b>${krFn(saker.reduce((n, s) => n + s.belop, 0))}</b><span>søkt i din bunke</span></div>
+    <div class="kpi-grid frank-boks-rutenett">
+      ${boks("tildelt", saker.length, "saker fordelt til deg")}
+      ${boks("startet", startet.length, "du har startet")}
+      ${boks("ikke_startet", vent.length, "ikke startet ennå")}
+      ${boks("tildelt", krFn(saker.reduce((n, s) => n + s.belop, 0)), "søkt i din bunke")}
     </div>
-    <section class="panel">
-      <h2>Startet</h2>
-      <p class="hint">Du har åpnet eller fått dem merket som i arbeid. Fiktive saker.</p>
-      <div class="frank-sak-liste">${startet.map(rad).join("") || "<p class='hint'>Ingen startet ennå.</p>"}</div>
-    </section>
-    <section class="panel" style="margin-top:1rem">
-      <h2>Ikke startet</h2>
-      <p class="hint">Tildelt deg, men ikke åpnet. Åpning merkes som startet i denne nettleseren.</p>
-      <div class="frank-sak-liste">${vent.map(rad).join("") || "<p class='hint'>Tomt.</p>"}</div>
-    </section>
+    ${sakPanel}
     <section class="panel" style="margin-top:1rem">
       <h2>Regelverk knyttet til tilskudd</h2>
       <p class="hint">Ja — det finnes lov og regelverk. Dette er en pekepinn i øvelsen, ikke juridisk råd og ikke komplett liste.</p>
@@ -205,6 +229,7 @@ function renderFrankVelkommen() {
       <p class="hint">Spør den svevende assistenten om en sak eller om regelverk. Den fatter ikke vedtak.</p>
     </section>
     <div id="frankLovRot"></div>`;
+  if (typeof renderLovFordeling === "function") renderLovFordeling("frankLovRot", "frank");
 }
 
 knyttFrankEkstraSaker();
@@ -217,6 +242,7 @@ if (typeof window !== "undefined") {
   window.frankSakStatus = frankSakStatus;
   window.markerFrankSakStartet = markerFrankSakStartet;
   window.renderFrankVelkommen = renderFrankVelkommen;
+  window.setFrankBoksFilter = setFrankBoksFilter;
   window.FRANK_TILDELTE = FRANK_TILDELTE;
   const forrige = window.openSak;
   if (typeof forrige === "function") {
@@ -228,7 +254,8 @@ if (typeof window !== "undefined") {
   document.addEventListener("DOMContentLoaded", () => {
     knyttFrankEkstraSaker();
     if (typeof knyttSoknadsdokumentasjon === "function") knyttSoknadsdokumentasjon(typeof SAKER !== "undefined" ? SAKER : []);
+    const hash = (location.hash || "").replace("#", "");
+    if (hash === "tildelt" || hash === "startet" || hash === "ikke_startet") frankBoksFilter = hash;
     renderFrankVelkommen();
-    if (typeof renderLovFordeling === "function") renderLovFordeling("frankLovRot", "frank");
   });
 }
