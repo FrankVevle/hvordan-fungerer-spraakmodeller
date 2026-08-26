@@ -107,9 +107,10 @@ const FRANK_EKSTRA = [
   }
 ];
 
-const TILSKUDD_LOVVERK = (typeof window !== "undefined" && window.TILSKUDD_LOVVERK)
-  ? window.TILSKUDD_LOVVERK
-  : [];
+function frankLovListe() {
+  if (typeof TILSKUDD_LOVVERK !== "undefined") return TILSKUDD_LOVVERK;
+  return [];
+}
 
 function lesFrankStatus() {
   if (typeof loadJson === "function") return loadJson(FRANK_STATUS_KEY, { ...FRANK_STANDARD_STATUS });
@@ -199,7 +200,7 @@ function renderFrankVelkommen() {
     <section class="panel" style="margin-top:1rem">
       <h2>Regelverk knyttet til tilskudd</h2>
       <p class="hint">Ja — det finnes lov og regelverk. Dette er en pekepinn i øvelsen, ikke juridisk råd og ikke komplett liste.</p>
-      <ul class="lov-liste">${TILSKUDD_LOVVERK.map((l) => `<li><strong>${escFn(l.navn)}</strong> — ${escFn(l.kort)} <span class="hint">${escFn(l.merknad)}</span></li>`).join("")}</ul>
+      <ul class="lov-liste">${frankLovListe().map((l) => `<li><strong>${escFn(l.navn)}</strong> — ${escFn(l.kort)} <span class="hint">${escFn(l.merknad)}</span></li>`).join("")}</ul>
       <p class="hint">Spør den svevende assistenten om en sak eller om regelverk. Den fatter ikke vedtak.</p>
     </section>
     <div id="frankLovRot"></div>`;
@@ -209,7 +210,6 @@ knyttFrankEkstraSaker();
 
 if (typeof window !== "undefined") {
   window.ANSATT = ANSATT;
-  window.TILSKUDD_LOVVERK = TILSKUDD_LOVVERK;
   window.frankSaker = frankSaker;
   window.frankDigest = frankDigest;
   window.frankSakStatus = frankSakStatus;
