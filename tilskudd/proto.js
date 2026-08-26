@@ -1757,6 +1757,7 @@ window.sakOrdning = sakOrdning;
 window.sakOrdningTekst = sakOrdningTekst;
 window.setListFilter = setListFilter;
 window.setOrdningFilter = setOrdningFilter;
+window.setFrankArbeidBoks = setFrankArbeidBoks;
 window.setForvalterFilter = setForvalterFilter;
 window.openSak = openSak;
 window.runKI = runKI;
@@ -2026,9 +2027,18 @@ window.renderPersonvern = renderPersonvern;
 window.setPvTabellFilter = setPvTabellFilter;
 
 let aiActTabellFilter = "alle";
+let aiActArtFilter = null;
 
 function setAiActTabellFilter(id) {
   aiActTabellFilter = id;
+  renderAiAct();
+}
+
+function setAiActArtFilter(id) {
+  aiActArtFilter = aiActArtFilter === id ? null : id;
+  try {
+    history.replaceState(null, "", aiActArtFilter ? `#art=${aiActArtFilter}` : location.pathname);
+  } catch (_e) { /* ignore */ }
   renderAiAct();
 }
 
@@ -2036,22 +2046,34 @@ function renderAiAct() {
   const rot = $("aiActRot");
   if (!rot || typeof sjekkAiActSystem !== "function") return;
   const system = sjekkAiActSystem();
-  const porte = sjekkHelePortefoljenAiAct(SAKER, (sak) => {
+  const ctxFor = (sak) => {
     const w = work[sak.id] || {};
     const spor = loadJson(TRACE_KEY, []).some((t) => t.sak === sak.id);
     return { work: w, harSpor: spor };
-  });
+  };
+  const porte = sjekkHelePortefoljenAiAct(SAKER, ctxFor);
+  const valgt = typeof finnAiActSjekk === "function" ? finnAiActSjekk(aiActArtFilter) : null;
+  const nivaTekst = (niva) => (niva === "ok" ? "OK i øvelsen" : niva === "rod" ? "Ikke oppfylt" : "Begrenset");
   const nivaCls = { ok: "check-green", gul: "check-yellow", rod: "check-red" };
-  const sjekker = system.map((s) => `<div class="check ${nivaCls[s.niva] || "check-yellow"}"><small>${esc(s.art)} · ${s.niva === "ok" ? "OK i øvelsen" : s.niva === "rod" ? "Ikke oppfylt" : "Begrenset"}</small><strong>${esc(s.tittel)}</strong><br>${esc(s.tekst)}</div>`).join("");
+  const sjekker = system.map((s) => {
+    const on = aiActArtFilter === s.id;
+    return `<button type="button" class="check check-filter ${nivaCls[s.niva] || "check-yellow"} ${on ? "on" : ""}" onclick="setAiActArtFilter('${esc(s.id)}')">
+      <small>${esc(s.art)} · ${nivaTekst(s.niva)}</small><strong>${esc(s.tittel)}</strong><br>${esc(s.tekst)}
+    </button>`;
+  }).join("");
   const alle = [...porte.rader].sort((a, b) => {
     if (a.act.klasse !== b.act.klasse) return a.act.klasse === "hoy-tilsyn" ? -1 : 1;
     return a.sak.id.localeCompare(b.sak.id, "nb");
   });
-  const vist = aiActTabellFilter === "alle" ? alle : alle.filter((r) => r.act.klasse === aiActTabellFilter);
+  let etterArt = alle;
+  if (valgt && typeof sakTrefferAiActSjekk === "function") {
+    etterArt = alle.filter((r) => sakTrefferAiActSjekk(valgt, r.sak, r.act, ctxFor(r.sak)));
+  }
+  const vist = aiActTabellFilter === "alle" ? etterArt : etterArt.filter((r) => r.act.klasse === aiActTabellFilter);
   const chips = [
-    ["alle", `Alle ${porte.antall}`],
-    ["hoy-tilsyn", `Høyt tilsyn ${porte.hoy.length}`],
-    ["standard", `Standard ${porte.standard.length}`]
+    ["alle", `Alle i utvalg ${etterArt.length}`],
+    ["hoy-tilsyn", `Høyt tilsyn ${etterArt.filter((r) => r.act.klasse === "hoy-tilsyn").length}`],
+    ["standard", `Standard ${etterArt.filter((r) => r.act.klasse === "standard").length}`]
   ].map(([id, label]) => `<button type="button" class="chip ${aiActTabellFilter === id ? "on" : ""}" onclick="setAiActTabellFilter('${id}')">${label}</button>`).join("");
   const rader = vist.map((r) => `<tr class="${r.act.klasse === "hoy-tilsyn" ? "pv-rad-gul" : "pv-rad-ok"}">
     <td><a href="/tilskudd/behandle#${r.sak.id}">${esc(r.sak.id)}</a></td>
@@ -2064,6 +2086,12 @@ function renderAiAct() {
     <td>${r.act.logging ? "Spor" : "—"}</td>
     <td>${r.act.grunner.map((g) => esc(g)).join("; ")}</td>
   </tr>`).join("");
+  const listeTittel = valgt
+    ? `${valgt.art} · ${valgt.tittel}`
+    : "Full klassifisert saksliste";
+  const listeHint = valgt
+    ? (valgt.filterHint || "Saker som treffer dette hensynet. Klikk kortet igjen for å vise alle.")
+    : "Klikk et kort over for å filtrere listen. «Høyt tilsyn» er plantet feil, avvik eller rødt personvern. Ingen rad er et vedtak.";
   rot.innerHTML = `
     <div class="kpi-grid">
       <div class="kpi"><b>${porte.antall}</b><span>saker klassifisert</span></div>
@@ -2073,12 +2101,12 @@ function renderAiAct() {
     </div>
     <section class="panel">
       <h2>Systemet mot forordningen</h2>
-      <p class="hint">${esc(AIACT_REF)}. Øvelsesvurdering — ikke samsvar, ikke juridisk råd.</p>
+      <p class="hint">${esc(AIACT_REF)}. Klikk et kort — listen under viser sakene som hører til. Klikk samme kort igjen for å fjerne filteret. Øvelse, ikke samsvar, ikke juridisk råd.</p>
       ${sjekker}
     </section>
-    <section class="panel">
-      <h2>Full klassifisert saksliste</h2>
-      <p class="hint">Alle saker er beslutningsstøtte. «Høyt tilsyn» er plantet feil, avvik eller rødt personvern. Ingen rad er et vedtak.</p>
+    <section class="panel" id="aiActListe">
+      <h2>${esc(listeTittel)}</h2>
+      <p class="hint">${esc(listeHint)}</p>
       <div class="chips">${chips}</div>
       <div class="tabell-wrap">
         <table class="pv-tabell">
@@ -2087,16 +2115,18 @@ function renderAiAct() {
               <th>Sak</th><th>Søker</th><th>Ordning</th><th>Sakstype</th><th>Bruk</th><th>Klasse</th><th>Tilsyn</th><th>Logg</th><th>Hensyn</th>
             </tr>
           </thead>
-          <tbody>${rader}</tbody>
+          <tbody>${rader || `<tr><td colspan="9">Ingen saker i dette filteret.</td></tr>`}</tbody>
         </table>
       </div>
       <p class="hint">${vist.length} av ${porte.antall} vist.</p>
     </section>
   `;
+  if (valgt) $("aiActListe")?.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 window.renderAiAct = renderAiAct;
 window.setAiActTabellFilter = setAiActTabellFilter;
+window.setAiActArtFilter = setAiActArtFilter;
 
 let nis2TabellFilter = "alle";
 
@@ -2205,7 +2235,11 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   if ($("analyseRot")) renderAnalyse();
   if ($("pvRot")) renderPersonvern();
-  if ($("aiActRot")) renderAiAct();
+  if ($("aiActRot")) {
+    const hash = (location.hash || "").replace("#", "");
+    if (hash.startsWith("art=")) aiActArtFilter = hash.slice(4) || null;
+    renderAiAct();
+  }
   if ($("nis2Rot")) renderNis2();
   const ant = document.querySelector("[data-antall-saker]");
   if (ant) ant.textContent = `${SAKER.length} saker på 16 bokser. Klikk «fordelt til deg» eller en ordning for å se saker.`;
