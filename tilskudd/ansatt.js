@@ -157,7 +157,8 @@ function frankDigest() {
     const lov = typeof sakLovverk === "function"
       ? sakLovverk(s).gjelder.map((l) => l.id).join(",")
       : "";
-    return `${s.id} | ${s.org} | ${o} | ${s.flag} | ${frankSakStatus(s.id)} | søkt ${s.belop} | lov:${lov} | ${s.jobb}`;
+    const dok = (s.dokumenter || []).map((d) => `${d.id}:${d.status}`).join(",");
+    return `${s.id} | ${s.org} | ${o} | ${s.flag} | ${frankSakStatus(s.id)} | søkt ${s.belop} | lov:${lov} | dok:${dok} | ${s.jobb}`;
   }).join("\n");
 }
 
@@ -207,6 +208,7 @@ function renderFrankVelkommen() {
 }
 
 knyttFrankEkstraSaker();
+if (typeof knyttSoknadsdokumentasjon === "function" && typeof SAKER !== "undefined") knyttSoknadsdokumentasjon(SAKER);
 
 if (typeof window !== "undefined") {
   window.ANSATT = ANSATT;
@@ -225,6 +227,7 @@ if (typeof window !== "undefined") {
   }
   document.addEventListener("DOMContentLoaded", () => {
     knyttFrankEkstraSaker();
+    if (typeof knyttSoknadsdokumentasjon === "function") knyttSoknadsdokumentasjon(typeof SAKER !== "undefined" ? SAKER : []);
     renderFrankVelkommen();
     if (typeof renderLovFordeling === "function") renderLovFordeling("frankLovRot", "frank");
   });

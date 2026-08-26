@@ -8,6 +8,7 @@ Svar kort på norsk, i hele setninger.
 Hvis spørsmålet gjelder Franks saker: bruk KUN bunken du får. Siter saksnummer.
 Hvis noe ikke står i bunken: skriv «ikke i Franks bunke».
 Regelverk og fordeling: peke på lov-id-ene i bunken. Kort. Ikke vedtak. Ikke juridisk råd. Ikke omfordel potten.
+Dokumentasjon: hvis Frank spør om en sak, bruk dok-status i bunken og si hva som er tynt eller mangler. Ta det med i samlet synspunkt.
 Fiktive saker. Ikke late som du er Bufdir eller Tilskudd.no.`;
 
 function agentEsc(s) {
@@ -38,7 +39,13 @@ function agentFallback(spm) {
   }
   const treff = saker.find((s) => q.includes(s.id.toLowerCase()) || q.includes(String(s.org).toLowerCase()));
   if (treff) {
-    return `Synspunkt på ${treff.id} ${treff.org}: ${treff.jobb} Søknaden sier: «${treff.soknad}». Jeg foreslår at du åpner sakskortet og sjekker tall og personvern selv. Ikke vedtak.`;
+    const dok = (treff.dokumenter || []).filter((d) => d.status !== "ok").map((d) => `${d.tittel} (${d.status})`).join(", ");
+    return `Synspunkt på ${treff.id} ${treff.org}: ${treff.jobb} Søknaden sier: «${treff.soknad}». Dokumenter som ikke er OK: ${dok || "ingen flagget"}. Åpne sakskortet for full tekst og struktur. Ikke vedtak.`;
+  }
+  if (/dokument|krav|etikk|fremdrift|egenfinans/.test(q) && saker[0]) {
+    const s = saker.find((x) => /t-2629/i.test(q)) || saker[0];
+    const svak = (s.dokumenter || []).filter((d) => d.status !== "ok");
+    return `${s.id}: ${svak.length ? svak.map((d) => d.tittel).join(", ") : "dokumentene ser komplette ut i øvelsen"}. Samlet vurdering får du på sakskortet når KI har kjørt. Ikke vedtak.`;
   }
   if (/bistand|synspunkt|hjelp|vurder/.test(q)) {
     return "Jeg kan se på en sak hvis du oppgir saksnummer, for eksempel T-2629. Jeg forbereder. Du bestemmer.";
@@ -91,6 +98,7 @@ function byggAgentUi() {
         <button type="button" class="chip" data-agent-q="Gi meg synspunkt på T-2629">Bistand T-2629</button>
         <button type="button" class="chip" data-agent-q="Kjenner vi regelverk knyttet til tilskudd?">Regelverk</button>
         <button type="button" class="chip" data-agent-q="Evaluer fordelingen av sakene mine mot regelverk">Fordeling</button>
+        <button type="button" class="chip" data-agent-q="Vurder all dokumentasjon i T-2629 og gi en samlet vurdering">Dokumentasjon T-2629</button>
       </div>
       <form id="kiAgentForm">
         <label class="field">Spør assistenten

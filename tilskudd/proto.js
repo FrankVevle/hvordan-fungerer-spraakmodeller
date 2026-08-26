@@ -478,16 +478,17 @@ function fallbackFromSak(sak) {
       : `1. Jeg leste søknaden til ${sak.org}.\n2. Flagget i øvelsen er ${sak.flag}.\n3. Jeg skriver utkast, ikke vedtak.`,
     notat: planted
       ? "Anbefalt avslag med henvisning til § 14 og Golfklubben Fjord (T-2621)."
-      : `Øvelsesutkast for ${sak.id}. ${sak.jobb} Ikke vedtak.`,
-    brev: `Utkast — ikke vedtak\n\nTil ${sak.org}\n\n${sak.soknad}\n\nDette er et forslag til saksbehandler.`
+      : `Øvelsesutkast for ${sak.id}. ${sak.jobb} Dokumentasjonen er lest i øvelsen. Ikke vedtak.`,
+    brev: `Utkast — ikke vedtak\n\nTil ${sak.org}\n\n${sak.soknad}\n\nDette er et forslag til saksbehandler.`,
+    ...(typeof fallbackDokSemantikk === "function" ? fallbackDokSemantikk(sak) : {})
   };
 }
 
 const SYS = `Du er forvaltningsrådgiver i en pedagogisk øvelse (2026). Du fatter ALDRI vedtak. Du er ikke Bufdir.
 Etter KI-forordningen (EU) 2024/1689 er du beslutningsstøtte: søkeren og saksbehandleren skal se at dette er utkast, ikke automatisert vedtak.
-Du får KUN søknadstekst og utdrag under. Hvis noe mangler: skriv «ikke oppgitt».
-Admin 15 % og revisor 200 000 kr er øvelsesregler 2026.
-Svar på norsk. Start ALLTID med tenkning — skriv høyt hva du gjør, før du konkluderer.
+Du får søknadstekst, syntetiske søknadsdokumenter og utdrag. Hvis noe mangler: skriv «ikke oppgitt».
+Admin 15 %, revisor 200 000 kr og øvelseskrav til innhold (mål, rekruttering, plan, samarbeid, budsjett, egenfinansiering, etikk) er øvelse 2026 — ikke live Bufdir.
+Svar på norsk. Start ALLTID med tenkning — skriv høyt hva du gjør, før du konkluderer. Les dokumentene, ikke bare ingressen.
 
 ## Tenkning
 Nummererte setninger (5–8):
@@ -505,6 +506,22 @@ Medvirkning: N/5
 Sitat medvirkning: "..." eller ikke oppgitt
 Gratis: N/5
 Sitat gratis: "..." eller ikke oppgitt
+
+## Dokumentasjon
+Mål og evaluering: N/5
+Sitat mål: "..." eller ikke oppgitt
+Rekruttering: N/5
+Sitat rekruttering: "..." eller ikke oppgitt
+Fremdrift: N/5
+Sitat fremdrift: "..." eller ikke oppgitt
+Samarbeid: N/5
+Sitat samarbeid: "..." eller ikke oppgitt
+Budsjett og egenfinansiering: N/5
+Sitat budsjett: "..." eller ikke oppgitt
+Etikk og trygghet: N/5
+Sitat etikk: "..." eller ikke oppgitt
+Samlet dokumentasjon: N/5
+Sitat samlet: "..." eller ikke oppgitt
 
 ## Saksnotat
 Kort innstillingsforslag. Ikke fatt vedtak.
@@ -588,6 +605,11 @@ function runGrantRules(sak) {
   if (sak.flag === "avvik" || sak.id === "T-2631") {
     recommended = 0;
     checks.push({ status: "red", label: "Slutt", text: "Deler av beløpet er brukt utenfor vilkår. Utkast: tilbakekreving. Ikke innkreving." });
+  }
+  if (typeof sjekkSoknadskrav === "function") {
+    sjekkSoknadskrav(sak).forEach((c) => {
+      if (["etikk", "egen", "profitt", "mal", "plan"].includes(c.id)) checks.push(c);
+    });
   }
   return { checks, recommended };
 }
@@ -794,6 +816,13 @@ function parseKi(text) {
     malgruppe: { score: score(grab("Målgruppe")), sitat: grab("Sitat målgruppe") || "ikke oppgitt" },
     medvirkning: { score: score(grab("Medvirkning")), sitat: grab("Sitat medvirkning") || "ikke oppgitt" },
     gratis: { score: score(grab("Gratis")), sitat: grab("Sitat gratis") || "ikke oppgitt" },
+    dokMal: { score: score(grab("Mål og evaluering")), sitat: grab("Sitat mål") || "ikke oppgitt" },
+    dokMalg: { score: score(grab("Rekruttering")), sitat: grab("Sitat rekruttering") || "ikke oppgitt" },
+    dokPlan: { score: score(grab("Fremdrift")), sitat: grab("Sitat fremdrift") || "ikke oppgitt" },
+    dokSam: { score: score(grab("Samarbeid")), sitat: grab("Sitat samarbeid") || "ikke oppgitt" },
+    dokOkonomi: { score: score(grab("Budsjett og egenfinansiering")), sitat: grab("Sitat budsjett") || "ikke oppgitt" },
+    dokEtikk: { score: score(grab("Etikk og trygghet")), sitat: grab("Sitat etikk") || "ikke oppgitt" },
+    dokSamlet: { score: score(grab("Samlet dokumentasjon")), sitat: grab("Sitat samlet") || "ikke oppgitt" },
     tenkning,
     notat: note || text.trim(),
     brev: brev || "",
@@ -888,6 +917,15 @@ function byggKiVurdering(sak, w) {
     linje("Målgruppe", sem.malgruppe),
     linje("Medvirkning", sem.medvirkning),
     linje("Gratis", sem.gratis),
+    "",
+    "## Dokumentasjon",
+    linje("Mål og evaluering", sem.dokMal),
+    linje("Rekruttering", sem.dokMalg),
+    linje("Fremdrift", sem.dokPlan),
+    linje("Samarbeid", sem.dokSam),
+    linje("Budsjett og egenfinansiering", sem.dokOkonomi),
+    linje("Etikk og trygghet", sem.dokEtikk),
+    linje("Samlet dokumentasjon", sem.dokSamlet),
     "",
     "## Tenkning",
     sem.tenkning || "(ikke oppgitt)",
@@ -1127,7 +1165,7 @@ function renderCard() {
     ? `<ul class="arkiv-liste">${arkiv.dokumenter.map((d) => `<li><strong>${esc(d.tittel)}</strong> · ${esc(d.at)}<br><span class="hint">${esc(d.merknad || "Simulert journalpost.")}</span></li>`).join("")}</ul>`
     : `<p class="hint">Ingen journalposter i øvelsesarkivet på denne saken ennå.</p>`;
   const sem = w.semantic
-    ? `<table><thead><tr><th>Tema</th><th>Score</th><th>Sitat</th></tr></thead><tbody>${semRow("Målgruppe", w.semantic.malgruppe)}${semRow("Medvirkning", w.semantic.medvirkning)}${semRow("Gratis", w.semantic.gratis)}</tbody></table>`
+    ? `<table><thead><tr><th>Tema</th><th>Score</th><th>Sitat</th></tr></thead><tbody>${semRow("Målgruppe", w.semantic.malgruppe)}${semRow("Medvirkning", w.semantic.medvirkning)}${semRow("Gratis", w.semantic.gratis)}${semRow("Mål og evaluering", w.semantic.dokMal)}${semRow("Rekruttering", w.semantic.dokMalg)}${semRow("Fremdrift", w.semantic.dokPlan)}${semRow("Samarbeid", w.semantic.dokSam)}${semRow("Budsjett / egenandel", w.semantic.dokOkonomi)}${semRow("Etikk og trygghet", w.semantic.dokEtikk)}${semRow("Samlet dokumentasjon", w.semantic.dokSamlet)}</tbody></table>`
     : `<p class="hint">${w.running ? "Leser teksten…" : "Ingen tekstvurdering ennå."}</p>`;
   box.innerHTML = `
     <div style="display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;align-items:flex-start">
@@ -1145,6 +1183,8 @@ function renderCard() {
       <div>
         <h3>Søknaden</h3>
         <p>${esc(sak.soknad)}</p>
+        <h3>All dokumentasjon</h3>
+        ${typeof dokVisHtml === "function" ? dokVisHtml(sak) : `<p class="hint">${esc(sak.soknad)}</p>`}
         <h3>Budsjett</h3>
         <table>${budsjett}</table>
         <h3>Vedlegg</h3>
@@ -1233,7 +1273,8 @@ async function runKI(id, force, pvValg) {
   renderCard();
   const seq = ++kiSeq;
   const rag = ragFor(sak).map((r) => `### ${r.tittel}\n${r.tekst}`).join("\n\n");
-  const prompt = `Saksnummer: ${sak.id}\nOrganisasjon: ${sak.org}\nSøkt: ${sak.belop} kr\nPersonvern: ${w.pvSendt === "sladdet" ? "søknadstekst er sladdet av øvelsesmodulen" : "søknadstekst som i saken"}.\n\nSØKNADSTEKST:\n${gate.tekst}\n\nUTDRAG (fiktiv øvelse 2026):\n${rag}\n\nSkriv først ## Tenkning, deretter semantikk, notat og brev. Ikke fatt vedtak.`;
+  const maskinKrav = typeof kravSjekkKort === "function" ? kravSjekkKort(sak) : "";
+  const prompt = `Saksnummer: ${sak.id}\nOrganisasjon: ${sak.org}\nSøkt: ${sak.belop} kr\nPersonvern: ${w.pvSendt === "sladdet" ? "tekst er sladdet av øvelsesmodulen" : "tekst som i saken"}.\n\nSØKNAD OG DOKUMENTER:\n${gate.tekst}\n\nMASKINELL KRAVSJEKK (øvelse, ikke vedtak):\n${maskinKrav}\n\nUTDRAG (fiktiv øvelse 2026):\n${rag}\n\nSkriv først ## Tenkning, deretter semantikk, dokumentasjon, notat og brev. Bruk dokumentene i den samlede vurderingen. Ikke fatt vedtak.`;
   addJournal({ type: "ki", sak: id, svar: force ? "Kjører KI på nytt" : "Første KI-kall" });
   const kilder = ragFor(sak).map((r) => r.tittel);
   try {
