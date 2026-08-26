@@ -222,12 +222,15 @@ function renderFrankVelkommen() {
       ${boks("tildelt", krFn(saker.reduce((n, s) => n + s.belop, 0)), "søkt i din bunke")}
     </div>
     ${sakPanel}
-    <section class="panel" style="margin-top:1rem">
-      <h2>Regelverk knyttet til tilskudd</h2>
-      <p class="hint">Ja — det finnes lov og regelverk. Dette er en pekepinn i øvelsen, ikke juridisk råd og ikke komplett liste.</p>
+    <details class="panel trekkspill" style="margin-top:1rem">
+      <summary>
+        <h2>Regelverk knyttet til tilskudd</h2>
+        <span class="hint">Pekepinn i øvelsen — klikk for å åpne</span>
+      </summary>
+      <p class="hint">Ja — det finnes lov og regelverk. Dette er ikke juridisk råd og ikke komplett liste.</p>
       <ul class="lov-liste">${frankLovListe().map((l) => `<li><strong>${escFn(l.navn)}</strong> — ${escFn(l.kort)} <span class="hint">${escFn(l.merknad)}</span></li>`).join("")}</ul>
       <p class="hint">Spør den svevende assistenten om en sak eller om regelverk. Den fatter ikke vedtak.</p>
-    </section>
+    </details>
     <div id="frankLovRot"></div>`;
   if (typeof renderLovFordeling === "function") renderLovFordeling("frankLovRot", "frank");
 }
