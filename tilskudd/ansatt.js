@@ -162,7 +162,7 @@ function frankDigest() {
   }).join("\n");
 }
 
-let frankBoksFilter = null;
+let frankMinSideFilter = null;
 
 function frankSakerIBoks(nøkkel) {
   const saker = frankSaker();
@@ -172,9 +172,9 @@ function frankSakerIBoks(nøkkel) {
 }
 
 function setFrankBoksFilter(nøkkel) {
-  frankBoksFilter = frankBoksFilter === nøkkel ? null : nøkkel;
+  frankMinSideFilter = frankMinSideFilter === nøkkel ? null : nøkkel;
   try {
-    history.replaceState(null, "", frankBoksFilter ? `#${frankBoksFilter}` : location.pathname);
+    history.replaceState(null, "", frankMinSideFilter ? `#${frankMinSideFilter}` : location.pathname);
   } catch (_e) { /* ignore */ }
   renderFrankVelkommen();
 }
@@ -198,7 +198,7 @@ function renderFrankVelkommen() {
       <p class="job">${escFn(s.jobb)}</p>
     </a>`;
   };
-  const boks = (nøkkel, tall, tekst) => `<button type="button" class="kpi kpi-klikk ${frankBoksFilter === nøkkel ? "on" : ""}" onclick="setFrankBoksFilter('${nøkkel}')">
+  const boks = (nøkkel, tall, tekst) => `<button type="button" class="kpi kpi-klikk ${frankMinSideFilter === nøkkel ? "on" : ""}" onclick="setFrankBoksFilter('${nøkkel}')">
       <b>${tall}</b><span>${tekst}</span>
     </button>`;
   const titler = {
@@ -206,10 +206,10 @@ function renderFrankVelkommen() {
     startet: "Saker du har startet",
     ikke_startet: "Saker du ikke har startet"
   };
-  const valgte = frankBoksFilter ? frankSakerIBoks(frankBoksFilter) : [];
-  const sakPanel = frankBoksFilter
+  const valgte = frankMinSideFilter ? frankSakerIBoks(frankMinSideFilter) : [];
+  const sakPanel = frankMinSideFilter
     ? `<section class="panel" id="frankSaker">
-      <h2>${escFn(titler[frankBoksFilter] || "Saker")}</h2>
+      <h2>${escFn(titler[frankMinSideFilter] || "Saker")}</h2>
       <p class="hint">Klikk en sak for å åpne den. Klikk samme boks igjen for å skjule listen. Fiktive saker.</p>
       <div class="frank-sak-liste">${valgte.map(rad).join("") || "<p class='hint'>Ingen saker i denne boksen.</p>"}</div>
     </section>`
@@ -255,7 +255,7 @@ if (typeof window !== "undefined") {
     knyttFrankEkstraSaker();
     if (typeof knyttSoknadsdokumentasjon === "function") knyttSoknadsdokumentasjon(typeof SAKER !== "undefined" ? SAKER : []);
     const hash = (location.hash || "").replace("#", "");
-    if (hash === "tildelt" || hash === "startet" || hash === "ikke_startet") frankBoksFilter = hash;
+    if (hash === "tildelt" || hash === "startet" || hash === "ikke_startet") frankMinSideFilter = hash;
     renderFrankVelkommen();
   });
 }
