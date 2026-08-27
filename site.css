@@ -154,6 +154,64 @@ body { font-family: 'Inter', sans-serif; }
       .flyt-role { transition: none; }
     }
 
+    .foil-manus {
+      background: #fffbeb;
+      border: 1px solid #f59e0b;
+      border-radius: 1.25rem;
+      padding: 1rem 1.15rem 1.1rem;
+      box-shadow: 0 8px 24px rgba(120, 53, 15, 0.06);
+    }
+    .foil-manus-card { margin-bottom: 0.85rem; }
+    .foil-manus-head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      margin-bottom: 0.45rem;
+    }
+    .foil-manus-head p {
+      margin: 0;
+      font-size: 0.68rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #92400e;
+    }
+    .foil-manus-actions { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+    .foil-manus-open, .foil-manus-hide, .foil-manus-show {
+      font-size: 0.72rem;
+      font-weight: 700;
+      border-radius: 0.65rem;
+      padding: 0.28rem 0.6rem;
+      border: 1px solid #f59e0b;
+      background: #fff;
+      color: #92400e;
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .foil-manus h3 {
+      margin: 0 0 0.45rem;
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: #1c1917;
+    }
+    .foil-manus p { margin: 0 0 0.45rem; font-size: 0.92rem; line-height: 1.55; color: #3f3f46; }
+    .foil-manus p:last-child { margin-bottom: 0; }
+    .foil-manus-si { color: #1c1917 !important; font-weight: 650; }
+    .foil-manus-show {
+      position: fixed;
+      right: 1rem;
+      bottom: 5.25rem;
+      z-index: 60;
+      box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+      background: #fffbeb;
+    }
+    @media (max-width: 640px) {
+      .foil-manus { padding: 0.85rem; }
+      .foil-manus p { font-size: 0.86rem; }
+    }
+
     .modal-details {
       display: block !important;
       margin-top: 0.75rem;

@@ -3,177 +3,60 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hva dette handler om · Hvordan Fungerer Språkmodeller?</title>
+  <title>Manus til gjennomgang · Hvordan Fungerer Språkmodeller?</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Fira+Code:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="site.css">
 </head>
-<body class="bg-slate-50 text-slate-800 antialiased min-h-screen pb-32" data-page="om.html">
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen pb-16" data-page="om.html">
   <header class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
       <a href="index.html" class="flex items-center gap-3">
         <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-purple-600 via-indigo-600 to-blue-500 flex items-center justify-center text-white font-black text-xl shadow-md shadow-purple-200">AI</div>
         <div>
           <h1 class="text-lg font-bold text-slate-900 leading-tight">Hvordan Fungerer Språkmodeller?</h1>
-          <p class="text-xs text-slate-500">Hver side er ett punkt</p>
+          <p class="text-xs text-slate-500">Manus — bare for deg som viser</p>
         </div>
       </a>
-      <div class="bg-slate-100 p-1 rounded-xl flex border border-slate-200 text-xs font-semibold">
-        <button id="btnSimple" onclick="toggleMode('simple')" class="px-3.5 py-1.5 rounded-lg bg-white text-purple-700 shadow-sm transition-all font-bold">🟢 Enkel forklaring</button>
-        <button id="btnTech" onclick="toggleMode('tech')" class="px-3.5 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition-all">🔬 Teknisk dypdykk</button>
-      </div>
+      <a href="index.html" class="text-sm font-semibold text-violet-800 hover:underline">Tilbake til oversikt</a>
     </div>
   </header>
 
-  <main class="max-w-6xl mx-auto px-4 sm:px-6 mt-8 space-y-6">
-    <p class="text-[11px] font-bold uppercase tracking-widest text-slate-500">Start · Hva dette er</p>
-
-    <section class="bg-gradient-to-r from-purple-900 via-indigo-900 to-slate-900 rounded-3xl p-5 sm:p-8 text-white shadow-2xl border border-purple-700/50 space-y-3">
-      <span class="bg-purple-500/20 text-purple-300 text-xs px-3 py-1 rounded-full font-mono font-bold uppercase tracking-wider border border-purple-500/30">Pedagogisk kurs + øvelsesprototype</span>
-      <h2 class="text-xl sm:text-3xl font-extrabold tracking-tight">Hva dette handler om — faglig og teknisk</h2>
-      <p class="text-slate-300 text-sm sm:text-base leading-relaxed max-w-3xl">
-        Dette er et kursopplegg som forklarer hvordan store språkmodeller faktisk virker, og en fiktiv tilskuddsprototype som viser hva som skjer når slike modeller settes inn i saksbehandling. Det er <strong>ikke</strong> et Bufdir-verktøy, ikke beslutningsstøtte og ikke et vedtakssystem. Forskrift, policy, presedens og saker er oppdiktet.
+  <main class="max-w-3xl mx-auto px-4 sm:px-6 mt-8 space-y-5">
+    <section class="bg-gradient-to-r from-amber-900 via-orange-900 to-slate-900 rounded-3xl p-5 sm:p-7 text-white shadow-xl">
+      <span class="bg-amber-500/20 text-amber-200 text-xs px-3 py-1 rounded-full font-mono font-bold uppercase tracking-wider border border-amber-500/30">Personlig gjennomgang</span>
+      <h2 class="text-xl sm:text-3xl font-extrabold tracking-tight mt-3">Én tekstblokk per foil</h2>
+      <p class="text-amber-50/90 text-sm sm:text-base leading-relaxed mt-2">
+        Dette er ikke en foil i kurset. Det er manuset ditt når du klikker deg gjennom sidene. Samme blokk ligger øverst på hver foil. «Si» er det du kan si høyt. Deretter faglig og teknisk. Skjul blokkene på foilene hvis du viser for andre.
       </p>
     </section>
 
-    <section class="bg-white p-5 sm:p-8 rounded-3xl border border-slate-200 shadow-sm space-y-4">
-      <p class="text-[11px] font-mono font-bold uppercase tracking-widest text-purple-700">Kort sagt</p>
-      <h3 class="text-2xl font-extrabold text-slate-900">To ting i samme pakke</h3>
-      <p class="text-base text-slate-700 leading-relaxed">
-        Først et <strong>faglig kurs</strong>: tokens, neste-token-prediksjon, temperatur, hallusinering, prompt, personvern, KI-forordning og kildeforankring. Deretter en <strong>teknisk øvelse</strong>: en saksbehandlerflate der KI forbereder notat og brev, mens kode og menneske stopper det som ikke skal passere.
-      </p>
-      <p class="text-base text-slate-700 leading-relaxed">
-        Poenget er ikke å «innføre KI». Poenget er å gjøre synlig hvorfor en åpen chat er farlig i tilskudd — og hvordan fast rekkefølge, godkjente kilder og en sjekk som <em>ikke</em> er KI, endrer risikoen. Vedtaket er alltid menneskets.
-      </p>
-    </section>
+    <nav id="manusHopplinjer" class="flex flex-wrap gap-2 text-xs font-semibold">
+      <a class="px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:border-amber-400" href="#manus-index-html">Oversikt</a>
+      <a class="px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:border-amber-400" href="#manus-kapittel-1-html">1</a>
+      <a class="px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:border-amber-400" href="#manus-kapittel-2-html">2</a>
+      <a class="px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:border-amber-400" href="#manus-kapittel-3-html">3</a>
+      <a class="px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:border-amber-400" href="#manus-teknisk-html">T</a>
+      <a class="px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:border-amber-400" href="#manus-kapittel-4-html">4</a>
+      <a class="px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:border-amber-400" href="#manus-kapittel-5-html">5</a>
+      <a class="px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:border-amber-400" href="#manus-kapittel-6-html">6</a>
+      <a class="px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:border-amber-400" href="#manus-kapittel-7-html">7</a>
+      <a class="px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:border-amber-400" href="#manus-kapittel-8-html">8</a>
+      <a class="px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:border-amber-400" href="#manus-kapittel-9-html">9</a>
+      <a class="px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:border-amber-400" href="#manus-tilskudd-">Prototype</a>
+      <a class="px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:border-amber-400" href="#manus-kapittel-10-html">10</a>
+      <a class="px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:border-amber-400" href="#manus-kapittel-11-html">11</a>
+      <a class="px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:border-amber-400" href="#manus-kapittel-12-html">12</a>
+    </nav>
 
-    <section class="bg-white p-5 sm:p-8 rounded-3xl border border-slate-200 shadow-sm space-y-5">
-      <p class="text-[11px] font-mono font-bold uppercase tracking-widest text-violet-700">Faglig</p>
-      <h3 class="text-2xl font-extrabold text-slate-900">Hva opplegget skal lære</h3>
-      <p class="text-base text-slate-700 leading-relaxed">
-        Målgruppen er folk som skal bruke eller vurdere språkmodeller i offentlig forvaltning — særlig tilskudd. De trenger ikke å trene en modell. De trenger å vite hva den gjør, hva den ikke gjør, og hvor ansvaret ligger.
-      </p>
-
-      <div class="grid md:grid-cols-2 gap-3">
-        <article class="rounded-2xl border border-slate-200 bg-slate-50 p-4 space-y-2">
-          <h4 class="font-bold text-slate-900">Modellen tipper, den tenker ikke</h4>
-          <p class="text-sm text-slate-700 leading-relaxed">Tekst blir tokens. Tokens blir tall. Modellen predikerer neste token. Den har ikke et internt leksikon, ingen sannhetsgaranti og ingen egen utredningsplikt. Samme prompt kan gi ulike svar.</p>
-        </article>
-        <article class="rounded-2xl border border-slate-200 bg-slate-50 p-4 space-y-2">
-          <h4 class="font-bold text-slate-900">Mennesket i loopen</h4>
-          <p class="text-sm text-slate-700 leading-relaxed">KI kan lese, foreslå og gjøre forarbeid. Den skal ikke fatte vedtak, sende brev eller handle alene. Skjønn, rangering mot ramme og likebehandling er saksbehandlers. Det følger av forvaltningsloven og av at dette aldri er automatisert enkeltvedtak.</p>
-        </article>
-        <article class="rounded-2xl border border-slate-200 bg-slate-50 p-4 space-y-2">
-          <h4 class="font-bold text-slate-900">Trygg bruk og plikter</h4>
-          <p class="text-sm text-slate-700 leading-relaxed">Fire regler: mennesket har ansvaret, personopplysninger skjermes, klarspråk, og du sjekker kilder. Trafikklys for data. Offentlig sektor har i tillegg innsyn, arkiv og KI-forordning. Rødt lys stopper automatisk sending til modell.</p>
-        </article>
-        <article class="rounded-2xl border border-slate-200 bg-slate-50 p-4 space-y-2">
-          <h4 class="font-bold text-slate-900">Kildeforankring er ikke det samme som rett</h4>
-          <p class="text-sm text-slate-700 leading-relaxed">RAG — at svaret skal hentes fra dokumenter du selv har lagt inn — reduserer påhitt. Det fjerner ikke skjønn, feil lik sak eller plikten til å sjekke hjemmel. En modell kan sitere feil paragraf med stor selvtillit.</p>
-        </article>
-      </div>
-
-      <div class="rounded-2xl border border-violet-200 bg-violet-50 p-4 space-y-2">
-        <h4 class="font-bold text-violet-950">Tilskudd som case</h4>
-        <p class="text-sm text-violet-950 leading-relaxed">
-          Tilskudd er valgt fordi det blander formalia (hvem kan søke, adminandel, revisor) med skjønn (målgruppe, medvirkning, prioritering mot ramme). KI hører hjemme på kontroll, budsjett, historikk og utkast — ikke på innstillingen som vedtak. I øvelsen er minst ett forslag plantet feil, slik at du skal øve på å si nei.
-        </p>
-      </div>
-
-      <p class="text-base text-slate-700 leading-relaxed">
-        Kurset er delt i fem. <strong>Del 1</strong> forklarer byggeklossene. <strong>Del 2</strong> øver prompt og trygge regler. <strong>Del 3</strong> viser kildeforankret KI og en fiktiv datalab. <strong>Del 4</strong> er hele tilskuddsløpet og en personlig agent med plantet feil. <strong>Del 5</strong> viser hvorfor fast saksflyt stopper hallusinering av hjemmel, og et forslag til innføring hvis noen skulle gå videre — behov, forankring, juss, pilot, drift eller stopp.
-      </p>
-    </section>
-
-    <section class="bg-white p-5 sm:p-8 rounded-3xl border border-slate-200 shadow-sm space-y-5">
-      <p class="text-[11px] font-mono font-bold uppercase tracking-widest text-indigo-700">Teknisk</p>
-      <h3 class="text-2xl font-extrabold text-slate-900">Hvordan løsningen er bygget</h3>
-      <p class="text-base text-slate-700 leading-relaxed">
-        Flaten er statiske HTML-sider med felles <code class="font-mono text-sm bg-slate-100 px-1.5 py-0.5 rounded">app.js</code> og <code class="font-mono text-sm bg-slate-100 px-1.5 py-0.5 rounded">site.css</code>. Tilskuddsprototypen ligger i <code class="font-mono text-sm bg-slate-100 px-1.5 py-0.5 rounded">/tilskudd/</code> som en egen webløsning uten kapittelmeny. Alt kjøres på Vercel. Uten <code class="font-mono text-sm bg-slate-100 px-1.5 py-0.5 rounded">OPENAI_API_KEY</code> virker øvelsen likevel: grafen leverer merkede øvelsesutkast og samme validator.
-      </p>
-
-      <div class="grid md:grid-cols-3 gap-3">
-        <article class="rounded-2xl border border-slate-200 bg-slate-50 p-4 space-y-2">
-          <p class="text-[11px] font-bold uppercase tracking-wider text-indigo-700">Kurs</p>
-          <h4 class="font-bold text-slate-900">Statiske kapitler</h4>
-          <p class="text-sm text-slate-700 leading-relaxed">Ett punkt per side. Enkel forklaring eller teknisk dypdykk. Prompt Lab og datalab kaller <code class="font-mono text-xs">/api/chat</code> mot OpenAI når nøkkel finnes.</p>
-        </article>
-        <article class="rounded-2xl border border-slate-200 bg-slate-50 p-4 space-y-2">
-          <p class="text-[11px] font-bold uppercase tracking-wider text-indigo-700">Prototype</p>
-          <h4 class="font-bold text-slate-900">Saksbehandlerflate</h4>
-          <p class="text-sm text-slate-700 leading-relaxed">Arbeidsliste, ordninger, KI-analyse, personvern, KI-forordning, NIS 2, jusmappe og simulert søkerportal. Journalen ligger i nettleseren, ikke i et arkivsystem.</p>
-        </article>
-        <article class="rounded-2xl border border-slate-200 bg-slate-50 p-4 space-y-2">
-          <p class="text-[11px] font-bold uppercase tracking-wider text-indigo-700">Graf</p>
-          <h4 class="font-bold text-slate-900">LangGraph</h4>
-          <p class="text-sm text-slate-700 leading-relaxed"><code class="font-mono text-xs">/api/graph</code> kjører RAG → utkast → sjekk. Bare utkast-steget er en språkmodell. Koordinator, kildehenter og validator er kode.</p>
-        </article>
-      </div>
-
-      <div class="bg-slate-900 text-white p-5 sm:p-7 rounded-3xl border border-purple-800/50 space-y-4">
-        <h4 class="text-lg font-extrabold">Stegvis saksflyt — det tekniske svaret på hallusinering</h4>
-        <p class="text-sm text-slate-200 leading-relaxed">
-          En åpen chat kan skrive en paragraf som høres riktig ut. Her tvinges saken gjennom faste steg. Det er ikke fire frie agenter som diskuterer.
-        </p>
-        <ol class="space-y-2 text-sm text-slate-200 leading-relaxed list-decimal pl-5">
-          <li><strong>Koordinator (LangGraph):</strong> velger neste steg. Skriver ikke utkast.</li>
-          <li><strong>Kildehenter (kode):</strong> slår opp i en kontrollert jusmappe. Lov, fiktiv øvelsesregel og veileder merkes. Plantet felle (§ 14 / Golfklubben) blir liggende i mappa, men går ikke til utkastet.</li>
-          <li><strong>Forslag (språkmodell):</strong> skriver tenkning, skårer, saksnotat og brev fra godkjente utdrag. Temperatur er lav. Uten API-nøkkel brukes et merket øvelsesutkast.</li>
-          <li><strong>Sjekk (kode, ikke KI):</strong> avviser manglende «ikke vedtak», påfunnede paragrafer, feil lik sak og manglende bruk av hentet hjemmel. Ved feil: nytt utkast, maks to forsøk.</li>
-          <li><strong>Menneske:</strong> bekrefter, justerer, avviser eller lar saken stå.</li>
-        </ol>
-        <p class="text-sm text-slate-300 leading-relaxed">
-          Før teksten går til modell, leter en egen modul etter fødselsnummer, helse, navngitte barn, e-post, telefon og adresse. Rødt stopper automatisk KI. Det er mønstersøk, ikke et vedtak om at behandlingen er lovlig.
-        </p>
-      </div>
-
-      <p class="text-base text-slate-700 leading-relaxed">
-        Det tekniske dypdykket i kurset går lenger enn prototypen: decoder-only transformer, residualstrøm, scaled dot-product attention, GQA, RoPE, SwiGLU, CLM-tap, SFT/RLHF/DPO, sampling og KV-cache. Det forklarer <em>hvorfor</em> modellen kan finne på en hjemmel — den sampler sannsynlige tokens, den slår ikke opp i en lovdatabase.
-      </p>
-    </section>
-
-    <section class="bg-white p-5 sm:p-8 rounded-3xl border border-slate-200 shadow-sm space-y-4">
-      <p class="text-[11px] font-mono font-bold uppercase tracking-widest text-rose-700">Avgrensning</p>
-      <h3 class="text-2xl font-extrabold text-slate-900">Hva dette ikke er</h3>
-      <ul class="list-disc pl-6 space-y-2 text-slate-800 text-sm sm:text-base leading-relaxed">
-        <li>Ikke et fagsystem, ikke live tildeling, ikke Bufdirs saksflyt.</li>
-        <li>Ikke juridisk rådgivning. Lovutdragene i mappa er øvelseskilder. Fiktive 2026-regler (admin 15 %, revisor 200 000 kr, jobbtilbud 4.2) er merket som fiktive.</li>
-        <li>Ikke samsvarserklæring etter KI-forordningen. Hvis dette var ekte tilskuddsforvaltning, ville det sannsynligvis vært høyrisiko.</li>
-        <li>Ikke en agent som utfører handlinger. Nivået er assistent: lese, foreslå, forarbeid.</li>
-        <li>Søkerportal, registeroppslag og arkiv er bare simulert. I skarp drift med personopplysninger kreves mer: DPIA, ev. FRIA, databehandleravtale, eier i linja og logg som holder.</li>
-      </ul>
-    </section>
-
-    <section class="grid sm:grid-cols-2 gap-3">
-      <a href="index.html" class="block rounded-2xl border border-slate-200 bg-white p-5 hover:border-violet-400 hover:shadow-md transition-all">
-        <p class="text-[10px] font-bold uppercase tracking-widest text-slate-500">Kurset</p>
-        <h3 class="text-base font-bold text-slate-900 mt-1">Start på oversiktssiden</h3>
-        <p class="text-sm text-slate-600 mt-1">Tolv kapitler, teknisk dypdykk og forslag til gjennomføring.</p>
-      </a>
-      <a href="tilskudd/" class="block rounded-2xl border border-violet-300 bg-violet-50 p-5 hover:border-violet-500 hover:shadow-md transition-all">
-        <p class="text-[10px] font-bold uppercase tracking-widest text-violet-700">Egen webløsning</p>
-        <h3 class="text-base font-bold text-slate-900 mt-1">Åpne tilskuddsprototypen</h3>
-        <p class="text-sm text-slate-600 mt-1">Du er saksbehandler. KI forbereder. Du bestemmer.</p>
-      </a>
-    </section>
+    <div id="manusListe" class="space-y-3"></div>
   </main>
 
-  <footer class="max-w-6xl mx-auto px-4 sm:px-6 mt-16 pt-8 pb-4 border-t border-slate-200 text-center text-xs text-slate-500 font-medium space-y-1">
-    <p>Pedagogisk øvelse. <strong>Ikke et Bufdir-verktøy.</strong> Sist oppdatert 27. august 2026.</p>
+  <footer class="max-w-3xl mx-auto px-4 sm:px-6 mt-12 pt-6 pb-4 border-t border-slate-200 text-center text-xs text-slate-500">
+    <p>Personlig manus. Ikke kursinnhold. Ikke et Bufdir-verktøy.</p>
   </footer>
-
-  <div id="chapterNav" class="fixed bottom-0 inset-x-0 z-50 bg-white/95 backdrop-blur border-t border-slate-200 px-4 py-3 shadow-[0_-8px_24px_rgba(15,23,42,0.08)]">
-    <div class="max-w-6xl mx-auto flex items-center justify-between gap-3">
-      <button type="button" id="btnPrevChapter" onclick="stepChapter(-1)" class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed">← Forrige</button>
-      <div class="text-center min-w-0">
-        <p id="chapterPartLabel" class="text-[11px] font-bold uppercase tracking-widest text-slate-500 truncate">Start</p>
-        <p id="chapterStepLabel" class="text-sm font-semibold text-slate-800">Hva dette handler om</p>
-      </div>
-      <button type="button" id="btnNextChapter" onclick="stepChapter(1)" class="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed">Neste →</button>
-    </div>
-  </div>
 
   <script src="app.js"></script>
 </body>

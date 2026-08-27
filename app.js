@@ -10,7 +10,6 @@ let currentChapterIdx = 0;
 
 const SITE_PAGES = [
   { file: "index.html", title: "Oversikt", part: "Start" },
-  { file: "om.html", title: "Hva dette handler om", part: "Start" },
   { file: "kapittel-1.html", title: "Kapittel 1 · Tokens og ordkart", part: "Del 1" },
   { file: "kapittel-2.html", title: "Kapittel 2 · Neste ord og temperatur", part: "Del 1" },
   { file: "kapittel-3.html", title: "Kapittel 3 · Ikke-determinisme", part: "Del 1" },
@@ -36,6 +35,191 @@ function currentPageFile() {
 function visibleSitePages() {
   return SITE_PAGES.filter((p) => !p.tech || currentMode === "tech");
 }
+
+/** Personlig manus når du går gjennom foilene. Ikke kursinnhold. */
+const FOIL_MANUS = [
+  {
+    file: "index.html",
+    del: "Start",
+    tittel: "Oversikt",
+    si: "Velkommen. Dette er et kursopplegg, ikke et Bufdir-verktøy. Forskrift og saker er oppdiktet. Vi går fra tokens til et helt tilskuddsløp — og slutter med hvorfor KI ikke får finne på hjemmel.",
+    faglig: "Fem deler: hvordan modellen virker, trygg bruk, kildeforankring, tilskudd som case, og et forslag til innføring. Målet er at folk skjønner hva en språkmodell gjør, hva den ikke gjør, og at vedtaket alltid er menneskets.",
+    teknisk: "Statiske HTML-sider med felles app.js. Forrige/Neste nederst. Teknisk dypdykk vises bare når du slår på «Teknisk dypdykk». Tilskuddsprototypen er en egen flate under /tilskudd/."
+  },
+  {
+    file: "kapittel-1.html",
+    del: "Del 1",
+    tittel: "1 · Tokens og ordkart",
+    si: "Modellen leser ikke hele ord. Den kutter teksten i tokens og slår hvert token opp som tall. Derfor «forstår» den ikke — den regner.",
+    faglig: "La dem skrive en setning. Vis at norsk ofte blir flere tokens enn engelsk. Klikk en token: id-nummer og vektor. Ordkartet: katt og hund ligger nær, katt og traktor langt unna. Det er mening som avstand, ikke et leksikon.",
+    teknisk: "Pedagogisk oppdeling, ikke ekte BPE. Vektoren med åtte tall er illustrasjon. Ekte embedding har hundrevis av dimensjoner. Samme token lander alltid på samme sted i kartet."
+  },
+  {
+    file: "kapittel-2.html",
+    del: "Del 1",
+    tittel: "2 · Neste ord og temperatur",
+    si: "Alt en språkmodell egentlig gjør, er å spørre: gitt ordene så langt, hva er mest sannsynlig neste ord? Den tipper. Den tenker ikke.",
+    faglig: "Tre setninger: «katten klatret opp i…» er åpent, «hovedstaden i Norge» er smalt, «for å løse dette» er faglig. Dra temperaturen. Lav = forutsigbart og mer «faktisk». Høy = kreativt, og oftere feil. Det er derfor samme oppgave kan bli ulike utkast.",
+    teknisk: "Softmax med temperatur T. Lav T skjerper fordelingen mot topp-tokenet. Høy T jevner ut. Dette er sampling, ikke en resonneringsmotor. Bro til foil 3 og til tre kjøringer av samme sak i kapittel 9."
+  },
+  {
+    file: "kapittel-3.html",
+    del: "Del 1",
+    tittel: "3 · Ikke-determinisme",
+    si: "2 + 2 er alltid 4. Samme prompt er ikke alltid samme svar. Det er ikke mannen i midten — det er slik modellen er bygget.",
+    faglig: "Tre kort. Søk: den slår ikke opp, den kan hallusinere på ulike måter. Omskriving: «kan innvilges» kan bli «skal innvilges». Oppgaver: ulike stier. Rådet er det samme: mennesket leser før noe brukes.",
+    teknisk: "Stokastisk trekning fra en fordeling når T > 0. Selv ved T = 0 kan GPU-reduksjoner gi mikroskopisk variasjon. Derfor kan du ikke «kjøre en gang og stole på det» i saksbehandling."
+  },
+  {
+    file: "teknisk.html",
+    del: "Del 1",
+    tittel: "Teknisk dypdykk",
+    si: "Bare hvis rommet tåler formler. En moderne LLM er en autoregressiv dekoder. Ingen sannhetsmotor, ingen separat tenkemotor.",
+    faglig: "Syv steg, én løkke: tokeniser, embed, N blokker, norm, unembed, softmax, sample. Attention er «hva hører sammen i konteksten». Avslutt på punkt 10: arkitekturen gir deg ikke grounding. Derfor RAG og sjekk senere.",
+    teknisk: "Vis softmax-kalkulatoren og KV-cache/VRAM. Prefill er compute, decode er minne. GQA, RoPE og SwiGLU er hvorfor 70B-modeller i det hele tatt kan serveres. Alignment dreier sannsynlighet — den sletter ikke evnen til å finne på en paragraf."
+  },
+  {
+    file: "kapittel-4.html",
+    del: "Del 2",
+    tittel: "4 · Prompt Lab",
+    si: "Instruksen din er jobben. En svak prompt pynter. En sterk prompt holder meningen og rammen.",
+    faglig: "Fiktivt, tungt Bufdir-vedtak. Kjør «skriv om til klarspråk». Sammenlign svak og sterk instruks. Tre faner: klarspråk, idémyldring, kodepartner. Poenget: mennesket styrer oppgaven, modellen fyller tekst.",
+    teknisk: "Kallet går til /api/chat (gpt-4o-mini, T = 0.3). Uten OPENAI_API_KEY får du simulert svar merket som øvelse. Originalteksten er oppdiktet — si det høyt."
+  },
+  {
+    file: "kapittel-5.html",
+    del: "Del 2",
+    tittel: "5 · Trygg bruk",
+    si: "Fire regler. Ikke pynt — dette er ansvaret når teksten forlater chatten.",
+    faglig: "1 Mennesket i loopen: du eier sluttresultatet. 2 Skjerming: aldri fødselsnummer eller taushetsbelagt i åpne verktøy. 3 Klarspråk: forenkle, ikke endre rettigheter. 4 Åpenhet: si ifra når KI har gjort vesentlig arbeid. Klikk kortene.",
+    teknisk: "Ingen modell her. Dette er policy-foilen som alt senere henger på — særlig personvernmodulen og «ikke vedtak»-sjekken i prototypen."
+  },
+  {
+    file: "kapittel-6.html",
+    del: "Del 2",
+    tittel: "6 · Trafikklys og plikter",
+    si: "Hva kan du lime inn? Grønt, gult, rødt. Offentlig sektor har tre plikter til: innsyn, forsvarlig saksbehandling og arkiv.",
+    faglig: "Rødt er fødselsnummer, helse, navngitte barn. Gult må sladdes. Grønt er åpne eller fiktive tekster. Kortene: offentlighetsloven, fvl § 17 utredningsplikt, arkiv. KI-forordningen skiller beslutningsstøtte fra automatisert vedtak.",
+    teknisk: "Trafikklyset er UI. I tilskuddsprototypen er rødt mønstersøk som stopper kallet til modellen — det er ikke et vedtak om at behandlingen er lovlig."
+  },
+  {
+    file: "kapittel-7.html",
+    del: "Del 3",
+    tittel: "7 · Kildeforankret KI",
+    si: "Når kilder er lastet opp, kan modellen sitere dem. Det er ikke det samme som at den har rett.",
+    faglig: "NotebookLM er et RAG-eksempel, ikke et anbefalt saksverktøy. Vilkår fra leverandør er ikke virksomhetens godkjenning. Sitater reduserer påhitt. Oppsummering, podcast og FAQ er ikke journalført vedtak.",
+    teknisk: "RAG: hent utdrag, putt dem i prompten, be modellen holde seg til dem. Det fjerner ikke feil lik sak eller feil hjemmel. Plantet felle i kapittel 11 ligger i mappa nettopp for å vise det."
+  },
+  {
+    file: "kapittel-8.html",
+    del: "Del 3",
+    tittel: "8 · Åpne data-øvelse",
+    si: "Dette er et fiktivt scenario. Det er ikke Bufdirs kunnskapsgrunnlag, og dere skal ikke styre etter det.",
+    faglig: "Vis hvordan åpne data (SSB, KOSTRA) pluss intern fagdata kan se ut som beslutningsstøtte. Syntesen er øvelse. Tall kan være sanne og konklusjonen likevel utenfor mandatet. Du eier skjønnet.",
+    teknisk: "Valgfri SSB-API og /api/chat. Uten nøkkel: merket øvelsestekst. Poenget er grensen, ikke dashbordet."
+  },
+  {
+    file: "kapittel-9.html",
+    del: "Del 4",
+    tittel: "9 · Hele tilskuddsløpet",
+    si: "Nå er dere saksbehandlere. KI forbereder formalia og utkast. Dere prioriterer mot ramme. Ingenting er vedtak.",
+    faglig: "Skille prosjekt/skjønn og drift/kriterier. Sjekklisten har fire deler: KI kan forberede 1, 3 og utkast til 4. Del 2 og rangering er deres. Vis at minst ett forslag er plantet feil. Tre kjøringer av samme sak — broen fra temperatur-foilen.",
+    teknisk: "Simulatoren lever i denne siden. Den fulle flaten er /tilskudd/. Journal og brevutkast ligger i nettleseren, ikke i et arkivsystem."
+  },
+  {
+    file: "tilskudd/",
+    del: "Del 4",
+    tittel: "Tilskuddsprototype",
+    si: "Egen webløsning uten kapittelmeny. Du er Frank. KI har gjort grovarbeidet. Jobben din er å si ja, nei eller «endre dette».",
+    faglig: "Tall sjekkes først (frivillig, admin 15 %, revisor, rapport). Så leser KI teksten. Du godkjenner. På T-2622 er poenget at hjemmelen er feil — da skal du stoppe. Ordningskatalogen speiler navn fra Tilskudd.no, ikke live saker.",
+    teknisk: "Personvernmodul før modellkall. /api/graph kjører LangGraph: kilder → utkast → sjekk. Uten nøkkel: merkede øvelsesutkast og samme validator. Søkerportal og register er simulert."
+  },
+  {
+    file: "kapittel-10.html",
+    del: "Del 4",
+    tittel: "10 · Personlig agent",
+    si: "Dette er din pult. Agenten kjenner stilen din. Én sak har et plantet feilgrep. Si nei.",
+    faglig: "Samme dag som kapittel 9. E-post, saker, budsjett, utkast. Agenten viser historikk og foreslår beløp — den fatter ikke innstillingen. Åpne T-2622: feil paragraf, feil lik sak. Det er øvelsen.",
+    teknisk: "Klientlogikk i app.js. Utkast kan komme fra grafen. Ingenting sendes. Ikke en autonom agent — en assistent med lesetilgang."
+  },
+  {
+    file: "kapittel-11.html",
+    del: "Del 5",
+    tittel: "11 · Saksflyt og hallusinering",
+    si: "Vi ber ikke modellen om å være snill. Vi tvinger rekkefølgen, og sjekken er ikke KI.",
+    faglig: "Spill av Brobyggerne (T-2622). Fem roller: koordinator, kildehenter, forslag, sjekk, du. Fellen (§ 14 / Golfklubben) ligger i mappa og skal ikke nå utkastet. Hvis sjekken sier nei, går det i loop — maks to forsøk.",
+    teknisk: "LangGraph i lib/grant-graph.js. retrieveFolder merker feller. validateDraft er kode: «ikke vedtak», forbudt §, feil lik sak, manglende bruk av hentet FVL-17. Bare generate-noden kaller OpenAI."
+  },
+  {
+    file: "kapittel-12.html",
+    del: "Del 5",
+    tittel: "12 · Forslag til gjennomføring",
+    si: "Hvis vi gjennomfører — ikke besluttet. Teknikken dere så, er bare fase 3. Resten er behov, forankring, juss og en stoppknapp.",
+    faglig: "Fem faser: behov, forankring (tillitsvalgte), juss/DPIA, pilot med menneske i loopen, drift eller stopp. Roller: linjeier, tillitsvalgt, personvern, superbruker, saksbehandler. Vedtaket er menneskets.",
+    teknisk: "Prototypen viser bare fase 3. Skarp drift med personopplysninger krever mer enn denne øvelsen: avtale, logg som holder, oppdatert kunnskapsgrunnlag. Skaler ned hvis gevinsten uteblir."
+  }
+];
+
+function foilManusHidden() {
+  try { return localStorage.getItem("foilManusHidden") === "1"; } catch (_e) { return false; }
+}
+
+function foilManusHtml(note, opts = {}) {
+  const href = note.file === "tilskudd/" ? "tilskudd/" : note.file;
+  const open = opts.list
+    ? `<a class="foil-manus-open" href="${href}">Åpne foilen</a>`
+    : `<a class="foil-manus-open" href="om.html">Alle blokker</a>`;
+  const hide = opts.list ? "" : `<button type="button" class="foil-manus-hide" onclick="toggleFoilManus()">Skjul på foilene</button>`;
+  return `<div class="foil-manus-head">
+      <p>Manus · ${note.del} · bare for deg som viser</p>
+      <div class="foil-manus-actions">${open}${hide}</div>
+    </div>
+    <h3>${note.tittel}</h3>
+    <p class="foil-manus-si">${note.si}</p>
+    <p><strong>Faglig.</strong> ${note.faglig}</p>
+    <p><strong>Teknisk.</strong> ${note.teknisk}</p>`;
+}
+
+function toggleFoilManus() {
+  const next = !foilManusHidden();
+  try { localStorage.setItem("foilManusHidden", next ? "1" : "0"); } catch (_e) { /* ignore */ }
+  document.querySelectorAll(".foil-manus[data-single]").forEach((el) => { el.hidden = next; });
+  const show = document.getElementById("foilManusShow");
+  if (show) show.hidden = !next;
+}
+
+function renderFoilManus() {
+  const file = currentPageFile();
+  if (file === "om.html") {
+    const list = document.getElementById("manusListe");
+    if (!list) return;
+    list.innerHTML = FOIL_MANUS.map((note) => `<article class="foil-manus foil-manus-card" id="manus-${note.file.replace(/[/.]/g, "-")}">${foilManusHtml(note, { list: true })}</article>`).join("");
+    return;
+  }
+  const note = FOIL_MANUS.find((n) => n.file === file);
+  const main = document.querySelector("main");
+  if (!note || !main) return;
+  const aside = document.createElement("aside");
+  aside.className = "foil-manus";
+  aside.dataset.single = "1";
+  aside.id = "foilManus";
+  aside.hidden = foilManusHidden();
+  aside.innerHTML = foilManusHtml(note);
+  main.insertBefore(aside, main.firstElementChild);
+
+  if (!document.getElementById("foilManusShow")) {
+    const show = document.createElement("button");
+    show.id = "foilManusShow";
+    show.type = "button";
+    show.className = "foil-manus-show";
+    show.textContent = "Vis manus";
+    show.hidden = !foilManusHidden();
+    show.addEventListener("click", toggleFoilManus);
+    document.body.appendChild(show);
+  }
+}
+
+window.toggleFoilManus = toggleFoilManus;
 
 async function callModelAPI(promptText, systemPromptText = "") {
   let delay = 800;
@@ -4673,6 +4857,7 @@ function initCockpit() {
 window.addEventListener('DOMContentLoaded', () => {
   try { currentMode = localStorage.getItem("guideMode") || "simple"; } catch (_e) { currentMode = "simple"; }
   toggleMode(currentMode, { keepChapter: true });
+  renderFoilManus();
   syncChapterNav();
   initCockpit();
   initPortalPage();

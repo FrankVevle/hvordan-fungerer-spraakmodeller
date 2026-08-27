@@ -2,7 +2,7 @@
 
 Pedagogisk kursopplegg om språkmodeller og tilskuddsøvelse. **Ikke et Bufdir-verktøy.** Forskrift, policy, presedens og saker er oppdiktet. Siden er ikke beslutningsstøtte og fatter ikke vedtak. Sist oppdatert 27. august 2026.
 
-Les [om.html](om.html) for en samlet tekst om hva dette handler om — faglig (kurs, forvaltning, mennesket i loopen) og teknisk (statiske sider, `/api/chat`, LangGraph med RAG → utkast → sjekk).
+[om.html](om.html) er personlig manus til gjennomgang: én tekstblokk per foil (si-høyt, faglig, teknisk). Samme blokk vises øverst på hver side. Det er ikke kursinnhold.
 
 ## Lokal kjøring
 
