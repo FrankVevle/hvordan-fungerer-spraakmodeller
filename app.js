@@ -10,6 +10,7 @@ let currentChapterIdx = 0;
 
 const SITE_PAGES = [
   { file: "index.html", title: "Oversikt", part: "Start" },
+  { file: "om.html", title: "Hva dette handler om", part: "Start" },
   { file: "kapittel-1.html", title: "Kapittel 1 · Tokens og ordkart", part: "Del 1" },
   { file: "kapittel-2.html", title: "Kapittel 2 · Neste ord og temperatur", part: "Del 1" },
   { file: "kapittel-3.html", title: "Kapittel 3 · Ikke-determinisme", part: "Del 1" },
