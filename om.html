@@ -3,61 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Manus til gjennomgang · Hvordan Fungerer Språkmodeller?</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Fira+Code:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="site.css">
+  <title>Manus</title>
+  <style>
+    body { font-family: Georgia, "Times New Roman", serif; max-width: 40rem; margin: 2rem auto; padding: 0 1.25rem 3rem; line-height: 1.55; color: #111; }
+    pre { white-space: pre-wrap; font-family: inherit; font-size: 1rem; margin: 0; }
+    a { color: #111; }
+  </style>
 </head>
-<body class="bg-slate-50 text-slate-800 antialiased min-h-screen pb-16" data-page="om.html">
-  <header class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-      <a href="index.html" class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-purple-600 via-indigo-600 to-blue-500 flex items-center justify-center text-white font-black text-xl shadow-md shadow-purple-200">AI</div>
-        <div>
-          <h1 class="text-lg font-bold text-slate-900 leading-tight">Hvordan Fungerer Språkmodeller?</h1>
-          <p class="text-xs text-slate-500">Manus — bare for deg som viser</p>
-        </div>
-      </a>
-      <a href="index.html" class="text-sm font-semibold text-violet-800 hover:underline">Tilbake til oversikt</a>
-    </div>
-  </header>
-
-  <main class="max-w-3xl mx-auto px-4 sm:px-6 mt-8 space-y-5">
-    <section class="bg-gradient-to-r from-amber-900 via-orange-900 to-slate-900 rounded-3xl p-5 sm:p-7 text-white shadow-xl">
-      <span class="bg-amber-500/20 text-amber-200 text-xs px-3 py-1 rounded-full font-mono font-bold uppercase tracking-wider border border-amber-500/30">Personlig gjennomgang</span>
-      <h2 class="text-xl sm:text-3xl font-extrabold tracking-tight mt-3">Én tekstblokk per foil</h2>
-      <p class="text-amber-50/90 text-sm sm:text-base leading-relaxed mt-2">
-        Dette er ikke en foil i kurset. Det er manuset ditt når du klikker deg gjennom sidene. Samme blokk ligger øverst på hver foil. «Si» er det du kan si høyt. Deretter faglig og teknisk. Skjul blokkene på foilene hvis du viser for andre.
-      </p>
-    </section>
-
-    <nav id="manusHopplinjer" class="flex flex-wrap gap-2 text-xs font-semibold">
-      <a class="px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:border-amber-400" href="#manus-index-html">Oversikt</a>
-      <a class="px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:border-amber-400" href="#manus-kapittel-1-html">1</a>
-      <a class="px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:border-amber-400" href="#manus-kapittel-2-html">2</a>
-      <a class="px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:border-amber-400" href="#manus-kapittel-3-html">3</a>
-      <a class="px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:border-amber-400" href="#manus-teknisk-html">T</a>
-      <a class="px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:border-amber-400" href="#manus-kapittel-4-html">4</a>
-      <a class="px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:border-amber-400" href="#manus-kapittel-5-html">5</a>
-      <a class="px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:border-amber-400" href="#manus-kapittel-6-html">6</a>
-      <a class="px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:border-amber-400" href="#manus-kapittel-7-html">7</a>
-      <a class="px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:border-amber-400" href="#manus-kapittel-8-html">8</a>
-      <a class="px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:border-amber-400" href="#manus-kapittel-9-html">9</a>
-      <a class="px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:border-amber-400" href="#manus-tilskudd-">Prototype</a>
-      <a class="px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:border-amber-400" href="#manus-kapittel-10-html">10</a>
-      <a class="px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:border-amber-400" href="#manus-kapittel-11-html">11</a>
-      <a class="px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:border-amber-400" href="#manus-kapittel-12-html">12</a>
-    </nav>
-
-    <div id="manusListe" class="space-y-3"></div>
-  </main>
-
-  <footer class="max-w-3xl mx-auto px-4 sm:px-6 mt-12 pt-6 pb-4 border-t border-slate-200 text-center text-xs text-slate-500">
-    <p>Personlig manus. Ikke kursinnhold. Ikke et Bufdir-verktøy.</p>
-  </footer>
-
-  <script src="app.js"></script>
+<body>
+  <p><a href="manus.txt">manus.txt</a> · <a href="index.html">kurset</a></p>
+  <pre id="manus"></pre>
+  <script>
+    fetch("manus.txt").then((r) => r.text()).then((t) => { document.getElementById("manus").textContent = t; });
+  </script>
 </body>
 </html>
