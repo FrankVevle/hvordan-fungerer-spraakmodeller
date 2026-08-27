@@ -23,7 +23,7 @@ Appen er en Vercel-side med `index.html`, `/api/chat` (Prompt Lab / Datalab) og 
 
 ## Sider
 
-Hvert punkt er en egen side. Start på `index.html`. Deretter `om.html`, `kapittel-1.html` … `kapittel-12.html` og `teknisk.html`. Forrige/Neste og piltaster hopper mellom sidene.
+Hvert punkt er en egen side. Start på `index.html`. Deretter `kapittel-1.html` … `kapittel-12.html` og `teknisk.html`. Forrige/Neste og piltaster hopper mellom sidene.
 
 - **Del 1** — tokens, temperatur, ikke-determinisme, teknisk dypdykk
 - **Del 2** — Prompt Lab, trygg bruk, trafikklys og plikter
