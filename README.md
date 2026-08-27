@@ -1,6 +1,8 @@
 # Hvordan Fungerer Språkmodeller?
 
-Pedagogisk kursopplegg om språkmodeller og tilskuddsøvelse. **Ikke et Bufdir-verktøy.** Forskrift, policy, presedens og saker er oppdiktet. Siden er ikke beslutningsstøtte og fatter ikke vedtak. Sist oppdatert 23. august 2026.
+Pedagogisk kursopplegg om språkmodeller og tilskuddsøvelse. **Ikke et Bufdir-verktøy.** Forskrift, policy, presedens og saker er oppdiktet. Siden er ikke beslutningsstøtte og fatter ikke vedtak. Sist oppdatert 27. august 2026.
+
+Personlig manus ligger som ren tekst i [manus.txt](manus.txt) (én blokk per foil). Det er ikke kursinnhold.
 
 ## Lokal kjøring
 
@@ -21,7 +23,7 @@ Appen er en Vercel-side med `index.html`, `/api/chat` (Prompt Lab / Datalab) og 
 
 ## Sider
 
-Hvert punkt er en egen side. Start på `index.html`. Deretter `kapittel-1.html` … `kapittel-10.html`, `kapittel-12.html`, `cockpit.html`, `slik-gjor-vi-det.html` og `teknisk.html`. Forrige/Neste og piltaster hopper mellom sidene.
+Hvert punkt er en egen side. Start på `index.html`. Deretter `kapittel-1.html` … `kapittel-12.html` og `teknisk.html`. Forrige/Neste og piltaster hopper mellom sidene.
 
 - **Del 1** — tokens, temperatur, ikke-determinisme, teknisk dypdykk
 - **Del 2** — Prompt Lab, trygg bruk, trafikklys og plikter
